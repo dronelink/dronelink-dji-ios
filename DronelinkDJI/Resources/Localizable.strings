@@ -1,0 +1,18 @@
+//
+//  Localizable.strings
+//  DronelinkDJI
+//
+//  Created by Jim McAndrew on 1/21/19.
+//  Copyright © 2019 Dronelink. All rights reserved.
+//
+"MissionDisengageReason.command.type.unhandled" = "Unhandled command type";
+"MissionDisengageReason.drone.control.unavailable.title" = "Drone Control Unavailable";
+"MissionDisengageReason.telemetry.unavailable.title" = "Telemetry Unavailable";
+"MissionDisengageReason.telemetry.delayed.title" = "Telemetry Delayed";
+"MissionDisengageReason.drone.control.override.title" = "Control Override";
+"MissionDisengageReason.take.off.failed.title" = "Unable to Take Off";
+"MissionDisengageReason.take.control.failed.title" = "Unable to Take Control";
+"MissionDisengageReason.drone.lightbridge.unavailable.title" = "Lightbridge Link Unavailable";
+"MissionDisengageReason.drone.ocusync.unavailable.title" = "OcuSync Link Unavailable";
+"MissionDisengageReason.drone.camera.unavailable.title" = "Camera Unavailable";
+"MissionDisengageReason.drone.gimbal.unavailable.title" = "Gimbal Unavailable";
