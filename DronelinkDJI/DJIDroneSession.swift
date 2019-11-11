@@ -28,13 +28,11 @@ public class DJIDroneSession: NSObject {
     
     private let delegates = MulticastDelegate<DroneSessionDelegate>()
     private let serialQueue = DispatchQueue(label: "DroneSession")
-    private var droneCommands = CommandQueue()
-    private var cameraCommands = MultiChannelCommandQueue()
-    private var gimbalCommands = MultiChannelCommandQueue()
+    private let droneCommands = CommandQueue()
+    private let cameraCommands = MultiChannelCommandQueue()
+    private let gimbalCommands = MultiChannelCommandQueue()
     
     private var _flightControllerState: DatedValue<DJIFlightControllerState>?
-    private var _ocuSyncLinkStates = DatedValue<Bool>(value: true)
-    private var _lightbridgeLinkStates = DatedValue<Bool>(value: true)
     private var _cameraStates: [UInt: DatedValue<DJICameraSystemState>] = [:]
     private var _gimbalStates: [UInt: DatedValue<DJIGimbalState>] = [:]
     
@@ -209,6 +207,34 @@ public class DJIDroneSession: NSObject {
         }
         os_log(.info, log: log, "Drone session closed")
     }
+    
+    internal func sendResetVelocityCommand(withCompletion: DJICompletionBlock? = nil) {
+        adapter.sendResetVelocityCommand(withCompletion: withCompletion)
+    }
+    
+    internal func sendResetGimbalCommands() {
+        adapter.drone.gimbals?.forEach {
+            $0.rotate(with: DJIGimbalRotation(
+                pitchValue: $0.isAdjustPitchSupported ? -12.0.convertDegreesToRadians as NSNumber : nil,
+                rollValue: $0.isAdjustRollSupported ? 0 : nil,
+                yawValue: nil,
+                time: DJIGimbalRotation.minTime,
+                mode: .absoluteAngle), completion: nil)
+        }
+    }
+    
+    internal func sendResetCameraCommands() {
+        adapter.drone.cameras?.forEach {
+            if let cameraState = cameraState(channel: $0.index)?.value {
+                if (cameraState.isCapturingVideo) {
+                    $0.stopRecordVideo(completion: nil)
+                }
+                else if (cameraState.isCapturing) {
+                    $0.stopShootPhoto(completion: nil)
+                }
+            }
+        }
+    }
 }
 
 extension DJIDroneSession: DroneSession {
@@ -264,7 +290,7 @@ extension DJIDroneSession: DroneSession {
                 id: command.id,
                 name: command.type.rawValue,
                 execute: { finished in
-                    self.delegates.invoke { $0.onCommandExecuted(session: self, command: command) }
+                    self.commandExecuted(command: command)
                     return self.execute(droneCommand: command, finished: finished)
                 },
                 finished: { error in
@@ -279,7 +305,7 @@ extension DJIDroneSession: DroneSession {
                 id: command.id,
                 name: command.type.rawValue,
                 execute: {
-                    self.delegates.invoke { $0.onCommandExecuted(session: self, command: command) }
+                    self.commandExecuted(command: command)
                     return self.execute(cameraCommand: command, finished: $0)
                 },
                 finished: { error in
@@ -294,7 +320,7 @@ extension DJIDroneSession: DroneSession {
                 id: command.id,
                 name: command.type.rawValue,
                 execute: {
-                    self.delegates.invoke { $0.onCommandExecuted(session: self, command: command) }
+                    self.commandExecuted(command: command)
                     return self.execute(gimbalCommand: command, finished: $0)
                 },
                 finished: { error in
@@ -305,6 +331,10 @@ extension DJIDroneSession: DroneSession {
         }
         
         throw DroneSessionError.commandTypeUnhandled
+    }
+    
+    private func commandExecuted(command: MissionCommand) {
+        self.delegates.invoke { $0.onCommandExecuted(session: self, command: command) }
     }
     
     private func commandFinished(command: MissionCommand, error: Error?) {

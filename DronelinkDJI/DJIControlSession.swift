@@ -25,13 +25,13 @@ public class DJIControlSession: DroneControlSession {
         case Deactivated
     }
     
+    private let droneSession: DJIDroneSession
+    
     private var state = State.TakeoffStart
     private var virtualStickAttempts = 0
     private var virtualStickAttemptPrevious: Date?
     private var flightModeJoystickAttemptingStarted: Date?
     private var attemptDisengageReason: Mission.Message?
-    
-    private let droneSession: DJIDroneSession
     
     public init(droneSession: DJIDroneSession) {
         self.droneSession = droneSession
@@ -130,7 +130,7 @@ public class DJIControlSession: DroneControlSession {
                 return false
             }
             
-            droneSession.adapter.drone.flightController?.sendResetVelocityCommand()
+            droneSession.sendResetVelocityCommand()
             return false
             
         case .FlightModeJoystickComplete:
@@ -143,37 +143,13 @@ public class DJIControlSession: DroneControlSession {
     
     public func deactivate() {
         DJISDKManager.closeConnection(whenEnteringBackground: true)
-        droneSession.adapter.drone.flightController?.sendResetVelocityCommand  { error in
+        droneSession.sendResetVelocityCommand  { error in
             self.droneSession.adapter.drone.flightController?.setVirtualStickModeEnabled(false, withCompletion: nil)
         }
         
-        sendResetGimbalCommand()
-        sendResetCameraCommand()
+        droneSession.sendResetGimbalCommands()
+        droneSession.sendResetCameraCommands()
         
         state = .Deactivated
-    }
-    
-    private func sendResetGimbalCommand() {
-        droneSession.adapter.drone.gimbals?.forEach {
-            $0.rotate(with: DJIGimbalRotation(
-                pitchValue: $0.isAdjustPitchSupported ? -12.0.convertDegreesToRadians as NSNumber : nil,
-                rollValue: $0.isAdjustRollSupported ? 0 : nil,
-                yawValue: nil,
-                time: DJIGimbalRotation.minTime,
-                mode: .absoluteAngle), completion: nil)
-        }
-    }
-    
-    private func sendResetCameraCommand() {
-        droneSession.adapter.drone.cameras?.forEach {
-            if let cameraState = droneSession.cameraState(channel: $0.index)?.value {
-                if (cameraState.isCapturingVideo) {
-                    $0.stopRecordVideo(completion: nil)
-                }
-                else if (cameraState.isCapturing) {
-                    $0.stopShootPhoto(completion: nil)
-                }
-            }
-        }
     }
 }

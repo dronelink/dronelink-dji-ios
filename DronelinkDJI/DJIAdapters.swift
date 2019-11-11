@@ -21,11 +21,12 @@ public struct DJIDroneAdapter: DroneAdapter {
     public func gimbal(channel: UInt) -> GimbalAdapter? { gimbals?[Int(channel)] }
 
     public func send(velocityCommand: Mission.VelocityDroneCommand?) {
-        guard let flightController = drone.flightController else { return }
         guard let velocityCommand = velocityCommand else {
-            flightController.sendResetVelocityCommand()
+            sendResetVelocityCommand()
             return
         }
+        
+        guard let flightController = drone.flightController else { return }
         
         flightController.isVirtualStickAdvancedModeEnabled = true
         flightController.rollPitchControlMode = .velocity
@@ -48,6 +49,19 @@ public struct DJIDroneAdapter: DroneAdapter {
     
     public func startLanding(finished: CommandFinished?) {
         drone.flightController?.startLanding(completion: finished)
+    }
+    
+    public func sendResetVelocityCommand(withCompletion: DJICompletionBlock? = nil) {
+        guard let flightController = drone.flightController else {
+            return
+        }
+        
+        flightController.isVirtualStickAdvancedModeEnabled = true
+        flightController.rollPitchControlMode = .velocity
+        flightController.rollPitchCoordinateSystem = .ground
+        flightController.verticalControlMode = .velocity
+        flightController.yawControlMode = .angularVelocity
+        flightController.send(DJIVirtualStickFlightControlData(pitch: 0, roll: 0, yaw: 0, verticalThrottle: 0), withCompletion: withCompletion)
     }
 }
 

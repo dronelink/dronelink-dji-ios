@@ -1,25 +1,24 @@
 PODS:
   - DJI-SDK-iOS (4.11)
   - DJIWidget (1.6.1)
-  - DronelinkCore (1.0.0)
+  - DronelinkCore (1.0.2)
 
 DEPENDENCIES:
   - DJI-SDK-iOS (~> 4.11)
   - DJIWidget (~> 1.6.1)
-  - DronelinkCore (~> 1.0.0)
+  - DronelinkCore (~> 1.0.2)
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
-    - DronelinkCore
   trunk:
     - DJI-SDK-iOS
     - DJIWidget
+    - DronelinkCore
 
 SPEC CHECKSUMS:
   DJI-SDK-iOS: dde922e22db39e270816fd7b077eccd362d61e4f
   DJIWidget: 93d449c4ef9cad1292b400e39da80ade4c538ee4
-  DronelinkCore: d6eddb4c3f9754ea4d92ddffda71f075e91c7272
+  DronelinkCore: eb3f7119d392604afce4bf387360ff53b1601de0
 
-PODFILE CHECKSUM: ea27b656608c99770dcb11bb9803ad2ca97f29b4
+PODFILE CHECKSUM: 46b170e300243b0d3848c0c5266d89b98d4a4d00
 
 COCOAPODS: 1.8.4

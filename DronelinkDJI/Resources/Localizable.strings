@@ -16,3 +16,4 @@
 "MissionDisengageReason.drone.ocusync.unavailable.title" = "OcuSync Link Unavailable";
 "MissionDisengageReason.drone.camera.unavailable.title" = "Camera Unavailable";
 "MissionDisengageReason.drone.gimbal.unavailable.title" = "Gimbal Unavailable";
+"MissionDisengageReason.drone.camera.mode.invalid.title" = "Camera Mode Invalid";

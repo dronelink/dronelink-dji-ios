@@ -44,17 +44,6 @@ extension DJIAircraft {
     public func gimbal(channel: UInt) -> DJIGimbal? { gimbals?[Int(channel)] }
 }
 
-extension DJIFlightController {
-    func sendResetVelocityCommand(withCompletion: DJICompletionBlock? = nil) {
-        isVirtualStickAdvancedModeEnabled = true
-        rollPitchControlMode = .velocity
-        rollPitchCoordinateSystem = .ground
-        verticalControlMode = .velocity
-        yawControlMode = .angularVelocity
-        send(DJIVirtualStickFlightControlData(pitch: 0, roll: 0, yaw: 0, verticalThrottle: 0), withCompletion: withCompletion)
-    }
-}
-
 extension DJIFlightControllerState {
     public var location: CLLocation? {
         if let location = aircraftLocation, isHomeLocationSet {

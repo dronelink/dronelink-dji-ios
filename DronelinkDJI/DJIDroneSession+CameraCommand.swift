@@ -117,7 +117,11 @@ extension DJIDroneSession {
                 }
                 else {
                     os_log(.debug, log: log, "Camera start capture photo")
-                    camera.startShootPhoto(completion: finished)
+                    camera.startShootPhoto { error in
+                        DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
+                            finished(error)
+                        }
+                    }
                 }
                 break
                 
@@ -128,13 +132,17 @@ extension DJIDroneSession {
                 }
                 else {
                     os_log(.debug, log: log, "Camera start capture video")
-                    camera.startRecordVideo(completion: finished)
+                    camera.startRecordVideo { error in
+                        DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
+                            finished(error)
+                        }
+                    }
                 }
                 break
                 
             default:
                 os_log(.info, log: log, "Camera start capture invalid mode: %d", state.missionMode.djiValue.rawValue)
-                return String(format: "MissionExecutor.StartCaptureCameraCommand.cameraModeInvalid".localized, state.missionMode.djiValue.rawValue)
+                return String(format: "MissionDisengageReason.drone.camera.mode.invalid.title".localized, state.missionMode.djiValue.rawValue)
             }
             return nil
         }
