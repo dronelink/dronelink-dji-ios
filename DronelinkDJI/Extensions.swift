@@ -40,8 +40,8 @@ extension DJIBaseProduct {
 extension DJIAircraft {
     public static var maxVelocity: Double { 15.0 }
     
-    public func camera(channel: UInt) -> DJICamera? { cameras?[Int(channel)] }
-    public func gimbal(channel: UInt) -> DJIGimbal? { gimbals?[Int(channel)] }
+    public func camera(channel: UInt) -> DJICamera? { cameras?[safeIndex: Int(channel)] }
+    public func gimbal(channel: UInt) -> DJIGimbal? { gimbals?[safeIndex: Int(channel)] }
 }
 
 extension DJIFlightControllerState {

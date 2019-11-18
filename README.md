@@ -1,12 +1,8 @@
-# DronelinkDJI
+# DronelinkDJI - iOS
 
 [![Version](https://img.shields.io/cocoapods/v/DronelinkDJI.svg?style=flat)](https://cocoapods.org/pods/DronelinkDJI)
 [![License](https://img.shields.io/cocoapods/l/DronelinkDJI.svg?style=flat)](https://cocoapods.org/pods/DronelinkDJI)
 [![Platform](https://img.shields.io/cocoapods/p/DronelinkDJI.svg?style=flat)](https://cocoapods.org/pods/DronelinkDJI)
-
-## Example
-
-## Requirements
 
 ## Installation
 

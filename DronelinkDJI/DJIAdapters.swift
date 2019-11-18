@@ -16,9 +16,9 @@ public struct DJIDroneAdapter: DroneAdapter {
     }
 
     public var cameras: [CameraAdapter]? { drone.cameras }
-    public func camera(channel: UInt) -> CameraAdapter? { cameras?[Int(channel)] }
+    public func camera(channel: UInt) -> CameraAdapter? { cameras?[safeIndex: Int(channel)] }
     public var gimbals: [GimbalAdapter]? { drone.gimbals }
-    public func gimbal(channel: UInt) -> GimbalAdapter? { gimbals?[Int(channel)] }
+    public func gimbal(channel: UInt) -> GimbalAdapter? { gimbals?[safeIndex: Int(channel)] }
 
     public func send(velocityCommand: Mission.VelocityDroneCommand?) {
         guard let velocityCommand = velocityCommand else {
@@ -66,6 +66,19 @@ public struct DJIDroneAdapter: DroneAdapter {
 }
 
 extension DJICamera : CameraAdapter {}
+
+struct DJICameraFile : CameraFile {
+    public let channel: UInt
+    public var name: String { mediaFile.fileName }
+    public var size: Int64 { mediaFile.fileSizeInBytes }
+    public let created = Date()
+    private let mediaFile: DJIMediaFile
+    
+    init(channel: UInt, mediaFile: DJIMediaFile) {
+        self.channel = channel
+        self.mediaFile = mediaFile
+    }
+}
 
 extension DJICameraSystemState: CameraStateAdapter {
     public var isCapturingPhotoInterval: Bool { isShootingIntervalPhoto }

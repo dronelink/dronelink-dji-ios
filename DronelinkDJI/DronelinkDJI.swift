@@ -22,7 +22,6 @@ extension Mission.DroneConnectionFailSafeBehavior {
         case .returnHome: return .goHome
         case .autoLand: return .landing
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -34,7 +33,6 @@ extension Mission.CameraAEBCount {
         case ._5: return .count5
         case ._7: return .count7
         case .unknown: return .countUnknown
-        @unknown default: return .countUnknown
         }
     }
 }
@@ -76,7 +74,6 @@ extension Mission.CameraAperture {
         case .f20: return .F20
         case .f22: return .F22
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -119,7 +116,6 @@ extension Mission.CameraColor {
         case .filmI: return .colorFilmI
         case .hlg: return .colorHLG
         case .unknown: return .colorUnknown
-        @unknown default: return .colorUnknown
         }
     }
 }
@@ -160,7 +156,6 @@ extension Mission.CameraExposureCompensation {
         case .p50: return .P50
         case .fixed: return .fixed
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -173,7 +168,6 @@ extension Mission.CameraExposureMode {
         case .aperturePriority: return .aperturePriority
         case .manual: return .manual
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -184,7 +178,6 @@ extension Mission.CameraFileIndexMode {
         case .reset: return .reset
         case .sequence: return .sequence
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -196,7 +189,6 @@ extension Mission.CameraFocusMode {
         case .auto: return .auto
         case .autoContinuous: return .AFC
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -215,7 +207,6 @@ extension Mission.CameraISO {
         case ._12800: return .ISO12800
         case ._25600: return .ISO25600
         case .unknown: return .isoUnknown
-        @unknown default: return .isoUnknown
         }
     }
 }
@@ -243,7 +234,6 @@ extension Mission.CameraMode {
         case .download: return .mediaDownload
         case .broadcast: return .broadcast
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -255,7 +245,6 @@ extension Mission.CameraPhotoAspectRatio {
         case ._16x9: return .ratio16_9
         case ._3x2: return .ratio3_2
         case .unknown: return .ratioUnknown
-        @unknown default: return .ratioUnknown
         }
     }
 }
@@ -271,7 +260,6 @@ extension Mission.CameraPhotoFileFormat {
         case .tiff14bitLinearLowTempResolution: return .tiff14BitLinearLowTempResolution
         case .tiff14bitLinearHighTempResolution: return .tiff14BitLinearHighTempResolution
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -283,7 +271,6 @@ extension Mission.CameraVideoFieldOfView {
         case .narrow: return .narrow
         case .wide: return .wide
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -368,7 +355,6 @@ extension Mission.CameraShutterSpeed {
         case ._25: return .speed25
         case ._30: return .speed30
         case .unknown: return .speedUnknown
-        @unknown default: return .speedUnknown
         }
     }
 }
@@ -388,7 +374,6 @@ extension Mission.CameraPhotoMode {
         case .ehdr: return .EHDR
         case .hyperLight: return .hyperLight
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -399,7 +384,6 @@ extension Mission.CameraStorageLocation {
         case .sdCard: return .sdCard
         case ._internal: return .internalStorage
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -410,7 +394,6 @@ extension Mission.CameraVideoFileCompressionStandard {
         case .h264: return .H264
         case .h265: return .H265
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -423,7 +406,6 @@ extension Mission.CameraVideoFileFormat {
         case .tiffSequence: return .tiffSequence
         case .seq: return .SEQ
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -447,7 +429,6 @@ extension Mission.CameraVideoFrameRate {
         case ._120: return .rate120FPS
         case ._8dot7: return .rate8dot7FPS
         case .unknown: return .rateUnknown
-        @unknown default: return .rateUnknown
         }
     }
 }
@@ -479,7 +460,6 @@ extension Mission.CameraVideoResolution {
         case .max: return .resolutionMax
         case .noSSDVideo: return .resolutionNoSSDVideo
         case .unknown: return .resolutionUnknown
-        @unknown default: return .resolutionUnknown
         }
     }
 }
@@ -490,7 +470,6 @@ extension Mission.CameraVideoStandard {
         case .pal: return .PAL
         case .ntsc: return .NTSC
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -507,7 +486,6 @@ extension Mission.CameraWhiteBalancePreset {
         case .custom: return .custom
         case .neutral: return .neutral
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -518,7 +496,6 @@ extension Mission.DroneLightbridgeChannelSelectionMode {
         case .auto: return .auto
         case .manual: return .manual
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -530,7 +507,6 @@ extension Mission.DroneLightbridgeFrequencyBand {
         case ._5dot7ghz: return .band5Dot7GHz
         case ._5dot8ghz: return .band5Dot8GHz
         case .unknown: return .bandUnknown
-        @unknown default: return .bandUnknown
         }
     }
 }
@@ -541,7 +517,6 @@ extension Mission.DroneOcuSyncChannelSelectionMode {
         case .auto: return .auto
         case .manual: return .manual
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -553,7 +528,6 @@ extension Mission.DroneOcuSyncFrequencyBand {
         case ._5dot8ghz: return .band5Dot8GHz
         case .dual: return .bandDual
         case .unknown: return .bandUnknown
-        @unknown default: return .bandUnknown
         }
     }
 }
@@ -578,7 +552,6 @@ extension Mission.GimbalMode {
         case .free: return .free
         case .fpv: return .FPV
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }

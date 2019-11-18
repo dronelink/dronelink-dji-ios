@@ -94,7 +94,7 @@ public class DJIDroneSession: NSObject {
     
     private func initCamera(index: UInt) {
         let index = Int(index)
-        if let camera = adapter.drone.cameras?[index] {
+        if let camera = adapter.drone.cameras?[safeIndex: index] {
             os_log(.info, log: log, "Camera[%{public}d] connected", index)
             camera.delegate = self
         }
@@ -102,7 +102,7 @@ public class DJIDroneSession: NSObject {
     
     private func initGimbal(index: UInt) {
         let index = Int(index)
-        if let gimbal = adapter.drone.gimbals?[index] {
+        if let gimbal = adapter.drone.gimbals?[safeIndex: index] {
             os_log(.info, log: log, "Gimbal[%{public}d] connected", index)
             gimbal.delegate = self
             
@@ -410,6 +410,12 @@ extension DJIDroneSession: DJICameraDelegate {
     public func camera(_ camera: DJICamera, didUpdate systemState: DJICameraSystemState) {
         serialQueue.async {
             self._cameraStates[camera.index] = DatedValue<DJICameraSystemState>(value: systemState)
+        }
+    }
+    
+    public func camera(_ camera: DJICamera, didGenerateNewMediaFile newMedia: DJIMediaFile) {
+        DispatchQueue.global().async {
+            self.delegates.invoke { $0.onCameraFileGenerated(session: self, file: DJICameraFile(channel: camera.index, mediaFile: newMedia)) }
         }
     }
 }
