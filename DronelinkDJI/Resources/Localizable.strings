@@ -5,7 +5,7 @@
 //  Created by Jim McAndrew on 1/21/19.
 //  Copyright © 2019 Dronelink. All rights reserved.
 //
-"MissionDisengageReason.command.type.unhandled" = "Unhandled command type";
+"MissionDisengageReason.command.type.unhandled" = "Unhandled Command Type";
 "MissionDisengageReason.drone.control.unavailable.title" = "Drone Control Unavailable";
 "MissionDisengageReason.telemetry.unavailable.title" = "Telemetry Unavailable";
 "MissionDisengageReason.telemetry.delayed.title" = "Telemetry Delayed";

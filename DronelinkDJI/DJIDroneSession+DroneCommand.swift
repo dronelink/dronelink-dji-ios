@@ -1,5 +1,5 @@
 //
-//  DroneSession+DroneCommand.swift
+//  DJIDroneSession+DroneCommand.swift
 //  DronelinkDJI
 //
 //  Created by Jim McAndrew on 10/28/19.

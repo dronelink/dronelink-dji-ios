@@ -385,6 +385,10 @@ extension DJIDroneSession: DroneStateAdapter {
     public var homeLocation: CLLocation? { flightControllerState?.value.isHomeLocationSet ?? false ? flightControllerState?.value.homeLocation : nil }
     public var lastKnownGroundLocation: CLLocation? { _lastKnownGroundLocation }
     public var takeoffLocation: CLLocation? { isFlying ? (lastKnownGroundLocation ?? homeLocation) : location }
+    public var takeoffAltitude: Double? {
+        nil
+        //TODO DJI reports wrong altitude? takeoffLocation == nil ? nil : flightControllerState?.value.takeoffAltitude
+    }
     public var course: Double { flightControllerState?.value.course ?? 0 }
     public var horizontalSpeed: Double { flightControllerState?.value.horizontalSpeed ?? 0 }
     public var verticalSpeed: Double { flightControllerState?.value.verticalSpeed ?? 0 }

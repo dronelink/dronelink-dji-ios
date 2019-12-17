@@ -142,7 +142,7 @@ extension DJIDroneSession {
                 
             default:
                 os_log(.info, log: log, "Camera start capture invalid mode: %d", state.missionMode.djiValue.rawValue)
-                return String(format: "MissionDisengageReason.drone.camera.mode.invalid.title".localized, state.missionMode.djiValue.rawValue)
+                return "MissionDisengageReason.drone.camera.mode.invalid.title".localized
             }
             return nil
         }

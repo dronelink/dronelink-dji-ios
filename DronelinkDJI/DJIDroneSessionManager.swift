@@ -47,7 +47,6 @@ public class DJIDroneSessionManager: NSObject {
 }
 
 extension DJIDroneSessionManager: DroneSessionManager {
-    
     public func add(delegate: DroneSessionManagerDelegate) {
         delegates.add(delegate)
         if let session = _session {
