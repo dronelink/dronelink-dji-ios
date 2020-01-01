@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = "DronelinkDJI"
-  s.version = "1.1.1"
+  s.version = "1.1.2"
   s.summary = "Dronelink vendor implementation for DJI"
   s.homepage = "https://dronelink.com/"
   s.license = { :type => "MIT", :file => "LICENSE" }
@@ -14,5 +14,4 @@ Pod::Spec.new do |s|
 
   s.dependency "DronelinkCore", "~> 1.1.1"
   s.dependency "DJI-SDK-iOS", "~> 4.11"
-  s.dependency "DJIWidget", "~> 1.6.1"
 end

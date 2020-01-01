@@ -201,6 +201,16 @@ public class DJIDroneSession: NSObject {
                 self.droneCommands.process()
                 self.cameraCommands.process()
                 self.gimbalCommands.process()
+                
+                //work-around for this issue: https://support.dronelink.com/hc/en-us/community/posts/360034749773-Seeming-to-have-a-Heading-error-
+                if self.adapter.gimbalDriftPossible, let gimbal = self.adapter.gimbal(channel: 0) as? DJIGimbal, gimbal.isAdjustYawSupported, let gimbalState = self._gimbalStates[0]?.value, gimbalState.mode == .yawFollow {
+                    gimbal.rotate(with: DJIGimbalRotation(
+                        pitchValue: nil,
+                        rollValue: nil,
+                        yawValue: 0,
+                        time: DJIGimbalRotation.minTime,
+                        mode: .absoluteAngle), completion: nil)
+                }
             }
             
             Thread.sleep(forTimeInterval: 0.1)

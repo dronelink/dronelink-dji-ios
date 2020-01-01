@@ -10,7 +10,6 @@ import Foundation
 import os
 import DronelinkCore
 import DJISDK
-import DJIWidget
 
 public class DJIDroneSessionManager: NSObject {
     private let log = OSLog(subsystem: "DronelinkDJI", category: "DJIDroneSessionManager")
@@ -27,22 +26,6 @@ public class DJIDroneSessionManager: NSObject {
         }
         
         DJISDKManager.registerApp(with: self)
-    }
-    
-    func setVideoPreviewer(view: UIView?) {
-        let videoPreviewer = DJIVideoPreviewer.instance()
-        videoPreviewer?.enableHardwareDecode = true
-        self.videoPreviewerView = view
-        guard let view = view, let product = DJISDKManager.product() else {
-            videoPreviewer?.unSetView()
-            videoPreviewer?.close()
-            DJISDKManager.product()?.targetVideoFeed?.remove(self)
-            return
-        }
-
-        videoPreviewer?.setView(view)
-        product.targetVideoFeed?.add(self, with: nil)
-        videoPreviewer?.start()
     }
 }
 
@@ -75,7 +58,6 @@ extension DJIDroneSessionManager: DJISDKManagerDelegate {
     }
     
     public func productConnected(_ product: DJIBaseProduct?) {
-        setVideoPreviewer(view: videoPreviewerView)
         if let drone = product as? DJIAircraft {
             _session = DJIDroneSession(drone: drone)
             delegates.invoke { $0.onOpened(session: _session!) }
@@ -83,7 +65,6 @@ extension DJIDroneSessionManager: DJISDKManagerDelegate {
     }
     
     public func productDisconnected() {
-        setVideoPreviewer(view: videoPreviewerView)
         if let session = _session {
             session.close()
             self._session = nil
@@ -100,14 +81,5 @@ extension DJIDroneSessionManager: DJISDKManagerDelegate {
     }
     
     public func didUpdateDatabaseDownloadProgress(_ progress: Progress) {
-    }
-}
-
-extension DJIDroneSessionManager: DJIVideoFeedListener {
-    public func videoFeed(_ videoFeed: DJIVideoFeed, didUpdateVideoData videoData: Data) {
-        var data = videoData
-        data.withUnsafeMutableBytes { (bytes: UnsafeMutablePointer<UInt8>) -> Void in
-            DJIVideoPreviewer.instance()?.push(bytes, length: Int32(videoData.count))
-        }
     }
 }

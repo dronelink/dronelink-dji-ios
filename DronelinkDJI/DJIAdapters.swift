@@ -63,6 +63,25 @@ public struct DJIDroneAdapter: DroneAdapter {
         flightController.yawControlMode = .angularVelocity
         flightController.send(DJIVirtualStickFlightControlData(pitch: 0, roll: 0, yaw: 0, verticalThrottle: 0), withCompletion: withCompletion)
     }
+    
+    public var gimbalDriftPossible: Bool {
+        switch drone.model {
+        case DJIAircraftModelNameMavic2,
+             DJIAircraftModelNameMavic2Enterprise,
+             DJIAircraftModelNameMavic2EnterpriseDual,
+             DJIAircraftModelNameMavic2Pro,
+             DJIAircraftModelNameMavic2Zoom,
+             DJIAircraftModelNameMavicPro,
+             DJIAircraftModelNamePhantom4,
+             DJIAircraftModelNamePhantom4Pro,
+             DJIAircraftModelNamePhantom4ProV2,
+             DJIAircraftModelNamePhantom4RTK,
+             DJIAircraftModelNamePhantom4Advanced:
+            return true
+        default:
+            return false
+        }
+    }
 }
 
 extension DJICamera : CameraAdapter {}
