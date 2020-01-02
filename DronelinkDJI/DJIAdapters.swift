@@ -8,8 +8,9 @@
 import DronelinkCore
 import DJISDK
 
-public struct DJIDroneAdapter: DroneAdapter {
+public class DJIDroneAdapter: DroneAdapter {
     public let drone: DJIAircraft
+    private var gimbalAdapters: [UInt: DJIGimbalAdapter] = [:]
 
     public init(drone: DJIAircraft) {
         self.drone = drone
@@ -17,8 +18,32 @@ public struct DJIDroneAdapter: DroneAdapter {
 
     public var cameras: [CameraAdapter]? { drone.cameras }
     public func camera(channel: UInt) -> CameraAdapter? { cameras?[safeIndex: Int(channel)] }
-    public var gimbals: [GimbalAdapter]? { drone.gimbals }
-    public func gimbal(channel: UInt) -> GimbalAdapter? { gimbals?[safeIndex: Int(channel)] }
+    public var gimbals: [GimbalAdapter]? {
+        if let gimbals = drone.gimbals {
+            var gimbalAdapters: [GimbalAdapter] = []
+            gimbals.forEach { gimbal in
+                if let gimbalAdapter = self.gimbal(channel: gimbal.index) {
+                    gimbalAdapters.append(gimbalAdapter)
+                }
+            }
+            return gimbalAdapters
+        }
+        return nil
+    }
+    
+    public func gimbal(channel: UInt) -> GimbalAdapter? {
+        if let gimbalAdapter = gimbalAdapters[channel] {
+            return gimbalAdapter
+        }
+        
+        if let gimbal = drone.gimbals?[safeIndex: Int(channel)] {
+            let gimbalAdapter = DJIGimbalAdapter(gimbal: gimbal)
+            gimbalAdapters[channel] = gimbalAdapter
+            return gimbalAdapter
+        }
+        
+        return nil
+    }
 
     public func send(velocityCommand: Mission.VelocityDroneCommand?) {
         guard let velocityCommand = velocityCommand else {
@@ -63,25 +88,6 @@ public struct DJIDroneAdapter: DroneAdapter {
         flightController.yawControlMode = .angularVelocity
         flightController.send(DJIVirtualStickFlightControlData(pitch: 0, roll: 0, yaw: 0, verticalThrottle: 0), withCompletion: withCompletion)
     }
-    
-    public var gimbalDriftPossible: Bool {
-        switch drone.model {
-        case DJIAircraftModelNameMavic2,
-             DJIAircraftModelNameMavic2Enterprise,
-             DJIAircraftModelNameMavic2EnterpriseDual,
-             DJIAircraftModelNameMavic2Pro,
-             DJIAircraftModelNameMavic2Zoom,
-             DJIAircraftModelNameMavicPro,
-             DJIAircraftModelNamePhantom4,
-             DJIAircraftModelNamePhantom4Pro,
-             DJIAircraftModelNamePhantom4ProV2,
-             DJIAircraftModelNamePhantom4RTK,
-             DJIAircraftModelNamePhantom4Advanced:
-            return true
-        default:
-            return false
-        }
-    }
 }
 
 extension DJICamera : CameraAdapter {}
@@ -106,14 +112,23 @@ extension DJICameraSystemState: CameraStateAdapter {
     public var missionMode: Mission.CameraMode { mode.missionValue }
 }
 
-extension DJIGimbal : GimbalAdapter {
+public class DJIGimbalAdapter: GimbalAdapter {
+    public let gimbal: DJIGimbal
+    public var pendingSpeedRotation: DJIGimbalRotation?
+    
+    public init(gimbal: DJIGimbal) {
+        self.gimbal = gimbal
+    }
+    
+    public var index: UInt { gimbal.index }
+
     public func send(velocityCommand: Mission.VelocityGimbalCommand, mode: Mission.GimbalMode) {
-        rotate(with: DJIGimbalRotation(
-            pitchValue: isAdjustPitchSupported ? velocityCommand.velocity.pitch.convertRadiansToDegrees as NSNumber : nil,
-            rollValue: mode == .free && isAdjustRollSupported ? velocityCommand.velocity.roll.convertRadiansToDegrees as NSNumber : nil,
-            yawValue: mode == .free && isAdjustYawSupported ? velocityCommand.velocity.yaw.convertRadiansToDegrees as NSNumber : nil,
+        pendingSpeedRotation = DJIGimbalRotation(
+            pitchValue: gimbal.isAdjustPitchSupported ? velocityCommand.velocity.pitch.convertRadiansToDegrees as NSNumber : nil,
+            rollValue: gimbal.isAdjustRollSupported ? velocityCommand.velocity.roll.convertRadiansToDegrees as NSNumber : nil,
+            yawValue: mode == .free && gimbal.isAdjustYawSupported ? velocityCommand.velocity.yaw.convertRadiansToDegrees as NSNumber : nil,
             time: DJIGimbalRotation.minTime,
-            mode: .speed), completion: nil)
+            mode: .speed)
     }
 }
 

@@ -33,10 +33,17 @@ extension DJIDroneSession {
                 pitch = -89.9
             }
             
+            var roll = command.orientation.roll?.convertRadiansToDegrees
+            
+            var yaw = command.orientation.yaw?.convertRadiansToDegrees
+            if (state.missionMode != .free) {
+                yaw = 0
+            }
+            
             gimbal.rotate(with: DJIGimbalRotation(
                 pitchValue: gimbal.isAdjustPitchSupported ? pitch as NSNumber? : nil,
-                rollValue: state.missionMode == .free && gimbal.isAdjustRollSupported ? command.orientation.roll?.convertRadiansToDegrees as NSNumber? : nil,
-                yawValue: state.missionMode == .free && gimbal.isAdjustYawSupported ? command.orientation.yaw?.convertRadiansToDegrees as NSNumber? : nil,
+                rollValue: gimbal.isAdjustRollSupported ? roll as NSNumber? : nil,
+                yawValue: gimbal.isAdjustYawSupported ? yaw as NSNumber? : nil,
                 time: DJIGimbalRotation.minTime,
                 mode: .absoluteAngle), completion: finished)
             return nil

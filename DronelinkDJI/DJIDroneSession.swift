@@ -47,8 +47,8 @@ public class DJIDroneSession: NSObject {
         os_log(.info, log: log, "Drone session opened")
         
         initFlightController()
-        drone.cameras?.forEach { initCamera(index: $0.index) }
-        drone.gimbals?.forEach { initGimbal(index: $0.index) }
+        adapter.cameras?.forEach { initCamera(index: $0.index) }
+        adapter.gimbals?.forEach { initGimbal(index: $0.index) }
     }
     
     private func initFlightController() {
@@ -203,13 +203,23 @@ public class DJIDroneSession: NSObject {
                 self.gimbalCommands.process()
                 
                 //work-around for this issue: https://support.dronelink.com/hc/en-us/community/posts/360034749773-Seeming-to-have-a-Heading-error-
-                if self.adapter.gimbalDriftPossible, let gimbal = self.adapter.gimbal(channel: 0) as? DJIGimbal, gimbal.isAdjustYawSupported, let gimbalState = self._gimbalStates[0]?.value, gimbalState.mode == .yawFollow {
-                    gimbal.rotate(with: DJIGimbalRotation(
-                        pitchValue: nil,
-                        rollValue: nil,
-                        yawValue: 0,
-                        time: DJIGimbalRotation.minTime,
-                        mode: .absoluteAngle), completion: nil)
+                self.adapter.gimbals?.forEach { gimbalAdapter in
+                    if let gimbalAdapter = gimbalAdapter as? DJIGimbalAdapter {
+                        var rotation = gimbalAdapter.pendingSpeedRotation
+                        gimbalAdapter.pendingSpeedRotation = nil
+                        if gimbalAdapter.gimbal.isAdjustYawSupported, let gimbalState = self._gimbalStates[gimbalAdapter.index]?.value, gimbalState.mode == .yawFollow {
+                            rotation = DJIGimbalRotation(
+                                pitchValue: rotation?.pitch,
+                                rollValue: rotation?.roll,
+                                yawValue: min(max(-gimbalState.yawRelativeToAircraftHeading * 0.1, -5), 5) as NSNumber,
+                                time: DJIGimbalRotation.minTime,
+                                mode: .speed)
+                        }
+                        
+                        if let rotation = rotation {
+                            gimbalAdapter.gimbal.rotate(with: rotation, completion: nil)
+                        }
+                    }
                 }
             }
             
@@ -227,7 +237,7 @@ public class DJIDroneSession: NSObject {
             $0.rotate(with: DJIGimbalRotation(
                 pitchValue: $0.isAdjustPitchSupported ? -12.0.convertDegreesToRadians as NSNumber : nil,
                 rollValue: $0.isAdjustRollSupported ? 0 : nil,
-                yawValue: nil,
+                yawValue: $0.isAdjustYawSupported ? 0 : nil,
                 time: DJIGimbalRotation.minTime,
                 mode: .absoluteAngle), completion: nil)
         }
@@ -397,7 +407,8 @@ extension DJIDroneSession: DroneStateAdapter {
     public var takeoffLocation: CLLocation? { isFlying ? (lastKnownGroundLocation ?? homeLocation) : location }
     public var takeoffAltitude: Double? {
         nil
-        //TODO DJI reports wrong altitude? takeoffLocation == nil ? nil : flightControllerState?.value.takeoffAltitude
+        //DJI reports "MSL" altitude based on barometer...no good
+        //takeoffLocation == nil ? nil : flightControllerState?.value.takeoffAltitude
     }
     public var course: Double { flightControllerState?.value.course ?? 0 }
     public var horizontalSpeed: Double { flightControllerState?.value.horizontalSpeed ?? 0 }
