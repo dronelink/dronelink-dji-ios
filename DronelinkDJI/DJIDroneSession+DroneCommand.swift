@@ -9,6 +9,10 @@ import DronelinkCore
 
 extension DJIDroneSession {
     func execute(droneCommand: MissionDroneCommand, finished: @escaping CommandFinished) -> Error? {
+        if let command = droneCommand as? MissionDroneLandingGearCommand {
+            return execute(landingGearCommand: command, finished: finished)
+        }
+        
         if let command = droneCommand as? MissionDroneLightbridgeCommand {
             return execute(lightbridgeCommand: command, finished: finished)
         }
@@ -49,6 +53,29 @@ extension DJIDroneSession {
 
         if let command = droneCommand as? Mission.ReturnHomeAltitudeDroneCommand {
             flightController.setGoHomeHeightInMeters(UInt(command.returnHomeAltitude), withCompletion: finished)
+            return nil
+        }
+        
+        return "MissionDisengageReason.command.type.unhandled".localized
+    }
+    
+    func execute(landingGearCommand: MissionDroneLandingGearCommand, finished: @escaping CommandFinished) -> Error? {
+        guard let landingGear = adapter.drone.flightController?.landingGear else {
+            return "MissionDisengageReason.drone.landing.gear.unavailable.title".localized
+        }
+        
+        if let command = landingGearCommand as? Mission.LandingGearAutomaticMovementDroneCommand {
+            landingGear.setAutomaticMovementEnabled(command.enabled, withCompletion: finished)
+            return nil
+        }
+
+        if let command = landingGearCommand as? Mission.LandingGearDeployDroneCommand {
+            landingGear.deploy(completion: finished)
+            return nil
+        }
+        
+        if let command = landingGearCommand as? Mission.LandingGearDeployDroneCommand {
+            landingGear.retract(completion: finished)
             return nil
         }
         

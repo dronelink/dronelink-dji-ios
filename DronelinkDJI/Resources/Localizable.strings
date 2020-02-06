@@ -12,6 +12,7 @@
 "MissionDisengageReason.drone.control.override.title" = "Control Override";
 "MissionDisengageReason.take.off.failed.title" = "Unable to Take Off";
 "MissionDisengageReason.take.control.failed.title" = "Unable to Take Control";
+"MissionDisengageReason.drone.landing.gear.unavailable.title" = "Landing Gear Unavailable";
 "MissionDisengageReason.drone.lightbridge.unavailable.title" = "Lightbridge Link Unavailable";
 "MissionDisengageReason.drone.ocusync.unavailable.title" = "OcuSync Link Unavailable";
 "MissionDisengageReason.drone.camera.unavailable.title" = "Camera Unavailable";

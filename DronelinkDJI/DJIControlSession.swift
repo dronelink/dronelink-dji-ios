@@ -65,15 +65,26 @@ public class DJIControlSession: DroneControlSession {
             }
 
             state = .TakeoffAttempting
-            os_log(.info, log: log, "Attempting takeoff")
-            flightController.startTakeoff { error in
+            os_log(.info, log: log, "Attempting precision takeoff")
+            flightController.startPrecisionTakeoff { error in
                 if let error = error {
-                    self.attemptDisengageReason = Mission.Message(title: "MissionDisengageReason.take.off.failed.title".localized, details: error.localizedDescription)
-                    self.deactivate()
+                    os_log(.error, log: self.log, "Precision takeoff failed: %{public}s", error.localizedDescription)
+                    os_log(.info, log: self.log, "Attempting takeoff")
+                    flightController.startTakeoff { error in
+                        if let error = error {
+                            os_log(.error, log: self.log, "Takeoff failed: %{public}s", error.localizedDescription)
+                           self.attemptDisengageReason = Mission.Message(title: "MissionDisengageReason.take.off.failed.title".localized, details: error.localizedDescription)
+                           self.deactivate()
+                           return
+                        }
+
+                        os_log(.info, log: self.log, "Takeoff succeeded")
+                        self.state = .TakeoffComplete
+                    }
                     return
                 }
                 
-                os_log(.info, log: self.log, "Takeoff succeeded")
+                os_log(.info, log: self.log, "Precision takeoff succeeded")
                 self.state = .TakeoffComplete
             }
             return false

@@ -90,7 +90,9 @@ public class DJIDroneAdapter: DroneAdapter {
     }
 }
 
-extension DJICamera : CameraAdapter {}
+extension DJICamera : CameraAdapter {
+    public var model: String? { displayName }
+}
 
 struct DJICameraFile : CameraFile {
     public let channel: UInt
