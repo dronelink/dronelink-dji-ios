@@ -231,6 +231,47 @@ extension Mission.CameraExposureCompensation {
     }
 }
 
+extension DJICameraExposureCompensation {
+    var missionValue: Mission.CameraExposureCompensation {
+        switch self {
+            case .N50: return .n50
+            case .N47: return .n47
+            case .N43: return .n43
+            case .N40: return .n40
+            case .N37: return .n37
+            case .N33: return .n33
+            case .N30: return .n30
+            case .N27: return .n27
+            case .N23: return .n23
+            case .N20: return .n20
+            case .N17: return .n17
+            case .N13: return .n13
+            case .N10: return .n10
+            case .N07: return .n07
+            case .N03: return .n03
+            case .N00: return .n00
+            case .P03: return .p03
+            case .P07: return .p07
+            case .P10: return .p10
+            case .P13: return .p13
+            case .P17: return .p17
+            case .P20: return .p20
+            case .P23: return .p23
+            case .P27: return .p27
+            case .P30: return .p30
+            case .P33: return .p33
+            case .P37: return .p37
+            case .P40: return .p40
+            case .P43: return .p43
+            case .P47: return .p47
+            case .P50: return .p50
+            case .fixed: return .fixed
+            case .unknown: return .unknown
+            @unknown default: return .unknown
+        }
+    }
+}
+
 extension Mission.CameraExposureMode {
     var djiValue: DJICameraExposureMode {
         switch self {
