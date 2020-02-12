@@ -48,6 +48,12 @@ extension DJIDroneSession {
             return nil
         }
         
+        
+        if let command = cameraCommand as? Mission.ExposureCompensationStepCameraCommand {
+            camera.setExposureCompensation(state.missionExposureCompensation.offset(steps: command.exposureCompensationSteps).djiValue, withCompletion: finished)
+            return nil
+        }
+        
         if let command = cameraCommand as? Mission.ExposureModeCameraCommand {
             camera.setExposureMode(command.exposureMode.djiValue, withCompletion: finished)
             return nil

@@ -103,6 +103,16 @@ public class DJIDroneSession: NSObject {
         if let camera = adapter.drone.cameras?[safeIndex: index] {
             os_log(.info, log: log, "Camera[%{public}d] connected", index)
             camera.delegate = self
+            
+            let xmp = "dronelink:\(Dronelink.shared.kernelVersion?.display ?? "")"
+            camera.setMediaFileCustomInformation(xmp) { error in
+                if let error = error {
+                    os_log(.info, log: self.log, "Unable to set media file custom information: %{public}s", error.localizedDescription)
+                }
+                else {
+                    os_log(.info, log: self.log, "Set media file custom information: %{public}s", xmp)
+                }
+            }
         }
     }
     
@@ -330,7 +340,8 @@ extension DJIDroneSession: DroneSession {
                 },
                 finished: { error in
                     self.commandFinished(command: command, error: error)
-                }
+                },
+                config: command.config
             ))
             return
         }
@@ -345,7 +356,8 @@ extension DJIDroneSession: DroneSession {
                 },
                 finished: { error in
                     self.commandFinished(command: command, error: error)
-                }
+                },
+                config: command.config
             ))
             return
         }
@@ -360,7 +372,8 @@ extension DJIDroneSession: DroneSession {
                 },
                 finished: { error in
                     self.commandFinished(command: command, error: error)
-                }
+                },
+                config: command.config
             ))
             return
         }
@@ -477,7 +490,19 @@ extension DJIDroneSession: DJICameraDelegate {
     
     public func camera(_ camera: DJICamera, didGenerateNewMediaFile newMedia: DJIMediaFile) {
         DispatchQueue.global().async {
-            self.delegates.invoke { $0.onCameraFileGenerated(session: self, file: DJICameraFile(channel: camera.index, mediaFile: newMedia)) }
+            var orientation = self.missionOrientation
+            if let gimbalState = self.gimbalState(channel: camera.index)?.value {
+                orientation.x = gimbalState.missionOrientation.x
+                orientation.y = gimbalState.missionOrientation.y
+                if gimbalState.missionMode == .free {
+                    orientation.z = gimbalState.missionOrientation.z
+                }
+            }
+            else {
+                orientation.x = 0
+                orientation.y = 0
+            }
+            self.delegates.invoke { $0.onCameraFileGenerated(session: self, file: DJICameraFile(channel: camera.index, mediaFile: newMedia, coordinate: self.location?.coordinate, altitude: self.altitude, orientation: orientation)) }
         }
     }
 }

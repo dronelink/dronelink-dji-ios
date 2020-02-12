@@ -74,7 +74,7 @@ extension DJIDroneSession {
             return nil
         }
         
-        if let command = landingGearCommand as? Mission.LandingGearDeployDroneCommand {
+        if let command = landingGearCommand as? Mission.LandingGearRetractDroneCommand {
             landingGear.retract(completion: finished)
             return nil
         }

@@ -109,12 +109,19 @@ struct DJICameraFile : CameraFile {
     public let channel: UInt
     public var name: String { mediaFile.fileName }
     public var size: Int64 { mediaFile.fileSizeInBytes }
+    public var metadata: String? { mediaFile.customInformation }
     public let created = Date()
+    public let coordinate: CLLocationCoordinate2D?
+    public let altitude: Double?
+    public let orientation: Mission.Orientation3?
     private let mediaFile: DJIMediaFile
     
-    init(channel: UInt, mediaFile: DJIMediaFile) {
+    init(channel: UInt, mediaFile: DJIMediaFile, coordinate: CLLocationCoordinate2D?, altitude: Double?, orientation: Mission.Orientation3?) {
         self.channel = channel
         self.mediaFile = mediaFile
+        self.coordinate = coordinate
+        self.altitude = altitude
+        self.orientation = orientation
     }
 }
 
