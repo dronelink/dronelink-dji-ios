@@ -28,17 +28,25 @@ public class DJIDroneSession: NSObject {
     private var _lastKnownGroundLocation: CLLocation?
     
     private let delegates = MulticastDelegate<DroneSessionDelegate>()
-    private let serialQueue = DispatchQueue(label: "DroneSession")
     private let droneCommands = CommandQueue()
     private let cameraCommands = MultiChannelCommandQueue()
     private let gimbalCommands = MultiChannelCommandQueue()
     
+    private let flightControllerSerialQueue = DispatchQueue(label: "DroneSession+flightControllerState")
     private var _flightControllerState: DatedValue<DJIFlightControllerState>?
+    
+    private let visionDetectionSerialQueue = DispatchQueue(label: "DroneSession+visionDetectionState")
     private var _visionDetectionState: DatedValue<DJIVisionDetectionState>?
+    
+    private let cameraSerialQueue = DispatchQueue(label: "DroneSession+cameraStates")
     private var _cameraStates: [UInt: DatedValue<DJICameraSystemState>] = [:]
     private var _cameraExposureSettings: [UInt: DatedValue<DJICameraExposureSettings>] = [:]
+    
+    private let gimbalSerialQueue = DispatchQueue(label: "DroneSession+gimbalStates")
     private var _gimbalStates: [UInt: DatedValue<DJIGimbalState>] = [:]
-    private var _remoteControllerState: DatedValue<DJIRCHardwareState>?
+    
+    private let remoteControllerSerialQueue = DispatchQueue(label: "DroneSession+remoteControllerState")
+    private var _remoteControllerState: DatedValue<RemoteControllerStateAdapter>?
     
     public init(drone: DJIAircraft) {
         adapter = DJIDroneAdapter(drone: drone)
@@ -155,14 +163,18 @@ public class DJIDroneSession: NSObject {
         switch key {
         case DJIFlightControllerComponent:
             os_log(.info, log: log, "Flight controller disconnected")
-            serialQueue.async {
+            flightControllerSerialQueue.async {
                 self._flightControllerState = nil
+            }
+            
+            visionDetectionSerialQueue.async {
+                self._visionDetectionState = nil
             }
             break
             
         case DJICameraComponent:
             os_log(.info, log: log, "Camera[%{public}d] disconnected", index)
-            serialQueue.async {
+            cameraSerialQueue.async {
                 self._cameraStates[UInt(index)] = nil
                 self._cameraExposureSettings[UInt(index)] = nil
             }
@@ -170,7 +182,7 @@ public class DJIDroneSession: NSObject {
             
         case DJIGimbalComponent:
             os_log(.info, log: log, "Gimbal[%{public}d] disconnected", index)
-            serialQueue.async {
+            gimbalSerialQueue.async {
                 self._gimbalStates[UInt(index)] = nil
             }
             break
@@ -181,19 +193,15 @@ public class DJIDroneSession: NSObject {
     }
 
     public var flightControllerState: DatedValue<DJIFlightControllerState>? {
-        var flightControllerState: DatedValue<DJIFlightControllerState>?
-        serialQueue.sync {
-            flightControllerState = self._flightControllerState
+        flightControllerSerialQueue.sync {
+            return self._flightControllerState
         }
-        return flightControllerState
     }
 
-    public var remoteControllerState: DatedValue<DJIRCHardwareState>? {
-        var remoteControllerState: DatedValue<DJIRCHardwareState>?
-        serialQueue.sync {
-            remoteControllerState = self._remoteControllerState
+    public var visionDetectionState: DatedValue<DJIVisionDetectionState>? {
+        visionDetectionSerialQueue.sync {
+            return self._visionDetectionState
         }
-        return remoteControllerState
     }
     
     private func execute() {
@@ -222,11 +230,11 @@ public class DJIDroneSession: NSObject {
                 }
             }
             
-            serialQueue.async {
-                self.droneCommands.process()
-                self.cameraCommands.process()
-                self.gimbalCommands.process()
-                
+            self.droneCommands.process()
+            self.cameraCommands.process()
+            self.gimbalCommands.process()
+            
+            self.gimbalSerialQueue.sync {
                 //work-around for this issue: https://support.dronelink.com/hc/en-us/community/posts/360034749773-Seeming-to-have-a-Heading-error-
                 self.adapter.gimbals?.forEach { gimbalAdapter in
                     if let gimbalAdapter = gimbalAdapter as? DJIGimbalAdapter {
@@ -397,26 +405,27 @@ extension DJIDroneSession: DroneSession {
     
     public func createControlSession() -> DroneControlSession { DJIControlSession(droneSession: self) }
     public func cameraState(channel: UInt) -> DatedValue<CameraStateAdapter>? {
-        if let systemState = self._cameraStates[channel] {
-            return DatedValue(value: DJICameraStateAdapter(systemState: systemState.value, exposureSettings: self._cameraExposureSettings[channel]?.value), date: systemState.date)
+        cameraSerialQueue.sync {
+            if let systemState = self._cameraStates[channel] {
+                return DatedValue(value: DJICameraStateAdapter(systemState: systemState.value, exposureSettings: self._cameraExposureSettings[channel]?.value), date: systemState.date)
+            }
+            return nil
         }
-        return nil
     }
 
     public func gimbalState(channel: UInt) -> DatedValue<GimbalStateAdapter>? {
-        guard let gimbalState = _gimbalStates[channel] else {
+        gimbalSerialQueue.sync {
+            if let gimbalState = _gimbalStates[channel] {
+                return DatedValue<GimbalStateAdapter>(value: gimbalState.value, date: gimbalState.date)
+            }
             return nil
         }
-        
-        return DatedValue<GimbalStateAdapter>(value: gimbalState.value, date: gimbalState.date)
     }
 
     public func remoteControllerState(channel: UInt) -> DatedValue<RemoteControllerStateAdapter>? {
-        guard let remoteControllerState = self.remoteControllerState else {
-            return nil
+        remoteControllerSerialQueue.sync {
+            return _remoteControllerState
         }
-        
-        return DatedValue<RemoteControllerStateAdapter>(value: remoteControllerState.value, date: remoteControllerState.date)
     }
     
     public func close() {
@@ -439,13 +448,13 @@ extension DJIDroneSession: DroneStateAdapter {
     public var horizontalSpeed: Double { flightControllerState?.value.horizontalSpeed ?? 0 }
     public var verticalSpeed: Double { flightControllerState?.value.verticalSpeed ?? 0 }
     public var altitude: Double { flightControllerState?.value.altitude ?? 0 }
-    public var obstacleDistance: Double? {_visionDetectionState?.value.detectionSectors?[safeIndex: 0]?.obstacleDistanceInMeters }
+    public var obstacleDistance: Double? {visionDetectionState?.value.detectionSectors?[safeIndex: 0]?.obstacleDistanceInMeters }
     public var missionOrientation: Mission.Orientation3 { flightControllerState?.value.missionOrientation ?? Mission.Orientation3() }
 }
 
 extension DJIDroneSession: DJIFlightControllerDelegate {
     public func flightController(_ fc: DJIFlightController, didUpdate state: DJIFlightControllerState) {
-        serialQueue.async {
+        flightControllerSerialQueue.async {
             let motorsOnPrevious = self._flightControllerState?.value.areMotorsOn ?? false
             self._flightControllerState = DatedValue<DJIFlightControllerState>(value: state)
             if (motorsOnPrevious != state.areMotorsOn) {
@@ -460,7 +469,7 @@ extension DJIDroneSession: DJIFlightControllerDelegate {
 extension DJIDroneSession: DJIFlightAssistantDelegate {
     public func flightAssistant(_ assistant: DJIFlightAssistant, didUpdate state: DJIVisionDetectionState) {
         if state.position == .nose {
-            serialQueue.async {
+            visionDetectionSerialQueue.async {
                 self._visionDetectionState = DatedValue<DJIVisionDetectionState>(value: state)
             }
         }
@@ -469,21 +478,21 @@ extension DJIDroneSession: DJIFlightAssistantDelegate {
 
 extension DJIDroneSession: DJIRemoteControllerDelegate {
     public func remoteController(_ rc: DJIRemoteController, didUpdate state: DJIRCHardwareState) {
-        serialQueue.async {
-            self._remoteControllerState = DatedValue<DJIRCHardwareState>(value: state)
+        remoteControllerSerialQueue.async {
+            self._remoteControllerState = DatedValue<RemoteControllerStateAdapter>(value: state)
         }
     }
 }
 
 extension DJIDroneSession: DJICameraDelegate {
     public func camera(_ camera: DJICamera, didUpdate systemState: DJICameraSystemState) {
-        serialQueue.async {
+        cameraSerialQueue.async {
             self._cameraStates[camera.index] = DatedValue<DJICameraSystemState>(value: systemState)
         }
     }
     
     public func camera(_ camera: DJICamera, didUpdate settings: DJICameraExposureSettings) {
-        serialQueue.async {
+        cameraSerialQueue.async {
             self._cameraExposureSettings[camera.index] = DatedValue<DJICameraExposureSettings>(value: settings)
         }
     }
@@ -509,7 +518,7 @@ extension DJIDroneSession: DJICameraDelegate {
 
 extension DJIDroneSession: DJIGimbalDelegate {
     public func gimbal(_ gimbal: DJIGimbal, didUpdate state: DJIGimbalState) {
-        serialQueue.async {
+        gimbalSerialQueue.async {
             self._gimbalStates[gimbal.index] = DatedValue<DJIGimbalState>(value: state)
         }
     }
