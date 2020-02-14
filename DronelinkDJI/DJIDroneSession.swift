@@ -14,7 +14,6 @@ public class DJIDroneSession: NSObject {
     internal let log = OSLog(subsystem: "DronelinkDJI", category: "DJIDroneSession")
     
     public let adapter: DJIDroneAdapter
-    public var offsets = DroneSessionOffsets()
     
     private let _opened = Date()
     private var _closed = false
@@ -234,7 +233,7 @@ public class DJIDroneSession: NSObject {
             self.cameraCommands.process()
             self.gimbalCommands.process()
             
-            self.gimbalSerialQueue.sync {
+            self.gimbalSerialQueue.async {
                 //work-around for this issue: https://support.dronelink.com/hc/en-us/community/posts/360034749773-Seeming-to-have-a-Heading-error-
                 self.adapter.gimbals?.forEach { gimbalAdapter in
                     if let gimbalAdapter = gimbalAdapter as? DJIGimbalAdapter {

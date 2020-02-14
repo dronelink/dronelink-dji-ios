@@ -149,8 +149,14 @@ extension DJICameraSystemState {
 }
 
 public class DJIGimbalAdapter: GimbalAdapter {
+    private let serialQueue = DispatchQueue(label: "DJIGimbalAdapter")
+    
     public let gimbal: DJIGimbal
-    public var pendingSpeedRotation: DJIGimbalRotation?
+    private var _pendingSpeedRotation: DJIGimbalRotation?
+    public var pendingSpeedRotation: DJIGimbalRotation? {
+        get { serialQueue.sync { self._pendingSpeedRotation } }
+        set (pendingSpeedRotationNew) { serialQueue.async { self._pendingSpeedRotation = pendingSpeedRotationNew } }
+    }
     
     public init(gimbal: DJIGimbal) {
         self.gimbal = gimbal
