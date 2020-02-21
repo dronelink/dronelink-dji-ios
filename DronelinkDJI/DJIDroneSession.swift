@@ -37,15 +37,15 @@ public class DJIDroneSession: NSObject {
     private let visionDetectionSerialQueue = DispatchQueue(label: "DroneSession+visionDetectionState")
     private var _visionDetectionState: DatedValue<DJIVisionDetectionState>?
     
+    private let remoteControllerSerialQueue = DispatchQueue(label: "DroneSession+remoteControllerState")
+    private var _remoteControllerState: DatedValue<RemoteControllerStateAdapter>?
+    
     private let cameraSerialQueue = DispatchQueue(label: "DroneSession+cameraStates")
     private var _cameraStates: [UInt: DatedValue<DJICameraSystemState>] = [:]
     private var _cameraExposureSettings: [UInt: DatedValue<DJICameraExposureSettings>] = [:]
     
     private let gimbalSerialQueue = DispatchQueue(label: "DroneSession+gimbalStates")
     private var _gimbalStates: [UInt: DatedValue<DJIGimbalState>] = [:]
-    
-    private let remoteControllerSerialQueue = DispatchQueue(label: "DroneSession+remoteControllerState")
-    private var _remoteControllerState: DatedValue<RemoteControllerStateAdapter>?
     
     public init(drone: DJIAircraft) {
         adapter = DJIDroneAdapter(drone: drone)
@@ -447,7 +447,15 @@ extension DJIDroneSession: DroneStateAdapter {
     public var horizontalSpeed: Double { flightControllerState?.value.horizontalSpeed ?? 0 }
     public var verticalSpeed: Double { flightControllerState?.value.verticalSpeed ?? 0 }
     public var altitude: Double { flightControllerState?.value.altitude ?? 0 }
-    public var obstacleDistance: Double? {visionDetectionState?.value.detectionSectors?[safeIndex: 0]?.obstacleDistanceInMeters }
+    public var obstacleDistance: Double? {
+        guard
+            let obstacleDistance = visionDetectionState?.value.detectionSectors?[safeIndex: 0]?.obstacleDistanceInMeters,
+            obstacleDistance > 0
+        else {
+            return nil
+        }
+        return obstacleDistance
+    }
     public var missionOrientation: Mission.Orientation3 { flightControllerState?.value.missionOrientation ?? Mission.Orientation3() }
 }
 

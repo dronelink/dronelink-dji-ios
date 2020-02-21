@@ -15,6 +15,15 @@ public class DJIDroneAdapter: DroneAdapter {
     public init(drone: DJIAircraft) {
         self.drone = drone
     }
+    
+    public var remoteControllers: [RemoteControllerAdapter]? {
+        guard let remoteController = drone.remoteController else {
+            return nil
+        }
+        return [remoteController]
+    }
+    
+    public func remoteController(channel: UInt) -> RemoteControllerAdapter? { remoteControllers?[safeIndex: Int(channel)] }
 
     public var cameras: [CameraAdapter]? { drone.cameras }
     
@@ -46,15 +55,6 @@ public class DJIDroneAdapter: DroneAdapter {
         
         return nil
     }
-    
-    public var remoteControllers: [RemoteControllerAdapter]? {
-        guard let remoteController = drone.remoteController else {
-            return nil
-        }
-        return [remoteController]
-    }
-    
-    public func remoteController(channel: UInt) -> RemoteControllerAdapter? { remoteControllers?[safeIndex: Int(channel)] }
 
     public func send(velocityCommand: Mission.VelocityDroneCommand?) {
         guard let velocityCommand = velocityCommand else {
@@ -138,7 +138,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var isCapturingVideo: Bool { systemState.isCapturingVideo }
     public var isCapturing: Bool { systemState.isCapturing }
     public var missionMode: Mission.CameraMode { systemState.missionMode }
-    public var missionExposureCompensation: Mission.CameraExposureCompensation { exposureSettings?.exposureCompensation.missionValue ?? .n00 }
+    public var missionExposureCompensation: Mission.CameraExposureCompensation { exposureSettings?.exposureCompensation.missionValue ?? .unknown }
 }
 
 extension DJICameraSystemState {
@@ -171,6 +171,10 @@ public class DJIGimbalAdapter: GimbalAdapter {
             yawValue: mode == .free && gimbal.isAdjustYawSupported ? velocityCommand.velocity.yaw.convertRadiansToDegrees as NSNumber : nil,
             time: DJIGimbalRotation.minTime,
             mode: .speed)
+    }
+    
+    public func reset() {
+        gimbal.reset(completion: nil)
     }
 }
 

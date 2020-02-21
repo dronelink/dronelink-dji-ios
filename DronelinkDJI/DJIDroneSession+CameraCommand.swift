@@ -64,6 +64,11 @@ extension DJIDroneSession {
             return nil
         }
         
+        if let command = cameraCommand as? Mission.FocusCameraCommand {
+            camera.setFocusTarget(command.focusTarget.cgPoint, withCompletion: finished)
+            return nil
+        }
+        
         if let command = cameraCommand as? Mission.FocusModeCameraCommand {
             camera.setFocusMode(command.focusMode.djiValue, withCompletion: finished)
             return nil
