@@ -448,13 +448,11 @@ extension DJIDroneSession: DroneStateAdapter {
     public var verticalSpeed: Double { flightControllerState?.value.verticalSpeed ?? 0 }
     public var altitude: Double { flightControllerState?.value.altitude ?? 0 }
     public var obstacleDistance: Double? {
-        guard
-            let obstacleDistance = visionDetectionState?.value.detectionSectors?[safeIndex: 0]?.obstacleDistanceInMeters,
-            obstacleDistance > 0
-        else {
-            return nil
+        var minObstacleDistance = 0.0
+        visionDetectionState?.value.detectionSectors?.forEach {
+            minObstacleDistance = minObstacleDistance == 0 ? $0.obstacleDistanceInMeters : min(minObstacleDistance, $0.obstacleDistanceInMeters)
         }
-        return obstacleDistance
+        return minObstacleDistance > 0 ? minObstacleDistance : nil
     }
     public var missionOrientation: Mission.Orientation3 { flightControllerState?.value.missionOrientation ?? Mission.Orientation3() }
 }
