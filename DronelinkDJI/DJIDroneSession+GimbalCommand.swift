@@ -33,7 +33,7 @@ extension DJIDroneSession {
                 pitch = -89.9
             }
             
-            var roll = command.orientation.roll?.convertRadiansToDegrees
+            let roll = command.orientation.roll?.convertRadiansToDegrees
             
             var yaw = command.orientation.yaw?.convertRadiansToDegrees
             if (state.missionMode != .free) {
