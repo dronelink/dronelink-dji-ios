@@ -114,7 +114,7 @@ struct DJICameraFile : CameraFile {
     public let coordinate: CLLocationCoordinate2D?
     public let altitude: Double?
     public let orientation: Mission.Orientation3?
-    private let mediaFile: DJIMediaFile
+    public let mediaFile: DJIMediaFile
     
     init(channel: UInt, mediaFile: DJIMediaFile, coordinate: CLLocationCoordinate2D?, altitude: Double?, orientation: Mission.Orientation3?) {
         self.channel = channel

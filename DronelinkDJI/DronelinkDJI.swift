@@ -341,6 +341,18 @@ extension DJICameraMode {
     }
 }
 
+extension Mission.CameraMeteringMode {
+    var djiValue: DJICameraMeteringMode {
+        switch self {
+        case .center: return .center
+        case .average: return .average
+        case .spot: return .spot
+        case .unknown: return .unknown
+        @unknown default: return .unknown
+        }
+    }
+}
+
 extension Mission.CameraMode {
     var djiValue: DJICameraMode {
         switch self {

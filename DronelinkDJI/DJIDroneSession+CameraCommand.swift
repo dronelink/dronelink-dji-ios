@@ -79,6 +79,11 @@ extension DJIDroneSession {
             return nil
         }
         
+        if let command = cameraCommand as? Mission.MeteringModeCameraCommand {
+            camera.setMeteringMode(command.meteringMode.djiValue, withCompletion: finished)
+            return nil
+        }
+        
         if let command = cameraCommand as? Mission.ModeCameraCommand {
             camera.setMode(command.mode.djiValue, withCompletion: finished)
             return nil
@@ -116,6 +121,13 @@ extension DJIDroneSession {
         
         if let command = cameraCommand as? Mission.ShutterSpeedCameraCommand {
             camera.setShutterSpeed(command.shutterSpeed.djiValue, withCompletion: finished)
+            return nil
+        }
+        
+        if let command = cameraCommand as? Mission.SpotMeteringTargetCameraCommand {
+            let rowIndex = UInt8(round(command.spotMeteringTarget.y * 7))
+            let columnIndex = UInt8(round(command.spotMeteringTarget.x * 11))
+            camera.setSpotMeteringTargetRowIndex(rowIndex, columnIndex: columnIndex, withCompletion: finished)
             return nil
         }
         
