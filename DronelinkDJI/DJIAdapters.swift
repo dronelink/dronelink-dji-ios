@@ -105,7 +105,7 @@ extension DJICamera : CameraAdapter {
     public var model: String? { displayName }
 }
 
-struct DJICameraFile : CameraFile {
+public struct DJICameraFile : CameraFile {
     public let channel: UInt
     public var name: String { mediaFile.fileName }
     public var size: Int64 { mediaFile.fileSizeInBytes }
