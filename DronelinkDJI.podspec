@@ -13,5 +13,5 @@ Pod::Spec.new do |s|
   s.resources = "DronelinkDJI/**/*.{strings}"
 
   s.dependency "DronelinkCore", "~> 1.3.0"
-  s.dependency "DJI-SDK-iOS", "~> 4.11"
+  s.dependency "DJI-SDK-iOS", "~> 4.11.2"
 end
