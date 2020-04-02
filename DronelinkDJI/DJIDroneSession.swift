@@ -42,6 +42,7 @@ public class DJIDroneSession: NSObject {
     
     private let cameraSerialQueue = DispatchQueue(label: "DroneSession+cameraStates")
     private var _cameraStates: [UInt: DatedValue<DJICameraSystemState>] = [:]
+    private var _cameraStorageStates: [UInt: DatedValue<DJICameraStorageState>] = [:]
     private var _cameraExposureSettings: [UInt: DatedValue<DJICameraExposureSettings>] = [:]
     
     private let gimbalSerialQueue = DispatchQueue(label: "DroneSession+gimbalStates")
@@ -175,6 +176,7 @@ public class DJIDroneSession: NSObject {
             os_log(.info, log: log, "Camera[%{public}d] disconnected", index)
             cameraSerialQueue.async {
                 self._cameraStates[UInt(index)] = nil
+                self._cameraStorageStates[UInt(index)] = nil
                 self._cameraExposureSettings[UInt(index)] = nil
             }
             break
@@ -406,7 +408,7 @@ extension DJIDroneSession: DroneSession {
     public func cameraState(channel: UInt) -> DatedValue<CameraStateAdapter>? {
         cameraSerialQueue.sync {
             if let systemState = self._cameraStates[channel] {
-                return DatedValue(value: DJICameraStateAdapter(systemState: systemState.value, exposureSettings: self._cameraExposureSettings[channel]?.value), date: systemState.date)
+                return DatedValue(value: DJICameraStateAdapter(systemState: systemState.value, storageState: self._cameraStorageStates[channel]?.value, exposureSettings: self._cameraExposureSettings[channel]?.value), date: systemState.date)
             }
             return nil
         }
@@ -493,6 +495,14 @@ extension DJIDroneSession: DJICameraDelegate {
     public func camera(_ camera: DJICamera, didUpdate systemState: DJICameraSystemState) {
         cameraSerialQueue.async {
             self._cameraStates[camera.index] = DatedValue<DJICameraSystemState>(value: systemState)
+        }
+    }
+    
+    public func camera(_ camera: DJICamera, didUpdate storageState: DJICameraStorageState) {
+        if storageState.location == .sdCard {
+            cameraSerialQueue.async {
+                self._cameraStorageStates[camera.index] = DatedValue<DJICameraStorageState>(value: storageState)
+            }
         }
     }
     

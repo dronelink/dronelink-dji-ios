@@ -127,16 +127,19 @@ public struct DJICameraFile : CameraFile {
 
 public struct DJICameraStateAdapter: CameraStateAdapter {
     public let systemState: DJICameraSystemState
+    public let storageState: DJICameraStorageState?
     public let exposureSettings: DJICameraExposureSettings?
     
-    public init(systemState: DJICameraSystemState, exposureSettings: DJICameraExposureSettings?) {
+    public init(systemState: DJICameraSystemState, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?) {
         self.systemState = systemState
+        self.storageState = storageState
         self.exposureSettings = exposureSettings
     }
     
     public var isCapturingPhotoInterval: Bool { systemState.isCapturingPhotoInterval }
     public var isCapturingVideo: Bool { systemState.isCapturingVideo }
     public var isCapturing: Bool { systemState.isCapturing }
+    public var isSDCardInserted: Bool { storageState?.isInserted ?? true }
     public var missionMode: Mission.CameraMode { systemState.missionMode }
     public var missionExposureCompensation: Mission.CameraExposureCompensation { exposureSettings?.exposureCompensation.missionValue ?? .unknown }
 }
