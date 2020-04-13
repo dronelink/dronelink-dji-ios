@@ -99,10 +99,17 @@ public class DJIDroneSession: NSObject {
                 os_log(.info, log: self.log, "Serial number: %{public}s", serialNumber)
             }
         }
+        
         flightController.setMultipleFlightModeEnabled(true) { error in
             if error == nil {
                 os_log(.debug, log: self.log, "Flight controller multiple flight mode enabled")
             }
+        }
+        
+        flightController.setNoviceModeEnabled(false)  { error in
+           if error == nil {
+               os_log(.debug, log: self.log, "Flight controller novice mode disabled")
+           }
         }
     }
     
@@ -391,11 +398,16 @@ extension DJIDroneSession: DroneSession {
     }
     
     private func commandExecuted(command: MissionCommand) {
-        self.delegates.invoke { $0.onCommandExecuted(session: self, command: command) }
+        delegates.invoke { $0.onCommandExecuted(session: self, command: command) }
     }
     
     private func commandFinished(command: MissionCommand, error: Error?) {
-        self.delegates.invoke { $0.onCommandFinished(session: self, command: command, error: error) }
+        var errorResolved: Error? = error
+        if (error as? NSError)?.code == DJISDKError.productNotSupport.rawValue {
+            os_log(.info, log: log, "Ignoring command failure: product not supported (%{public}s)", command.id)
+            errorResolved = nil
+        }
+        delegates.invoke { $0.onCommandFinished(session: self, command: command, error: errorResolved) }
     }
     
     public func removeCommands() {
@@ -465,9 +477,7 @@ extension DJIDroneSession: DJIFlightControllerDelegate {
             let motorsOnPrevious = self._flightControllerState?.value.areMotorsOn ?? false
             self._flightControllerState = DatedValue<DJIFlightControllerState>(value: state)
             if (motorsOnPrevious != state.areMotorsOn) {
-                DispatchQueue.global().async {
-                    self.delegates.invoke { $0.onMotorsChanged(session: self, value: state.areMotorsOn) }
-                }
+                self.delegates.invoke { $0.onMotorsChanged(session: self, value: state.areMotorsOn) }
             }
         }
     }
@@ -513,7 +523,6 @@ extension DJIDroneSession: DJICameraDelegate {
     }
     
     public func camera(_ camera: DJICamera, didGenerateNewMediaFile newMedia: DJIMediaFile) {
-        DispatchQueue.global().async {
             var orientation = self.missionOrientation
             if let gimbalState = self.gimbalState(channel: camera.index)?.value {
                 orientation.x = gimbalState.missionOrientation.x
@@ -527,7 +536,6 @@ extension DJIDroneSession: DJICameraDelegate {
                 orientation.y = 0
             }
             self.delegates.invoke { $0.onCameraFileGenerated(session: self, file: DJICameraFile(channel: camera.index, mediaFile: newMedia, coordinate: self.location?.coordinate, altitude: self.altitude, orientation: orientation)) }
-        }
     }
 }
 

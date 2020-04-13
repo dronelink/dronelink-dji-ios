@@ -18,7 +18,9 @@ extension DJIDroneSession {
         }
         
         if let command = gimbalCommand as? Mission.ModeGimbalCommand {
-            gimbal.setMode(command.mode.djiValue, withCompletion: finished)
+            Command.conditionallyExecute(command.mode != state.missionMode, finished: finished) {
+                gimbal.setMode(command.mode.djiValue, withCompletion: finished)
+            }
             return nil
         }
         

@@ -9,6 +9,10 @@ import DronelinkCore
 
 extension DJIDroneSession {
     func execute(droneCommand: MissionDroneCommand, finished: @escaping CommandFinished) -> Error? {
+        if let command = droneCommand as? MissionDroneFlightAssistantCommand {
+            return execute(flightAssistantCommand: command, finished: finished)
+        }
+        
         if let command = droneCommand as? MissionDroneLandingGearCommand {
             return execute(landingGearCommand: command, finished: finished)
         }
@@ -26,33 +30,150 @@ extension DJIDroneSession {
         }
         
         if let command = droneCommand as? Mission.ConnectionFailSafeBehaviorDroneCommand {
-            flightController.setConnectionFailSafeBehavior(command.connectionFailSafeBehavior.djiValue, withCompletion: finished)
+            flightController.getConnectionFailSafeBehavior { (current, error) in
+                Command.conditionallyExecute(current != command.connectionFailSafeBehavior.djiValue, error: error, finished: finished) {
+                    flightController.setConnectionFailSafeBehavior(command.connectionFailSafeBehavior.djiValue, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = droneCommand as? Mission.LowBatteryWarningThresholdDroneCommand {
-            flightController.setLowBatteryWarningThreshold(UInt8(command.lowBatteryWarningThreshold * 100), withCompletion: finished)
+            flightController.getLowBatteryWarningThreshold { (current, error) in
+                let target = UInt8(command.lowBatteryWarningThreshold * 100)
+                Command.conditionallyExecute(current != target, error: error, finished: finished) {
+                    flightController.setLowBatteryWarningThreshold(target, withCompletion: finished)
+                }
+            }
             return nil
         }
 
         if let command = droneCommand as? Mission.MaxAltitudeDroneCommand {
-            flightController.setMaxFlightHeight(UInt(command.maxAltitude), withCompletion: finished)
+            flightController.getMaxFlightHeight { (current, error) in
+                let target = UInt(command.maxAltitude)
+                Command.conditionallyExecute(current != target, error: error, finished: finished) {
+                    flightController.setMaxFlightHeight(target, withCompletion: finished)
+                }
+            }
             return nil
         }
 
         if let command = droneCommand as? Mission.MaxDistanceDroneCommand {
-            flightController.setMaxFlightRadiusLimitationEnabled(true, withCompletion: { error in
-                if let error = error {
-                    finished(error)
-                    return
+            flightController.getMaxFlightRadius { (current, error) in
+                let target = UInt(command.maxDistance)
+                Command.conditionallyExecute(current != target, error: error, finished: finished) {
+                    flightController.setMaxFlightRadius(target, withCompletion: finished)
                 }
-                flightController.setMaxFlightRadius(UInt(command.maxDistance), withCompletion: finished)
-            })
+            }
+            return nil
+        }
+
+        if let command = droneCommand as? Mission.MaxDistanceLimitationDroneCommand {
+            flightController.getMaxFlightRadiusLimitationEnabled { (current, error) in
+                Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
+                    flightController.setMaxFlightRadiusLimitationEnabled(command.enabled, withCompletion: finished)
+                }
+            }
+            return nil
+        }
+
+        if let command = droneCommand as? Mission.SmartReturnHomeDroneCommand {
+            flightController.getSmartReturnToHomeEnabled { (current, error) in
+                Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
+                    flightController.setSmartReturnToHomeEnabled(command.enabled, withCompletion: finished)
+                }
+            }
             return nil
         }
 
         if let command = droneCommand as? Mission.ReturnHomeAltitudeDroneCommand {
-            flightController.setGoHomeHeightInMeters(UInt(command.returnHomeAltitude), withCompletion: finished)
+            flightController.getGoHomeHeightInMeters { (current, error) in
+                let target = UInt(command.returnHomeAltitude)
+                Command.conditionallyExecute(current != target, error: error, finished: finished) {
+                    flightController.setGoHomeHeightInMeters(target, withCompletion: finished)
+                }
+            }
+            return nil
+        }
+        
+        if let command = droneCommand as? Mission.SeriousLowBatteryWarningThresholdDroneCommand {
+            flightController.getSeriousLowBatteryWarningThreshold { (current, error) in
+                let target = UInt8(command.seriousLowBatteryWarningThreshold * 100)
+                Command.conditionallyExecute(current != target, error: error, finished: finished) {
+                    flightController.setSeriousLowBatteryWarningThreshold(target, withCompletion: finished)
+                }
+            }
+            return nil
+        }
+        
+        if let command = droneCommand as? Mission.VisionAssistedPositioningDroneCommand {
+            flightController.getVisionAssistedPositioningEnabled { (current, error) in
+                Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
+                    flightController.setVisionAssistedPositioningEnabled(command.enabled, withCompletion: finished)
+                }
+            }
+            return nil
+        }
+        
+        return "MissionDisengageReason.command.type.unhandled".localized
+    }
+    
+    func execute(flightAssistantCommand: MissionDroneFlightAssistantCommand, finished: @escaping CommandFinished) -> Error? {
+        guard let flightAssistant = adapter.drone.flightController?.flightAssistant else {
+            return "MissionDisengageReason.drone.flight.assistant.unavailable.title".localized
+        }
+        
+        if let command = flightAssistantCommand as? Mission.CollisionAvoidanceDroneCommand {
+            flightAssistant.getCollisionAvoidanceEnabled { (current, error) in
+                Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
+                    flightAssistant.setCollisionAvoidanceEnabled(command.enabled, withCompletion: finished)
+                }
+            }
+            return nil
+        }
+        
+        if let command = flightAssistantCommand as? Mission.LandingProtectionDroneCommand {
+            flightAssistant.getLandingProtectionEnabled { (current, error) in
+                Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
+                    flightAssistant.setLandingProtectionEnabled(command.enabled, withCompletion: finished)
+                }
+            }
+            return nil
+        }
+        
+        if let command = flightAssistantCommand as? Mission.PrecisionLandingDroneCommand {
+            flightAssistant.getPrecisionLandingEnabled { (current, error) in
+                Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
+                    flightAssistant.setPrecisionLandingEnabled(command.enabled, withCompletion: finished)
+                }
+            }
+            return nil
+        }
+        
+        if let command = flightAssistantCommand as? Mission.ReturnHomeObstacleAvoidanceDroneCommand {
+            flightAssistant.getRTHObstacleAvoidanceEnabled { (current, error) in
+                Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
+                    flightAssistant.setRTHObstacleAvoidanceEnabled(command.enabled, withCompletion: finished)
+                }
+            }
+            return nil
+        }
+        
+        if let command = flightAssistantCommand as? Mission.ReturnHomeRemoteObstacleAvoidanceDroneCommand {
+            flightAssistant.getRTHRemoteObstacleAvoidanceEnabled { (current, error) in
+                Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
+                    flightAssistant.setRTHRemoteObstacleAvoidanceEnabled(command.enabled, withCompletion: finished)
+                }
+            }
+            return nil
+        }
+        
+        if let command = flightAssistantCommand as? Mission.UpwardsAvoidanceDroneCommand {
+            flightAssistant.getUpwardsAvoidanceEnabled { (current, error) in
+                Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
+                    flightAssistant.setUpwardsAvoidanceEnabled(command.enabled, withCompletion: finished)
+                }
+            }
             return nil
         }
         
@@ -65,17 +186,25 @@ extension DJIDroneSession {
         }
         
         if let command = landingGearCommand as? Mission.LandingGearAutomaticMovementDroneCommand {
-            landingGear.setAutomaticMovementEnabled(command.enabled, withCompletion: finished)
+            landingGear.getAutomaticMovementEnabled { (current, error) in
+                Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
+                    landingGear.setAutomaticMovementEnabled(command.enabled, withCompletion: finished)
+                }
+            }
             return nil
         }
 
         if landingGearCommand is Mission.LandingGearDeployDroneCommand {
-            landingGear.deploy(completion: finished)
+            Command.conditionallyExecute(!(landingGear.state == .deployed || landingGear.state == .deploying), finished: finished) {
+                landingGear.deploy(completion: finished)
+            }
             return nil
         }
         
         if landingGearCommand is Mission.LandingGearRetractDroneCommand {
-            landingGear.retract(completion: finished)
+            Command.conditionallyExecute(!(landingGear.state == .retracted || landingGear.state == .retracting), finished: finished) {
+                landingGear.retract(completion: finished)
+            }
             return nil
         }
         
@@ -88,17 +217,30 @@ extension DJIDroneSession {
         }
         
         if let command = lightbridgeCommand as? Mission.LightbridgeChannelDroneCommand {
-            lightbridgeLink.setChannelNumber(Int32(command.lightbridgeChannel), withCompletion: finished)
+            lightbridgeLink.getChannelNumber { (current, error) in
+                let target = Int32(command.lightbridgeChannel)
+                Command.conditionallyExecute(current != target, error: error, finished: finished) {
+                    lightbridgeLink.setChannelNumber(target, withCompletion: finished)
+                }
+            }
             return nil
         }
 
         if let command = lightbridgeCommand as? Mission.LightbridgeChannelSelectionModeDroneCommand {
-            lightbridgeLink.setChannelSelectionMode(command.lightbridgeChannelSelectionMode.djiValue, withCompletion: finished)
+            lightbridgeLink.getChannelSelectionMode { (current, error) in
+                Command.conditionallyExecute(current != command.lightbridgeChannelSelectionMode.djiValue, error: error, finished: finished) {
+                    lightbridgeLink.setChannelSelectionMode(command.lightbridgeChannelSelectionMode.djiValue, withCompletion: finished)
+                }
+            }
             return nil
         }
 
         if let command = lightbridgeCommand as? Mission.LightbridgeFrequencyBandDroneCommand {
-            lightbridgeLink.setFrequencyBand(command.lightbridgeFrequencyBand.djiValue, withCompletion: finished)
+            lightbridgeLink.getFrequencyBand { (current, error) in
+                Command.conditionallyExecute(current != command.lightbridgeFrequencyBand.djiValue, error: error, finished: finished) {
+                    lightbridgeLink.setFrequencyBand(command.lightbridgeFrequencyBand.djiValue, withCompletion: finished)
+                }
+            }
             return nil
         }
         
@@ -111,17 +253,30 @@ extension DJIDroneSession {
         }
         
         if let command = ocuSyncCommand as? Mission.OcuSyncChannelDroneCommand {
-            ocuSyncLink.setChannelNumber(UInt(command.ocuSyncChannel), withCompletion: finished)
+            ocuSyncLink.getChannelNumber { (current, error) in
+                let target = UInt(command.ocuSyncChannel)
+                Command.conditionallyExecute(current != target, error: error, finished: finished) {
+                    ocuSyncLink.setChannelNumber(target, withCompletion: finished)
+                }
+            }
             return nil
         }
 
         if let command = ocuSyncCommand as? Mission.OcuSyncChannelSelectionModeDroneCommand {
-            ocuSyncLink.setChannelSelectionMode(command.ocuSyncChannelSelectionMode.djiValue, withCompletion: finished)
+            ocuSyncLink.getChannelSelectionMode { (current, error) in
+                Command.conditionallyExecute(current != command.ocuSyncChannelSelectionMode.djiValue, error: error, finished: finished) {
+                    ocuSyncLink.setChannelSelectionMode(command.ocuSyncChannelSelectionMode.djiValue, withCompletion: finished)
+                }
+            }
             return nil
         }
 
         if let command = ocuSyncCommand as? Mission.OcuSyncFrequencyBandDroneCommand {
-            ocuSyncLink.setFrequencyBand(command.ocuSyncFrequencyBand.djiValue, withCompletion: finished)
+            ocuSyncLink.getFrequencyBand { (current, error) in
+                Command.conditionallyExecute(current != command.ocuSyncFrequencyBand.djiValue, error: error, finished: finished) {
+                    ocuSyncLink.setFrequencyBand(command.ocuSyncFrequencyBand.djiValue, withCompletion: finished)
+                }
+            }
             return nil
         }
         

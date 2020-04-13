@@ -13,54 +13,94 @@ extension DJIDroneSession {
     func execute(cameraCommand: MissionCameraCommand, finished: @escaping CommandFinished) -> Error? {
         guard
             let camera = adapter.drone.camera(channel: cameraCommand.channel),
-            let state = cameraState(channel: cameraCommand.channel)?.value
+            let state = cameraState(channel: cameraCommand.channel)?.value as? DJICameraStateAdapter
         else {
             return "MissionDisengageReason.drone.camera.unavailable.title".localized
         }
         
         if let command = cameraCommand as? Mission.AEBCountCameraCommand {
-            camera.setPhotoAEBCount(command.aebCount.djiValue, withCompletion: finished)
+            camera.getPhotoAEBCount { (current, error) in
+                Command.conditionallyExecute(current != command.aebCount.djiValue, error: error, finished: finished) {
+                    camera.setPhotoAEBCount(command.aebCount.djiValue, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.ApertureCameraCommand {
-            camera.setAperture(command.aperture.djiValue, withCompletion: finished)
+            Command.conditionallyExecute(state.exposureSettings?.aperture != command.aperture.djiValue, finished: finished) {
+                camera.setAperture(command.aperture.djiValue, withCompletion: finished)
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.AutoExposureLockCameraCommand {
-            camera.setAELock(command.enabled, withCompletion: finished)
+            camera.getAELock { (current, error) in
+                Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
+                    camera.setAELock(command.enabled, withCompletion: finished)
+                }
+            }
+            return nil
+        }
+        
+        if let command = cameraCommand as? Mission.AutoLockGimbalCameraCommand {
+            camera.getAutoLockGimbalEnabled { (current, error) in
+                Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
+                    camera.setAutoLockGimbalEnabled(command.enabled, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.ColorCameraCommand {
-            camera.setColor(command.color.djiValue, withCompletion: finished)
+            camera.getColorWithCompletion { (current, error) in
+                Command.conditionallyExecute(current != command.color.djiValue, error: error, finished: finished) {
+                    camera.setColor(command.color.djiValue, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.ContrastCameraCommand {
-            camera.setContrast(command.contrast, withCompletion: finished)
+            camera.getContrastWithCompletion { (current, error) in
+                Command.conditionallyExecute(current != command.contrast, error: error, finished: finished) {
+                    camera.setContrast(command.contrast, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.ExposureCompensationCameraCommand {
-            camera.setExposureCompensation(command.exposureCompensation.djiValue, withCompletion: finished)
+            Command.conditionallyExecute(state.exposureSettings?.exposureCompensation != command.exposureCompensation.djiValue, finished: finished) {
+                camera.setExposureCompensation(command.exposureCompensation.djiValue, withCompletion: finished)
+            }
             return nil
         }
         
         
         if let command = cameraCommand as? Mission.ExposureCompensationStepCameraCommand {
-            camera.setExposureCompensation(state.missionExposureCompensation.offset(steps: command.exposureCompensationSteps).djiValue, withCompletion: finished)
+            let exposureCompensation = state.missionExposureCompensation.offset(steps: command.exposureCompensationSteps).djiValue
+            Command.conditionallyExecute(state.exposureSettings?.exposureCompensation != exposureCompensation, finished: finished) {
+                camera.setExposureCompensation(exposureCompensation, withCompletion: finished)
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.ExposureModeCameraCommand {
-            camera.setExposureMode(command.exposureMode.djiValue, withCompletion: finished)
+            camera.getExposureMode { (current, error) in
+                Command.conditionallyExecute(current != command.exposureMode.djiValue, error: error, finished: finished) {
+                    camera.setExposureMode(command.exposureMode.djiValue, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.FileIndexModeCameraCommand {
-            camera.setFileIndexMode(command.fileIndexMode.djiValue, withCompletion: finished)
+            camera.getFileIndexMode { (current, error) in
+                Command.conditionallyExecute(current != command.fileIndexMode.djiValue, error: error, finished: finished) {
+                    camera.setFileIndexMode(command.fileIndexMode.djiValue, withCompletion: finished)
+                }
+            }
             return nil
         }
         
@@ -70,57 +110,105 @@ extension DJIDroneSession {
         }
         
         if let command = cameraCommand as? Mission.FocusModeCameraCommand {
-            camera.setFocusMode(command.focusMode.djiValue, withCompletion: finished)
+            camera.getFocusMode { (current, error) in
+                Command.conditionallyExecute(current != command.focusMode.djiValue, error: error, finished: finished) {
+                    camera.setFocusMode(command.focusMode.djiValue, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.ISOCameraCommand {
-            camera.setISO(command.iso.djiValue, withCompletion: finished)
+            Command.conditionallyExecute(state.exposureSettings?.ISO != command.iso.djiValue.rawValue, finished: finished) {
+                camera.setISO(command.iso.djiValue, withCompletion: finished)
+            }
+            return nil
+        }
+        
+        if let command = cameraCommand as? Mission.MechanicalShutterCameraCommand {
+            camera.getMechanicalShutterEnabled { (current, error) in
+                Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
+                    camera.setMechanicalShutterEnabled(command.enabled, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.MeteringModeCameraCommand {
-            camera.setMeteringMode(command.meteringMode.djiValue, withCompletion: finished)
+            camera.getMeteringMode { (current, error) in
+                Command.conditionallyExecute(current != command.meteringMode.djiValue, error: error, finished: finished) {
+                    camera.setMeteringMode(command.meteringMode.djiValue, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.ModeCameraCommand {
-            camera.setMode(command.mode.djiValue, withCompletion: finished)
+            Command.conditionallyExecute(command.mode != state.missionMode, finished: finished) {
+                camera.setMode(command.mode.djiValue, withCompletion: finished)
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.PhotoAspectRatioCameraCommand {
-            camera.setPhotoAspectRatio(command.photoAspectRatio.djiValue, withCompletion: finished)
+            camera.getPhotoAspectRatio { (current, error) in
+                Command.conditionallyExecute(current != command.photoAspectRatio.djiValue, error: error, finished: finished) {
+                    camera.setPhotoAspectRatio(command.photoAspectRatio.djiValue, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.PhotoFileFormatCameraCommand {
-            camera.setPhotoFileFormat(command.photoFileFormat.djiValue, withCompletion: finished)
+            camera.getPhotoFileFormat { (current, error) in
+                Command.conditionallyExecute(current != command.photoFileFormat.djiValue, error: error, finished: finished) {
+                    camera.setPhotoFileFormat(command.photoFileFormat.djiValue, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.PhotoIntervalCameraCommand {
-            camera.setPhotoTimeIntervalSettings(DJICameraPhotoTimeIntervalSettings(captureCount: 255, timeIntervalInSeconds: UInt16(command.photoInterval)), withCompletion: finished)
+            camera.getPhotoTimeIntervalSettings { (current, error) in
+                let target = DJICameraPhotoTimeIntervalSettings(captureCount: 255, timeIntervalInSeconds: UInt16(command.photoInterval))
+                Command.conditionallyExecute(current.captureCount != target.captureCount || current.timeIntervalInSeconds != target.timeIntervalInSeconds, error: error, finished: finished) {
+                    camera.setPhotoTimeIntervalSettings(target, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.PhotoModeCameraCommand {
-            camera.setShootPhotoMode(command.photoMode.djiValue, withCompletion: finished)
+            camera.getShootPhotoMode { (current, error) in
+                Command.conditionallyExecute(current != command.photoMode.djiValue, error: error, finished: finished) {
+                    camera.setShootPhotoMode(command.photoMode.djiValue, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.SaturationCameraCommand {
-            camera.setSaturation(command.saturation, withCompletion: finished)
+            camera.getSaturationWithCompletion { (current, error) in
+                Command.conditionallyExecute(current != command.saturation, error: error, finished: finished) {
+                    camera.setSaturation(command.saturation, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.SharpnessCameraCommand {
-            camera.setSharpness(command.sharpness, withCompletion: finished)
+            camera.getSharpnessWithCompletion { (current, error) in
+                Command.conditionallyExecute(current != command.sharpness, error: error, finished: finished) {
+                    camera.setSharpness(command.sharpness, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.ShutterSpeedCameraCommand {
-            camera.setShutterSpeed(command.shutterSpeed.djiValue, withCompletion: finished)
+            Command.conditionallyExecute(state.exposureSettings?.shutterSpeed != command.shutterSpeed.djiValue, finished: finished) {
+                camera.setShutterSpeed(command.shutterSpeed.djiValue, withCompletion: finished)
+            }
             return nil
         }
         
@@ -203,37 +291,68 @@ extension DJIDroneSession {
         }
         
         if let command = cameraCommand as? Mission.StorageLocationCameraCommand {
-            camera.setStorageLocation(command.storageLocation.djiValue, withCompletion: finished)
+            camera.getStorageLocation { (current, error) in
+                Command.conditionallyExecute(current != command.storageLocation.djiValue, error: error, finished: finished) {
+                    camera.setStorageLocation(command.storageLocation.djiValue, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.VideoFileCompressionStandardCameraCommand {
-            camera.setVideoFileCompressionStandard(command.videoFileCompressionStandard.djiValue, withCompletion: finished)
+            camera.getVideoFileCompressionStandard { (current, error) in
+                Command.conditionallyExecute(current != command.videoFileCompressionStandard.djiValue, error: error, finished: finished) {
+                    camera.setVideoFileCompressionStandard(command.videoFileCompressionStandard.djiValue, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.VideoFileFormatCameraCommand {
-            camera.setVideoFileFormat(command.videoFileFormat.djiValue, withCompletion: finished)
+            camera.getVideoFileFormat { (current, error) in
+                Command.conditionallyExecute(current != command.videoFileFormat.djiValue, error: error, finished: finished) {
+                    camera.setVideoFileFormat(command.videoFileFormat.djiValue, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.VideoResolutionFrameRateCameraCommand {
-            camera.setVideoResolutionAndFrameRate(DJICameraVideoResolutionAndFrameRate(resolution: command.videoResolution.djiValue, frameRate: command.videoFrameRate.djiValue, fov: command.videoFieldOfView.djiValue), withCompletion: finished)
+            camera.getVideoResolutionAndFrameRate { (current, error) in
+                let target = DJICameraVideoResolutionAndFrameRate(resolution: command.videoResolution.djiValue, frameRate: command.videoFrameRate.djiValue, fov: command.videoFieldOfView.djiValue)
+                Command.conditionallyExecute(current?.resolution != target.resolution || current?.frameRate != target.frameRate || current?.fov != target.fov, error: error, finished: finished) {
+                    camera.setVideoResolutionAndFrameRate(target, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.VideoStandardCameraCommand {
-            camera.setVideoStandard(command.videoStandard.djiValue, withCompletion: finished)
+            camera.getVideoStandard { (current, error) in
+                Command.conditionallyExecute(current != command.videoStandard.djiValue, error: error, finished: finished) {
+                    camera.setVideoStandard(command.videoStandard.djiValue, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.WhiteBalanceCustomCameraCommand {
-            camera.setWhiteBalance(DJICameraWhiteBalance(customColorTemperature: UInt8(floor(Float(command.whiteBalanceCustom) / 100)))!, withCompletion: finished)
+            camera.getWhiteBalance { (current, error) in
+                let target = DJICameraWhiteBalance(customColorTemperature: UInt8(floor(Float(command.whiteBalanceCustom) / 100)))!
+                Command.conditionallyExecute(current?.preset != target.preset || current?.colorTemperature != target.colorTemperature, error: error, finished: finished) {
+                    camera.setWhiteBalance(target, withCompletion: finished)
+                }
+            }
             return nil
         }
         
         if let command = cameraCommand as? Mission.WhiteBalancePresetCameraCommand {
-            camera.setWhiteBalance(DJICameraWhiteBalance(preset: command.whiteBalancePreset.djiValue)!, withCompletion: finished)
+            camera.getWhiteBalance { (current, error) in
+                let target = DJICameraWhiteBalance(preset: command.whiteBalancePreset.djiValue)!
+                Command.conditionallyExecute(current?.preset != target.preset, error: error, finished: finished) {
+                    camera.setWhiteBalance(target, withCompletion: finished)
+                }
+            }
             return nil
         }
         
