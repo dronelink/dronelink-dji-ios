@@ -403,7 +403,7 @@ extension DJIDroneSession: DroneSession {
     
     private func commandFinished(command: MissionCommand, error: Error?) {
         var errorResolved: Error? = error
-        if (error as? NSError)?.code == DJISDKError.productNotSupport.rawValue {
+        if (error as NSError?)?.code == DJISDKError.productNotSupport.rawValue {
             os_log(.info, log: log, "Ignoring command failure: product not supported (%{public}s)", command.id)
             errorResolved = nil
         }
