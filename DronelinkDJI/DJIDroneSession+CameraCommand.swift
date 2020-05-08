@@ -274,7 +274,11 @@ extension DJIDroneSession {
             case .video:
                 if state.isCapturingVideo {
                     os_log(.debug, log: log, "Camera stop capture video")
-                    camera.stopRecordVideo(completion: finished)
+                    camera.stopRecordVideo { error in
+                        DispatchQueue.global().asyncAfter(deadline: .now() + 2.0) {
+                            finished(error)
+                        }
+                    }
                 }
                 else {
                     os_log(.debug, log: log, "Camera stop capture skipped, not recording video")
