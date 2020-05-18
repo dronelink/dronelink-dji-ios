@@ -34,6 +34,9 @@ public class DJIDroneSession: NSObject {
     private let flightControllerSerialQueue = DispatchQueue(label: "DroneSession+flightControllerState")
     private var _flightControllerState: DatedValue<DJIFlightControllerState>?
     
+    private let batterySerialQueue = DispatchQueue(label: "DroneSession+batteryState")
+    private var _batterState: DatedValue<DJIBatteryState>?
+    
     private let visionDetectionSerialQueue = DispatchQueue(label: "DroneSession+visionDetectionState")
     private var _visionDetectionState: DatedValue<DJIVisionDetectionState>?
     
@@ -72,6 +75,7 @@ public class DJIDroneSession: NSObject {
         
         os_log(.info, log: log, "Flight controller connected")
         flightController.delegate = self
+        adapter.drone.battery?.delegate = self
         flightController.flightAssistant?.delegate = self
         
         _model = adapter.drone.model ?? ""
@@ -174,6 +178,10 @@ public class DJIDroneSession: NSObject {
                 self._flightControllerState = nil
             }
             
+            batterySerialQueue.async {
+                self._batterState = nil
+            }
+            
             visionDetectionSerialQueue.async {
                 self._visionDetectionState = nil
             }
@@ -205,7 +213,13 @@ public class DJIDroneSession: NSObject {
             return self._flightControllerState
         }
     }
-
+    
+    public var batteryState: DatedValue<DJIBatteryState>? {
+        batterySerialQueue.sync {
+            return self._batterState
+        }
+    }
+    
     public var visionDetectionState: DatedValue<DJIVisionDetectionState>? {
         visionDetectionSerialQueue.sync {
             return self._visionDetectionState
@@ -461,6 +475,12 @@ extension DJIDroneSession: DroneStateAdapter {
     public var horizontalSpeed: Double { flightControllerState?.value.horizontalSpeed ?? 0 }
     public var verticalSpeed: Double { flightControllerState?.value.verticalSpeed ?? 0 }
     public var altitude: Double { flightControllerState?.value.altitude ?? 0 }
+    public var batteryPercent: Double? {
+        if let chargeRemainingInPercent = batteryState?.value.chargeRemainingInPercent {
+            return Double(chargeRemainingInPercent) / 100
+        }
+        return nil
+    }
     public var obstacleDistance: Double? {
         var minObstacleDistance = 0.0
         visionDetectionState?.value.detectionSectors?.forEach {
@@ -489,6 +509,14 @@ extension DJIDroneSession: DJIFlightAssistantDelegate {
             visionDetectionSerialQueue.async {
                 self._visionDetectionState = DatedValue<DJIVisionDetectionState>(value: state)
             }
+        }
+    }
+}
+
+extension DJIDroneSession: DJIBatteryDelegate {
+    public func battery(_ battery: DJIBattery, didUpdate state: DJIBatteryState) {
+        batterySerialQueue.async {
+            self._batterState = DatedValue<DJIBatteryState>(value: state)
         }
     }
 }
