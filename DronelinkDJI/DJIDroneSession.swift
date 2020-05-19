@@ -431,6 +431,7 @@ extension DJIDroneSession: DroneSession {
     }
     
     public func createControlSession() -> DroneControlSession { DJIControlSession(droneSession: self) }
+    
     public func cameraState(channel: UInt) -> DatedValue<CameraStateAdapter>? {
         cameraSerialQueue.sync {
             if let systemState = self._cameraStates[channel] {
@@ -494,6 +495,21 @@ extension DJIDroneSession: DroneStateAdapter {
 extension DJIDroneSession: DJIFlightControllerDelegate {
     public func flightController(_ fc: DJIFlightController, didUpdate state: DJIFlightControllerState) {
         flightControllerSerialQueue.async {
+            //automatically adjust the drone altitude offset if:
+            //1) altitude continuity is enabled
+            //2) the drone is going from flying to not flying
+            //3) the altitude reference is ground level
+            //4) the current drone altitude offset is not zero
+            //5) the last flight altitude is available
+            if Dronelink.shared.droneOffsets.droneAltitudeContinuity,
+                self._flightControllerState?.value.isFlying ?? false,
+                !state.isFlying,
+                (Dronelink.shared.droneOffsets.droneAltitudeReference ?? 0) == 0,
+                let lastFlightAltitude = self._flightControllerState?.value.altitude {
+                //adjust by the last flight altitude
+                Dronelink.shared.droneOffsets.droneAltitude -= lastFlightAltitude
+            }
+            
             let motorsOnPrevious = self._flightControllerState?.value.areMotorsOn ?? false
             self._flightControllerState = DatedValue<DJIFlightControllerState>(value: state)
             if (motorsOnPrevious != state.areMotorsOn) {
