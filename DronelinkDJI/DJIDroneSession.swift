@@ -25,6 +25,7 @@ public class DJIDroneSession: NSObject {
     private var _initialized = false
     private var _located = false
     private var _lastKnownGroundLocation: CLLocation?
+    private var _lastNonZeroFlyingAltitude: Double?
     
     private let delegates = MulticastDelegate<DroneSessionDelegate>()
     private let droneCommands = CommandQueue()
@@ -500,20 +501,31 @@ extension DJIDroneSession: DJIFlightControllerDelegate {
             //2) the drone is going from flying to not flying
             //3) the altitude reference is ground level
             //4) the current drone altitude offset is not zero
-            //5) the last flight altitude is available
+            //5) the last non-zero flying altitude is available
+            //6) the absolute value of last non-zero flying altitude is more than 1m
             if Dronelink.shared.droneOffsets.droneAltitudeContinuity,
                 self._flightControllerState?.value.isFlying ?? false,
                 !state.isFlying,
                 (Dronelink.shared.droneOffsets.droneAltitudeReference ?? 0) == 0,
-                let lastFlightAltitude = self._flightControllerState?.value.altitude {
-                //adjust by the last flight altitude
-                Dronelink.shared.droneOffsets.droneAltitude -= lastFlightAltitude
+                let lastNonZeroFlyingAltitude = self._lastNonZeroFlyingAltitude,
+                abs(lastNonZeroFlyingAltitude) > 1 {
+                //adjust by the last non-zero flying altitude
+                Dronelink.shared.droneOffsets.droneAltitude -= lastNonZeroFlyingAltitude
             }
             
             let motorsOnPrevious = self._flightControllerState?.value.areMotorsOn ?? false
             self._flightControllerState = DatedValue<DJIFlightControllerState>(value: state)
             if (motorsOnPrevious != state.areMotorsOn) {
                 self.delegates.invoke { $0.onMotorsChanged(session: self, value: state.areMotorsOn) }
+            }
+            
+            if state.isFlying {
+                if state.altitude != 0 {
+                    self._lastNonZeroFlyingAltitude = state.altitude
+                }
+            }
+            else {
+                self._lastNonZeroFlyingAltitude = nil
             }
         }
     }
