@@ -52,6 +52,8 @@ public class DJIDroneSession: NSObject {
     private let gimbalSerialQueue = DispatchQueue(label: "DroneSession+gimbalStates")
     private var _gimbalStates: [UInt: DatedValue<DJIGimbalState>] = [:]
     
+    private var _airLinkSignalQuality: DatedValue<UInt>?
+    
     public init(drone: DJIAircraft) {
         adapter = DJIDroneAdapter(drone: drone)
         super.init()
@@ -115,6 +117,15 @@ public class DJIDroneSession: NSObject {
            if error == nil {
                os_log(.debug, log: self.log, "Flight controller novice mode disabled")
            }
+        }
+        
+        DJISDKManager.keyManager()?.startListeningForChanges(on: DJIAirLinkKey(param: DJIAirLinkParamDownlinkSignalQuality)!, withListener: self) { (oldValue, newValue) in
+            if let newValue = newValue?.unsignedIntegerValue {
+                self._airLinkSignalQuality = DatedValue(value: newValue)
+            }
+            else {
+                self._airLinkSignalQuality = nil
+            }
         }
     }
     
@@ -281,6 +292,8 @@ public class DJIDroneSession: NSObject {
             
             Thread.sleep(forTimeInterval: 0.1)
         }
+        
+        DJISDKManager.keyManager()?.stopListening(on: DJIAirLinkKey(param: DJIAirLinkParamDownlinkSignalQuality)!, ofListener: self)
         os_log(.info, log: log, "Drone session closed")
     }
     
@@ -491,6 +504,19 @@ extension DJIDroneSession: DroneStateAdapter {
         return minObstacleDistance > 0 ? minObstacleDistance : nil
     }
     public var missionOrientation: Mission.Orientation3 { flightControllerState?.value.missionOrientation ?? Mission.Orientation3() }
+    public var gpsSatellites: Int? {
+        if let satelliteCount = flightControllerState?.value.satelliteCount {
+            return Int(satelliteCount)
+        }
+        return nil
+    }
+    
+    public var signalStrength: Double? {
+        if let airLinkSignalQuality = _airLinkSignalQuality?.value {
+            return Double(airLinkSignalQuality) / 100.0
+        }
+        return nil
+    }
 }
 
 extension DJIDroneSession: DJIFlightControllerDelegate {

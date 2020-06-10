@@ -49,11 +49,12 @@ public class DJIControlSession: DroneControlSession {
         return nil
     }
     
-    public func activate() -> Bool {
+    public func activate() -> Bool? {
         guard
             let flightController = droneSession.adapter.drone.flightController,
             let flightControllerState = droneSession.flightControllerState
         else {
+            deactivate()
             return false
         }
         
@@ -87,17 +88,17 @@ public class DJIControlSession: DroneControlSession {
                 os_log(.info, log: self.log, "Precision takeoff succeeded")
                 self.state = .TakeoffComplete
             }
-            return false
+            return nil
             
         case .TakeoffAttempting:
-            return false
+            return nil
             
         case .TakeoffComplete:
             if flightControllerState.value.isFlying && flightControllerState.value.flightMode != .autoTakeoff {
                 state = .VirtualStickStart
                 return activate()
             }
-            return false
+            return nil
             
         case .VirtualStickStart:
             if virtualStickAttemptPrevious == nil || virtualStickAttemptPrevious!.timeIntervalSinceNow < -2.0 {
@@ -122,10 +123,10 @@ public class DJIControlSession: DroneControlSession {
                     self.state = .FlightModeJoystickAttempting
                 }
             }
-            return false
+            return nil
             
         case .VirtualStickAttempting:
-            return false
+            return nil
             
         case .FlightModeJoystickAttempting:
             if flightControllerState.value.flightMode == .joystick {
@@ -142,7 +143,7 @@ public class DJIControlSession: DroneControlSession {
             }
             
             droneSession.sendResetVelocityCommand()
-            return false
+            return nil
             
         case .FlightModeJoystickComplete:
             return true
