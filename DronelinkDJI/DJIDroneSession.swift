@@ -302,13 +302,27 @@ public class DJIDroneSession: NSObject {
     }
     
     internal func sendResetGimbalCommands() {
-        adapter.drone.gimbals?.forEach {
-            $0.rotate(with: DJIGimbalRotation(
-                pitchValue: $0.isAdjustPitchSupported ? -12.0.convertDegreesToRadians as NSNumber : nil,
-                rollValue: $0.isAdjustRollSupported ? 0 : nil,
-                yawValue: $0.isAdjustYawSupported ? 0 : nil,
+        adapter.drone.gimbals?.forEach { gimbal in
+            let rotation = DJIGimbalRotation(
+                pitchValue: gimbal.isAdjustPitchSupported ? -12.0 as NSNumber : nil,
+                rollValue: gimbal.isAdjustRollSupported ? 0 : nil,
+                yawValue: nil,
                 time: DJIGimbalRotation.minTime,
-                mode: .absoluteAngle), completion: nil)
+                mode: .absoluteAngle)
+            
+            if gimbal.isAdjustYawSupported, (gimbalState(channel: gimbal.index)?.value.missionMode ?? .yawFollow) != .yawFollow {
+                gimbal.setMode(.yawFollow) { yawFollowError in
+                    //if we don't give it a delay, it ignores the next command!
+                    DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
+                        gimbal.reset { resetError in
+                            gimbal.rotate(with: rotation, completion: nil)
+                        }
+                    }
+                }
+            }
+            else {
+                gimbal.rotate(with: rotation, completion: nil)
+            }
         }
     }
     
@@ -468,6 +482,11 @@ extension DJIDroneSession: DroneSession {
         remoteControllerSerialQueue.sync {
             return _remoteControllerState
         }
+    }
+    
+    public func resetPayloads() {
+        sendResetGimbalCommands()
+        sendResetCameraCommands()
     }
     
     public func close() {

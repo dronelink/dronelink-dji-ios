@@ -159,9 +159,6 @@ public class DJIControlSession: DroneControlSession {
             self.droneSession.adapter.drone.flightController?.setVirtualStickModeEnabled(false, withCompletion: nil)
         }
         
-        droneSession.sendResetGimbalCommands()
-        droneSession.sendResetCameraCommands()
-        
         state = .Deactivated
     }
 }

@@ -19,7 +19,22 @@ extension DJIDroneSession {
         
         if let command = gimbalCommand as? Mission.ModeGimbalCommand {
             Command.conditionallyExecute(command.mode != state.missionMode, finished: finished) {
-                gimbal.setMode(command.mode.djiValue, withCompletion: finished)
+                gimbal.setMode(command.mode.djiValue) { error in
+                    if let error = error {
+                        finished(error)
+                        return
+                    }
+
+                    //if we don't give it a delay, subsequent gimbal attitude or reset commands that are issued immediately are ignored
+                    DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
+                        if command.mode == .yawFollow {
+                            gimbal.reset(completion: finished)
+                        }
+                        else {
+                            finished(nil)
+                        }
+                    }
+                }
             }
             return nil
         }
@@ -37,15 +52,26 @@ extension DJIDroneSession {
             
             let roll = command.orientation.roll?.convertRadiansToDegrees
             
-            var yaw = command.orientation.yaw?.convertRadiansToDegrees
-            if (state.missionMode != .free) {
-                yaw = 0
+            if state.missionMode == .free, let yaw = command.orientation.yaw {
+                //use relative angle because absolute angle for yaw is not predictable
+                gimbal.rotate(with: DJIGimbalRotation(
+                    pitchValue: gimbal.isAdjustPitchSupported ? pitch?.convertDegreesToRadians.angleDifferenceSigned(angle: state.missionOrientation.pitch).convertRadiansToDegrees as NSNumber? : nil,
+                    rollValue: gimbal.isAdjustRollSupported ? roll?.convertDegreesToRadians.angleDifferenceSigned(angle: state.missionOrientation.roll).convertRadiansToDegrees as NSNumber? : nil,
+                    yawValue: yaw.angleDifferenceSigned(angle: state.missionOrientation.yaw).convertRadiansToDegrees as NSNumber,
+                    time: DJIGimbalRotation.minTime,
+                    mode: .relativeAngle), completion: finished)
+                return nil
+            }
+            
+            if pitch == nil && roll == nil {
+                finished(nil)
+                return nil
             }
             
             gimbal.rotate(with: DJIGimbalRotation(
                 pitchValue: gimbal.isAdjustPitchSupported ? pitch as NSNumber? : nil,
                 rollValue: gimbal.isAdjustRollSupported ? roll as NSNumber? : nil,
-                yawValue: gimbal.isAdjustYawSupported ? yaw as NSNumber? : nil,
+                yawValue: nil,
                 time: DJIGimbalRotation.minTime,
                 mode: .absoluteAngle), completion: finished)
             return nil
