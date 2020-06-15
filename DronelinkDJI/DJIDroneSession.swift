@@ -48,6 +48,7 @@ public class DJIDroneSession: NSObject {
     private var _cameraStates: [UInt: DatedValue<DJICameraSystemState>] = [:]
     private var _cameraStorageStates: [UInt: DatedValue<DJICameraStorageState>] = [:]
     private var _cameraExposureSettings: [UInt: DatedValue<DJICameraExposureSettings>] = [:]
+    private var _cameraLensInformation: [UInt: DatedValue<String>] = [:]
     
     private let gimbalSerialQueue = DispatchQueue(label: "DroneSession+gimbalStates")
     private var _gimbalStates: [UInt: DatedValue<DJIGimbalState>] = [:]
@@ -144,6 +145,14 @@ public class DJIDroneSession: NSObject {
                     os_log(.info, log: self.log, "Set media file custom information: %{public}s", xmp)
                 }
             }
+            
+            camera.getLensInformation { (info, error) in
+                if let info = info {
+                    self.cameraSerialQueue.async {
+                        self._cameraLensInformation[camera.index] = DatedValue<String>(value: info)
+                    }
+                }
+            }
         }
     }
     
@@ -205,6 +214,7 @@ public class DJIDroneSession: NSObject {
                 self._cameraStates[UInt(index)] = nil
                 self._cameraStorageStates[UInt(index)] = nil
                 self._cameraExposureSettings[UInt(index)] = nil
+                self._cameraLensInformation[UInt(index)] = nil
             }
             break
             
@@ -463,7 +473,11 @@ extension DJIDroneSession: DroneSession {
     public func cameraState(channel: UInt) -> DatedValue<CameraStateAdapter>? {
         cameraSerialQueue.sync {
             if let systemState = self._cameraStates[channel] {
-                return DatedValue(value: DJICameraStateAdapter(systemState: systemState.value, storageState: self._cameraStorageStates[channel]?.value, exposureSettings: self._cameraExposureSettings[channel]?.value), date: systemState.date)
+                return DatedValue(value: DJICameraStateAdapter(
+                    systemState: systemState.value,
+                    storageState: self._cameraStorageStates[channel]?.value,
+                    exposureSettings: self._cameraExposureSettings[channel]?.value,
+                    lensInformation: self._cameraLensInformation[channel]?.value), date: systemState.date)
             }
             return nil
         }

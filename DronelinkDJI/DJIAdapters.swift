@@ -129,11 +129,13 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public let systemState: DJICameraSystemState
     public let storageState: DJICameraStorageState?
     public let exposureSettings: DJICameraExposureSettings?
+    public let lensInformation: String?
     
-    public init(systemState: DJICameraSystemState, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?) {
+    public init(systemState: DJICameraSystemState, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensInformation: String?) {
         self.systemState = systemState
         self.storageState = storageState
         self.exposureSettings = exposureSettings
+        self.lensInformation = lensInformation
     }
     
     public var isCapturingPhotoInterval: Bool { systemState.isCapturingPhotoInterval }
@@ -142,6 +144,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var isSDCardInserted: Bool { storageState?.isInserted ?? true }
     public var missionMode: Mission.CameraMode { systemState.missionMode }
     public var missionExposureCompensation: Mission.CameraExposureCompensation { exposureSettings?.exposureCompensation.missionValue ?? .unknown }
+    public var lensDetails: String? { lensInformation }
 }
 
 extension DJICameraSystemState {
