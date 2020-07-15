@@ -182,6 +182,10 @@ public class DJIGimbalAdapter: GimbalAdapter {
     public func reset() {
         gimbal.reset(completion: nil)
     }
+    
+    public func fineTune(roll: Double) {
+        gimbal.fineTuneRoll(inDegrees: Float(roll.convertRadiansToDegrees), withCompletion: nil)
+    }
 }
 
 extension DJIGimbalState: GimbalStateAdapter {
