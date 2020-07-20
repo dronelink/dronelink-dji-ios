@@ -303,6 +303,15 @@ extension DJIDroneSession {
             return nil
         }
         
+        if let command = cameraCommand as? Mission.VideoCaptionCameraCommand {
+            camera.getVideoCaptionEnabled { (current, error) in
+                Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
+                    camera.setVideoCaptionEnabled(command.enabled, withCompletion: finished)
+                }
+            }
+            return nil
+        }
+        
         if let command = cameraCommand as? Mission.VideoFileCompressionStandardCameraCommand {
             camera.getVideoFileCompressionStandard { (current, error) in
                 Command.conditionallyExecute(current != command.videoFileCompressionStandard.djiValue, error: error, finished: finished) {

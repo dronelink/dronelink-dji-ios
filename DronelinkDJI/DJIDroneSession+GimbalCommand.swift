@@ -77,6 +77,15 @@ extension DJIDroneSession {
             return nil
         }
         
+        if let command = gimbalCommand as? Mission.YawSimultaneousFollowGimbalCommand {
+            gimbal.getYawSimultaneousFollowEnabled { (current, error) in
+                Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
+                    gimbal.setYawSimultaneousFollowEnabled(command.enabled, withCompletion: finished)
+                }
+            }
+            return nil
+        }
+        
         return "MissionDisengageReason.command.type.unhandled".localized
     }
 }
