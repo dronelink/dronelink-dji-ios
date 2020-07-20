@@ -38,7 +38,7 @@ extension DJIAircraft {
 
 extension DJIFlightControllerState {
     public var location: CLLocation? {
-        if let location = aircraftLocation, isHomeLocationSet {
+        if let location = aircraftLocation, isHomeLocationSet, gpsSignalLevel != .levelNone {
             if abs(location.coordinate.latitude) < 0.000001 && abs(location.coordinate.longitude) < 0.000001 {
                 return nil
             }
