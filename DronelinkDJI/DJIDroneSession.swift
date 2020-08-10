@@ -278,23 +278,27 @@ public class DJIDroneSession: NSObject {
             self.cameraCommands.process()
             self.gimbalCommands.process()
             
-            self.gimbalSerialQueue.async {
-                //work-around for this issue: https://support.dronelink.com/hc/en-us/community/posts/360034749773-Seeming-to-have-a-Heading-error-
-                self.adapter.gimbals?.forEach { gimbalAdapter in
-                    if let gimbalAdapter = gimbalAdapter as? DJIGimbalAdapter {
-                        var rotation = gimbalAdapter.pendingSpeedRotation
-                        gimbalAdapter.pendingSpeedRotation = nil
-                        if gimbalAdapter.gimbal.isAdjustYawSupported, let gimbalState = self._gimbalStates[gimbalAdapter.index]?.value, gimbalState.mode == .yawFollow {
-                            rotation = DJIGimbalRotation(
-                                pitchValue: rotation?.pitch,
-                                rollValue: rotation?.roll,
-                                yawValue: min(max(-gimbalState.yawRelativeToAircraftHeading * 0.1, -5), 5) as NSNumber,
-                                time: DJIGimbalRotation.minTime,
-                                mode: .speed)
-                        }
-                        
-                        if let rotation = rotation {
-                            gimbalAdapter.gimbal.rotate(with: rotation, completion: nil)
+            if Dronelink.shared.missionExecutor?.engaged ?? false {
+                self.gimbalSerialQueue.async {
+                    //work-around for this issue: https://support.dronelink.com/hc/en-us/community/posts/360034749773-Seeming-to-have-a-Heading-error-
+                    self.adapter.gimbals?.forEach { gimbalAdapter in
+                        if let gimbalAdapter = gimbalAdapter as? DJIGimbalAdapter {
+                            var rotation = gimbalAdapter.pendingSpeedRotation
+                            gimbalAdapter.pendingSpeedRotation = nil
+                            if let gimbalState = self._gimbalStates[gimbalAdapter.index]?.value, gimbalState.mode == .yawFollow, let droneYaw = self.state?.value.missionOrientation.yaw {
+                                let yawRelativeToAircraftHeading = Double(gimbalState.attitudeInDegrees.yaw.convertDegreesToRadians).angleDifferenceSigned(angle: droneYaw).convertRadiansToDegrees
+                                rotation = DJIGimbalRotation(
+                                    pitchValue: rotation?.pitch,
+                                    rollValue: rotation?.roll,
+                                    yawValue: min(max(-yawRelativeToAircraftHeading * 0.25, -25), 25) as NSNumber,
+                                    time: DJIGimbalRotation.minTime,
+                                    mode: .speed,
+                                    ignore: false)
+                            }
+                            
+                            if let rotation = rotation {
+                                gimbalAdapter.gimbal.rotate(with: rotation, completion: nil)
+                            }
                         }
                     }
                 }
@@ -318,9 +322,10 @@ public class DJIDroneSession: NSObject {
                 rollValue: gimbal.isAdjustRollSupported ? 0 : nil,
                 yawValue: nil,
                 time: DJIGimbalRotation.minTime,
-                mode: .absoluteAngle)
+                mode: .absoluteAngle,
+                ignore: false)
             
-            if gimbal.isAdjustYawSupported, (gimbalState(channel: gimbal.index)?.value.missionMode ?? .yawFollow) != .yawFollow {
+            if (gimbalState(channel: gimbal.index)?.value.missionMode ?? .yawFollow) != .yawFollow {
                 gimbal.setMode(.yawFollow) { yawFollowError in
                     //if we don't give it a delay, it ignores the next command!
                     DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {

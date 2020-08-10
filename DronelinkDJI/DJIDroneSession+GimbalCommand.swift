@@ -59,7 +59,8 @@ extension DJIDroneSession {
                     rollValue: gimbal.isAdjustRollSupported ? roll?.convertDegreesToRadians.angleDifferenceSigned(angle: state.missionOrientation.roll).convertRadiansToDegrees as NSNumber? : nil,
                     yawValue: yaw.angleDifferenceSigned(angle: state.missionOrientation.yaw).convertRadiansToDegrees as NSNumber,
                     time: DJIGimbalRotation.minTime,
-                    mode: .relativeAngle), completion: finished)
+                    mode: .relativeAngle,
+                    ignore: false), completion: finished)
                 return nil
             }
             
@@ -73,7 +74,8 @@ extension DJIDroneSession {
                 rollValue: gimbal.isAdjustRollSupported ? roll as NSNumber? : nil,
                 yawValue: nil,
                 time: DJIGimbalRotation.minTime,
-                mode: .absoluteAngle), completion: finished)
+                mode: .absoluteAngle,
+                ignore: false), completion: finished)
             return nil
         }
         
