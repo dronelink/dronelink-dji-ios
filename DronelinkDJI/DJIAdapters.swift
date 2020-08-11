@@ -172,9 +172,9 @@ public class DJIGimbalAdapter: GimbalAdapter {
 
     public func send(velocityCommand: Mission.VelocityGimbalCommand, mode: Mission.GimbalMode) {
         pendingSpeedRotation = DJIGimbalRotation(
-            pitchValue: velocityCommand.velocity.pitch.convertRadiansToDegrees as NSNumber,
-            rollValue: velocityCommand.velocity.roll.convertRadiansToDegrees as NSNumber,
-            yawValue: mode == .free ? velocityCommand.velocity.yaw.convertRadiansToDegrees as NSNumber : nil,
+            pitchValue: gimbal.isAdjustPitchSupported ? velocityCommand.velocity.pitch.convertRadiansToDegrees as NSNumber : nil,
+            rollValue: gimbal.isAdjustRollSupported ? velocityCommand.velocity.roll.convertRadiansToDegrees as NSNumber : nil,
+            yawValue: mode == .free && gimbal.isAdjustYawSupported ? velocityCommand.velocity.yaw.convertRadiansToDegrees as NSNumber : nil,
             time: DJIGimbalRotation.minTime,
             mode: .speed,
             ignore: false)

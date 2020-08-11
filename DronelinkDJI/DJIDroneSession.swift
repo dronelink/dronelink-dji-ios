@@ -285,12 +285,11 @@ public class DJIDroneSession: NSObject {
                         if let gimbalAdapter = gimbalAdapter as? DJIGimbalAdapter {
                             var rotation = gimbalAdapter.pendingSpeedRotation
                             gimbalAdapter.pendingSpeedRotation = nil
-                            if let gimbalState = self._gimbalStates[gimbalAdapter.index]?.value, gimbalState.mode == .yawFollow, let droneYaw = self.state?.value.missionOrientation.yaw {
-                                let yawRelativeToAircraftHeading = Double(gimbalState.attitudeInDegrees.yaw.convertDegreesToRadians).angleDifferenceSigned(angle: droneYaw).convertRadiansToDegrees
+                            if gimbalAdapter.gimbal.isAdjustYawSupported, let gimbalState = self._gimbalStates[gimbalAdapter.index]?.value, gimbalState.mode == .yawFollow {
                                 rotation = DJIGimbalRotation(
                                     pitchValue: rotation?.pitch,
                                     rollValue: rotation?.roll,
-                                    yawValue: min(max(-yawRelativeToAircraftHeading * 0.25, -25), 25) as NSNumber,
+                                    yawValue: min(max(-self.gimbalYawRelativeToAircraftHeadingCorrected(gimbalState: gimbalState).convertRadiansToDegrees * 0.25, -25), 25) as NSNumber,
                                     time: DJIGimbalRotation.minTime,
                                     mode: .speed,
                                     ignore: false)
@@ -311,6 +310,22 @@ public class DJIDroneSession: NSObject {
         os_log(.info, log: log, "Drone session closed")
     }
     
+    private func gimbalYawRelativeToAircraftHeadingCorrected(gimbalState: GimbalStateAdapter) -> Double {
+        if let model = (drone as? DJIDroneAdapter)?.drone.model {
+            switch (model) {
+            case DJIAircraftModelNamePhantom4,
+                 DJIAircraftModelNamePhantom4Pro,
+                 DJIAircraftModelNamePhantom4ProV2,
+                 DJIAircraftModelNamePhantom4Advanced,
+                 DJIAircraftModelNamePhantom4RTK:
+                return gimbalState.missionOrientation.yaw.angleDifferenceSigned(angle: missionOrientation.yaw)
+            default:
+                break
+            }
+        }
+        return (gimbalState as? DJIGimbalState)?.yawRelativeToAircraftHeading.convertDegreesToRadians ?? 0
+    }
+    
     internal func sendResetVelocityCommand(withCompletion: DJICompletionBlock? = nil) {
         adapter.sendResetVelocityCommand(withCompletion: withCompletion)
     }
@@ -325,7 +340,7 @@ public class DJIDroneSession: NSObject {
                 mode: .absoluteAngle,
                 ignore: false)
             
-            if (gimbalState(channel: gimbal.index)?.value.missionMode ?? .yawFollow) != .yawFollow {
+            if gimbal.isAdjustYawSupported, (gimbalState(channel: gimbal.index)?.value.missionMode ?? .yawFollow) != .yawFollow {
                 gimbal.setMode(.yawFollow) { yawFollowError in
                     //if we don't give it a delay, it ignores the next command!
                     DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
