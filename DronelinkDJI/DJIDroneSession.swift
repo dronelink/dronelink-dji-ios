@@ -126,12 +126,6 @@ public class DJIDroneSession: NSObject {
            }
         }
         
-        flightController.setControlMode(.smart)  { error in
-           if error == nil {
-               os_log(.debug, log: self.log, "Flight controller control mode set to smart")
-           }
-        }
-        
         DJISDKManager.keyManager()?.startListeningForChanges(on: DJIAirLinkKey(param: DJIAirLinkParamDownlinkSignalQuality)!, withListener: self) { (oldValue, newValue) in
             if let newValue = newValue?.unsignedIntegerValue {
                 self._airLinkSignalQuality = DatedValue(value: newValue)
