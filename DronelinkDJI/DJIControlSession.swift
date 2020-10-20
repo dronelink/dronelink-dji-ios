@@ -31,19 +31,19 @@ public class DJIControlSession: DroneControlSession {
     private var virtualStickAttempts = 0
     private var virtualStickAttemptPrevious: Date?
     private var flightModeJoystickAttemptingStarted: Date?
-    private var attemptDisengageReason: Mission.Message?
+    private var attemptDisengageReason: Kernel.Message?
     
     public init(droneSession: DJIDroneSession) {
         self.droneSession = droneSession
     }
     
-    public var disengageReason: Mission.Message? {
+    public var disengageReason: Kernel.Message? {
         if let attemptDisengageReason = attemptDisengageReason {
             return attemptDisengageReason
         }
         
         if state == .FlightModeJoystickComplete, let flightControllerState = droneSession.flightControllerState, flightControllerState.value.flightMode != .joystick {
-            return Mission.Message(title: "MissionDisengageReason.drone.control.override.title".localized, details: flightControllerState.value.flightModeString)
+            return Kernel.Message(title: "MissionDisengageReason.drone.control.override.title".localized, details: flightControllerState.value.flightModeString)
         }
         
         return nil
@@ -74,7 +74,7 @@ public class DJIControlSession: DroneControlSession {
                     flightController.startTakeoff { error in
                         if let error = error {
                             os_log(.error, log: self.log, "Takeoff failed: %{public}s", error.localizedDescription)
-                           self.attemptDisengageReason = Mission.Message(title: "MissionDisengageReason.take.off.failed.title".localized, details: error.localizedDescription)
+                           self.attemptDisengageReason = Kernel.Message(title: "MissionDisengageReason.take.off.failed.title".localized, details: error.localizedDescription)
                            self.deactivate()
                            return
                         }
@@ -109,7 +109,7 @@ public class DJIControlSession: DroneControlSession {
                 flightController.setVirtualStickModeEnabled(true) { error in
                     if let error = error {
                         if self.virtualStickAttempts >= 5 {
-                            self.attemptDisengageReason = Mission.Message(title: "MissionDisengageReason.take.control.failed.title".localized, details: error.localizedDescription)
+                            self.attemptDisengageReason = Kernel.Message(title: "MissionDisengageReason.take.control.failed.title".localized, details: error.localizedDescription)
                             self.deactivate()
                         }
                         else {
@@ -137,7 +137,7 @@ public class DJIControlSession: DroneControlSession {
             }
             
             if (flightModeJoystickAttemptingStarted?.timeIntervalSinceNow ?? 0) < -2.0 {
-                self.attemptDisengageReason = Mission.Message(title: "MissionDisengageReason.take.control.failed.title".localized)
+                self.attemptDisengageReason = Kernel.Message(title: "MissionDisengageReason.take.control.failed.title".localized)
                 self.deactivate()
                 return false
             }

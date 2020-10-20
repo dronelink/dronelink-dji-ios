@@ -389,17 +389,25 @@ extension DJIDroneSession: DroneSession {
     public var initialized: Bool { _initialized }
     public var located: Bool { _located }
     public var telemetryDelayed: Bool { -(flightControllerState?.date.timeIntervalSinceNow ?? 0) > 1.0 }
-    public var disengageReason: Mission.Message? {
+    public var disengageReason: Kernel.Message? {
         if adapter.drone.flightController == nil {
-            return Mission.Message(title: "MissionDisengageReason.drone.control.unavailable.title".localized)
+            return Kernel.Message(title: "MissionDisengageReason.drone.control.unavailable.title".localized)
         }
         
         if flightControllerState == nil {
-            return Mission.Message(title: "MissionDisengageReason.telemetry.unavailable.title".localized)
+            return Kernel.Message(title: "MissionDisengageReason.telemetry.unavailable.title".localized)
         }
         
         if telemetryDelayed {
-            return Mission.Message(title: "MissionDisengageReason.telemetry.delayed.title".localized)
+            return Kernel.Message(title: "MissionDisengageReason.telemetry.delayed.title".localized)
+        }
+        
+        if flightControllerState?.value.hasReachedMaxFlightHeight ?? false {
+            return Kernel.Message(title: "MissionDisengageReason.drone.max.altitude.title".localized, details: "MissionDisengageReason.drone.max.altitude.details".localized)
+        }
+        
+        if flightControllerState?.value.hasReachedMaxFlightRadius ?? false {
+            return Kernel.Message(title: "MissionDisengageReason.drone.max.distance.title".localized, details: "MissionDisengageReason.drone.max.distance.details".localized)
         }
         
         return nil
@@ -423,8 +431,8 @@ extension DJIDroneSession: DroneSession {
         delegates.remove(delegate)
     }
     
-    public func add(command: MissionCommand) throws {
-        if let command = command as? MissionDroneCommand {
+    public func add(command: KernelCommand) throws {
+        if let command = command as? KernelDroneCommand {
             droneCommands.add(command: Command(
                 id: command.id,
                 name: command.type.rawValue,
@@ -440,7 +448,7 @@ extension DJIDroneSession: DroneSession {
             return
         }
         
-        if let command = command as? MissionCameraCommand {
+        if let command = command as? KernelCameraCommand {
             cameraCommands.add(channel: command.channel, command: Command(
                 id: command.id,
                 name: command.type.rawValue,
@@ -456,7 +464,7 @@ extension DJIDroneSession: DroneSession {
             return
         }
 
-        if let command = command as? MissionGimbalCommand {
+        if let command = command as? KernelGimbalCommand {
             gimbalCommands.add(channel: command.channel, command: Command(
                 id: command.id,
                 name: command.type.rawValue,
@@ -475,11 +483,11 @@ extension DJIDroneSession: DroneSession {
         throw DroneSessionError.commandTypeUnhandled
     }
     
-    private func commandExecuted(command: MissionCommand) {
+    private func commandExecuted(command: KernelCommand) {
         delegates.invoke { $0.onCommandExecuted(session: self, command: command) }
     }
     
-    private func commandFinished(command: MissionCommand, error: Error?) {
+    private func commandFinished(command: KernelCommand, error: Error?) {
         var errorResolved: Error? = error
         if (error as NSError?)?.code == DJISDKError.productNotSupport.rawValue {
             os_log(.info, log: log, "Ignoring command failure: product not supported (%{public}s)", command.id)
@@ -562,7 +570,7 @@ extension DJIDroneSession: DroneStateAdapter {
         }
         return minObstacleDistance > 0 ? minObstacleDistance : nil
     }
-    public var missionOrientation: Mission.Orientation3 { flightControllerState?.value.missionOrientation ?? Mission.Orientation3() }
+    public var missionOrientation: Kernel.Orientation3 { flightControllerState?.value.missionOrientation ?? Kernel.Orientation3() }
     public var gpsSatellites: Int? {
         if let satelliteCount = flightControllerState?.value.satelliteCount {
             return Int(satelliteCount)

@@ -56,7 +56,7 @@ public class DJIDroneAdapter: DroneAdapter {
         return nil
     }
 
-    public func send(velocityCommand: Mission.VelocityDroneCommand?) {
+    public func send(velocityCommand: Kernel.VelocityDroneCommand?) {
         guard let velocityCommand = velocityCommand else {
             sendResetVelocityCommand()
             return
@@ -113,10 +113,10 @@ public struct DJICameraFile : CameraFile {
     public let created = Date()
     public let coordinate: CLLocationCoordinate2D?
     public let altitude: Double?
-    public let orientation: Mission.Orientation3?
+    public let orientation: Kernel.Orientation3?
     public let mediaFile: DJIMediaFile
     
-    init(channel: UInt, mediaFile: DJIMediaFile, coordinate: CLLocationCoordinate2D?, altitude: Double?, orientation: Mission.Orientation3?) {
+    init(channel: UInt, mediaFile: DJIMediaFile, coordinate: CLLocationCoordinate2D?, altitude: Double?, orientation: Kernel.Orientation3?) {
         self.channel = channel
         self.mediaFile = mediaFile
         self.coordinate = coordinate
@@ -142,8 +142,8 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var isCapturingVideo: Bool { systemState.isCapturingVideo }
     public var isCapturing: Bool { systemState.isCapturing }
     public var isSDCardInserted: Bool { storageState?.isInserted ?? true }
-    public var missionMode: Mission.CameraMode { systemState.missionMode }
-    public var missionExposureCompensation: Mission.CameraExposureCompensation { exposureSettings?.exposureCompensation.missionValue ?? .unknown }
+    public var missionMode: Kernel.CameraMode { systemState.missionMode }
+    public var missionExposureCompensation: Kernel.CameraExposureCompensation { exposureSettings?.exposureCompensation.missionValue ?? .unknown }
     public var lensDetails: String? { lensInformation }
 }
 
@@ -151,7 +151,7 @@ extension DJICameraSystemState {
     public var isCapturingPhotoInterval: Bool { isShootingIntervalPhoto }
     public var isCapturingVideo: Bool { isRecording }
     public var isCapturing: Bool { isRecording || isShootingSinglePhoto || isShootingSinglePhotoInRAWFormat || isShootingIntervalPhoto || isShootingBurstPhoto || isShootingRAWBurstPhoto || isShootingShallowFocusPhoto || isShootingPanoramaPhoto }
-    public var missionMode: Mission.CameraMode { mode.missionValue }
+    public var missionMode: Kernel.CameraMode { mode.missionValue }
 }
 
 public class DJIGimbalAdapter: GimbalAdapter {
@@ -170,7 +170,7 @@ public class DJIGimbalAdapter: GimbalAdapter {
     
     public var index: UInt { gimbal.index }
 
-    public func send(velocityCommand: Mission.VelocityGimbalCommand, mode: Mission.GimbalMode) {
+    public func send(velocityCommand: Kernel.VelocityGimbalCommand, mode: Kernel.GimbalMode) {
         pendingSpeedRotation = DJIGimbalRotation(
             pitchValue: gimbal.isAdjustPitchSupported ? velocityCommand.velocity.pitch.convertRadiansToDegrees as NSNumber : nil,
             rollValue: gimbal.isAdjustRollSupported ? velocityCommand.velocity.roll.convertRadiansToDegrees as NSNumber : nil,
@@ -190,10 +190,10 @@ public class DJIGimbalAdapter: GimbalAdapter {
 }
 
 extension DJIGimbalState: GimbalStateAdapter {
-    public var missionMode: Mission.GimbalMode { mode.missionValue }
+    public var missionMode: Kernel.GimbalMode { mode.missionValue }
     
-    public var missionOrientation: Mission.Orientation3 {
-        Mission.Orientation3(
+    public var missionOrientation: Kernel.Orientation3 {
+        Kernel.Orientation3(
             x: Double(attitudeInDegrees.pitch.convertDegreesToRadians),
             y: Double(attitudeInDegrees.roll.convertDegreesToRadians),
             z: Double(attitudeInDegrees.yaw.convertDegreesToRadians)

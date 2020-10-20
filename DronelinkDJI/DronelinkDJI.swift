@@ -38,7 +38,7 @@ extension DJIAircraft {
 
 extension DJIFlightControllerState {
     public var location: CLLocation? {
-        if let location = aircraftLocation, isHomeLocationSet, satelliteCount > 0 {
+        if let location = aircraftLocation, satelliteCount > 0 {
             if abs(location.coordinate.latitude) < 0.000001 && abs(location.coordinate.longitude) < 0.000001 {
                 return nil
             }
@@ -54,8 +54,8 @@ extension DJIFlightControllerState {
     public var verticalSpeed: Double { velocityZ == 0 ? 0 : Double(-velocityZ) }
     public var course: Double { Double(atan2(velocityY, velocityX)) }
     
-    public var missionOrientation: Mission.Orientation3 {
-        Mission.Orientation3(
+    public var missionOrientation: Kernel.Orientation3 {
+        Kernel.Orientation3(
             x: attitude.pitch.convertDegreesToRadians,
             y: attitude.roll.convertDegreesToRadians,
             z: attitude.yaw.convertDegreesToRadians
@@ -81,7 +81,7 @@ extension DJIGimbalRotation {
     public static var minTime: TimeInterval { 0.1 }
 }
 
-extension Mission.DroneConnectionFailSafeBehavior {
+extension Kernel.DroneConnectionFailSafeBehavior {
     var djiValue: DJIConnectionFailSafeBehavior {
         switch self {
         case .hover: return .hover
@@ -93,7 +93,7 @@ extension Mission.DroneConnectionFailSafeBehavior {
     }
 }
 
-extension Mission.CameraAEBCount {
+extension Kernel.CameraAEBCount {
     var djiValue: DJICameraPhotoAEBCount {
         switch self {
         case ._3: return .count3
@@ -105,7 +105,7 @@ extension Mission.CameraAEBCount {
     }
 }
 
-extension Mission.CameraAperture {
+extension Kernel.CameraAperture {
     var djiValue: DJICameraAperture {
         switch self {
         case .f1dot6: return .f1Dot6
@@ -147,7 +147,7 @@ extension Mission.CameraAperture {
     }
 }
 
-extension Mission.CameraColor {
+extension Kernel.CameraColor {
     var djiValue: DJICameraColor {
         switch self {
         case .none: return .colorNone
@@ -190,7 +190,7 @@ extension Mission.CameraColor {
     }
 }
 
-extension Mission.CameraExposureCompensation {
+extension Kernel.CameraExposureCompensation {
     var djiValue: DJICameraExposureCompensation {
         switch self {
         case .n50: return .N50
@@ -232,7 +232,7 @@ extension Mission.CameraExposureCompensation {
 }
 
 extension DJICameraExposureCompensation {
-    var missionValue: Mission.CameraExposureCompensation {
+    var missionValue: Kernel.CameraExposureCompensation {
         switch self {
             case .N50: return .n50
             case .N47: return .n47
@@ -272,7 +272,7 @@ extension DJICameraExposureCompensation {
     }
 }
 
-extension Mission.CameraExposureMode {
+extension Kernel.CameraExposureMode {
     var djiValue: DJICameraExposureMode {
         switch self {
         case .program: return .program
@@ -285,7 +285,7 @@ extension Mission.CameraExposureMode {
     }
 }
 
-extension Mission.CameraFileIndexMode {
+extension Kernel.CameraFileIndexMode {
     var djiValue: DJICameraFileIndexMode {
         switch self {
         case .reset: return .reset
@@ -296,7 +296,7 @@ extension Mission.CameraFileIndexMode {
     }
 }
 
-extension Mission.CameraFocusMode {
+extension Kernel.CameraFocusMode {
     var djiValue: DJICameraFocusMode {
         switch self {
         case .manual: return .manual
@@ -308,7 +308,7 @@ extension Mission.CameraFocusMode {
     }
 }
 
-extension Mission.CameraISO {
+extension Kernel.CameraISO {
     var djiValue: DJICameraISO {
         switch self {
         case .auto: return .isoAuto
@@ -328,7 +328,7 @@ extension Mission.CameraISO {
 }
 
 extension DJICameraMode {
-    var missionValue: Mission.CameraMode {
+    var missionValue: Kernel.CameraMode {
         switch self {
         case .shootPhoto: return .photo
         case .recordVideo: return .video
@@ -341,7 +341,7 @@ extension DJICameraMode {
     }
 }
 
-extension Mission.CameraMeteringMode {
+extension Kernel.CameraMeteringMode {
     var djiValue: DJICameraMeteringMode {
         switch self {
         case .center: return .center
@@ -353,7 +353,7 @@ extension Mission.CameraMeteringMode {
     }
 }
 
-extension Mission.CameraMode {
+extension Kernel.CameraMode {
     var djiValue: DJICameraMode {
         switch self {
         case .photo: return .shootPhoto
@@ -367,7 +367,7 @@ extension Mission.CameraMode {
     }
 }
 
-extension Mission.CameraPhotoAspectRatio {
+extension Kernel.CameraPhotoAspectRatio {
     var djiValue: DJICameraPhotoAspectRatio {
         switch self {
         case ._4x3: return .ratio4_3
@@ -379,7 +379,7 @@ extension Mission.CameraPhotoAspectRatio {
     }
 }
 
-extension Mission.CameraPhotoFileFormat {
+extension Kernel.CameraPhotoFileFormat {
     var djiValue: DJICameraPhotoFileFormat {
         switch self {
         case .raw: return .RAW
@@ -395,7 +395,7 @@ extension Mission.CameraPhotoFileFormat {
     }
 }
 
-extension Mission.CameraPhotoMode {
+extension Kernel.CameraPhotoMode {
     var djiValue: DJICameraShootPhotoMode {
         switch self {
         case .single: return .single
@@ -415,7 +415,7 @@ extension Mission.CameraPhotoMode {
     }
 }
 
-extension Mission.CameraVideoFieldOfView {
+extension Kernel.CameraVideoFieldOfView {
     var djiValue: DJICameraVideoFOV {
         switch self {
         case ._default: return .default
@@ -427,7 +427,7 @@ extension Mission.CameraVideoFieldOfView {
     }
 }
 
-extension Mission.CameraShutterSpeed {
+extension Kernel.CameraShutterSpeed {
     var djiValue: DJICameraShutterSpeed {
         switch self {
         case ._1_8000: return .speed1_8000
@@ -512,7 +512,7 @@ extension Mission.CameraShutterSpeed {
     }
 }
 
-extension Mission.CameraStorageLocation {
+extension Kernel.CameraStorageLocation {
     var djiValue: DJICameraStorageLocation {
         switch self {
         case .sdCard: return .sdCard
@@ -523,7 +523,7 @@ extension Mission.CameraStorageLocation {
     }
 }
 
-extension Mission.CameraVideoFileCompressionStandard {
+extension Kernel.CameraVideoFileCompressionStandard {
     var djiValue: DJIVideoFileCompressionStandard {
         switch self {
         case .h264: return .H264
@@ -534,7 +534,7 @@ extension Mission.CameraVideoFileCompressionStandard {
     }
 }
 
-extension Mission.CameraVideoFileFormat {
+extension Kernel.CameraVideoFileFormat {
     var djiValue: DJICameraVideoFileFormat {
         switch self {
         case .mov: return .MOV
@@ -547,7 +547,7 @@ extension Mission.CameraVideoFileFormat {
     }
 }
 
-extension Mission.CameraVideoFrameRate {
+extension Kernel.CameraVideoFrameRate {
     var djiValue: DJICameraVideoFrameRate {
         switch self {
         case ._23dot976: return .rate23dot976FPS
@@ -571,7 +571,7 @@ extension Mission.CameraVideoFrameRate {
     }
 }
 
-extension Mission.CameraVideoResolution {
+extension Kernel.CameraVideoResolution {
     var djiValue: DJICameraVideoResolution {
         switch self {
         case ._336x256: return .resolution336x256
@@ -603,7 +603,7 @@ extension Mission.CameraVideoResolution {
     }
 }
 
-extension Mission.CameraVideoStandard {
+extension Kernel.CameraVideoStandard {
     var djiValue: DJICameraVideoStandard {
         switch self {
         case .pal: return .PAL
@@ -614,7 +614,7 @@ extension Mission.CameraVideoStandard {
     }
 }
 
-extension Mission.CameraWhiteBalancePreset {
+extension Kernel.CameraWhiteBalancePreset {
     var djiValue: DJICameraWhiteBalancePreset {
         switch self {
         case .auto: return .auto
@@ -631,7 +631,7 @@ extension Mission.CameraWhiteBalancePreset {
     }
 }
 
-extension Mission.DroneLightbridgeChannelSelectionMode {
+extension Kernel.DroneLightbridgeChannelSelectionMode {
     var djiValue: DJILightbridgeChannelSelectionMode {
         switch self {
         case .auto: return .auto
@@ -642,7 +642,7 @@ extension Mission.DroneLightbridgeChannelSelectionMode {
     }
 }
 
-extension Mission.DroneLightbridgeFrequencyBand {
+extension Kernel.DroneLightbridgeFrequencyBand {
     var djiValue: DJILightbridgeFrequencyBand {
         switch self {
         case ._2dot4ghz: return .band2Dot4GHz
@@ -654,7 +654,7 @@ extension Mission.DroneLightbridgeFrequencyBand {
     }
 }
 
-extension Mission.DroneOcuSyncChannelSelectionMode {
+extension Kernel.DroneOcuSyncChannelSelectionMode {
     var djiValue: DJIOcuSyncChannelSelectionMode {
         switch self {
         case .auto: return .auto
@@ -665,7 +665,7 @@ extension Mission.DroneOcuSyncChannelSelectionMode {
     }
 }
 
-extension Mission.DroneOcuSyncFrequencyBand {
+extension Kernel.DroneOcuSyncFrequencyBand {
     var djiValue: DJIOcuSyncFrequencyBand {
         switch self {
         case ._2dot4ghz: return .band2Dot4GHz
@@ -678,7 +678,7 @@ extension Mission.DroneOcuSyncFrequencyBand {
 }
 
 extension DJIGimbalMode {
-    var missionValue: Mission.GimbalMode {
+    var missionValue: Kernel.GimbalMode {
         switch self {
         case .yawFollow: return .yawFollow
         case .free: return .free
@@ -690,7 +690,7 @@ extension DJIGimbalMode {
 }
 
 
-extension Mission.GimbalMode {
+extension Kernel.GimbalMode {
     var djiValue: DJIGimbalMode {
         switch self {
         case .yawFollow: return .yawFollow

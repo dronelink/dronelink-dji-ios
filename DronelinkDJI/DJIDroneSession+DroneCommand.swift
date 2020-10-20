@@ -8,20 +8,20 @@
 import DronelinkCore
 
 extension DJIDroneSession {
-    func execute(droneCommand: MissionDroneCommand, finished: @escaping CommandFinished) -> Error? {
-        if let command = droneCommand as? MissionDroneFlightAssistantCommand {
+    func execute(droneCommand: KernelDroneCommand, finished: @escaping CommandFinished) -> Error? {
+        if let command = droneCommand as? KernelDroneFlightAssistantCommand {
             return execute(flightAssistantCommand: command, finished: finished)
         }
         
-        if let command = droneCommand as? MissionDroneLandingGearCommand {
+        if let command = droneCommand as? KernelDroneLandingGearCommand {
             return execute(landingGearCommand: command, finished: finished)
         }
         
-        if let command = droneCommand as? MissionDroneLightbridgeCommand {
+        if let command = droneCommand as? KernelDroneLightbridgeCommand {
             return execute(lightbridgeCommand: command, finished: finished)
         }
         
-        if let command = droneCommand as? MissionDroneOcuSyncCommand {
+        if let command = droneCommand as? KernelDroneOcuSyncCommand {
             return execute(ocuSyncCommand: command, finished: finished)
         }
         
@@ -29,7 +29,7 @@ extension DJIDroneSession {
             return "MissionDisengageReason.drone.control.unavailable.title".localized
         }
         
-        if let command = droneCommand as? Mission.ConnectionFailSafeBehaviorDroneCommand {
+        if let command = droneCommand as? Kernel.ConnectionFailSafeBehaviorDroneCommand {
             flightController.getConnectionFailSafeBehavior { (current, error) in
                 Command.conditionallyExecute(current != command.connectionFailSafeBehavior.djiValue, error: error, finished: finished) {
                     flightController.setConnectionFailSafeBehavior(command.connectionFailSafeBehavior.djiValue, withCompletion: finished)
@@ -38,7 +38,7 @@ extension DJIDroneSession {
             return nil
         }
         
-        if let command = droneCommand as? Mission.LowBatteryWarningThresholdDroneCommand {
+        if let command = droneCommand as? Kernel.LowBatteryWarningThresholdDroneCommand {
             flightController.getLowBatteryWarningThreshold { (current, error) in
                 let target = UInt8(command.lowBatteryWarningThreshold * 100)
                 Command.conditionallyExecute(current != target, error: error, finished: finished) {
@@ -48,7 +48,7 @@ extension DJIDroneSession {
             return nil
         }
 
-        if let command = droneCommand as? Mission.MaxAltitudeDroneCommand {
+        if let command = droneCommand as? Kernel.MaxAltitudeDroneCommand {
             flightController.getMaxFlightHeight { (current, error) in
                 let target = UInt(command.maxAltitude)
                 Command.conditionallyExecute(current != target, error: error, finished: finished) {
@@ -58,7 +58,7 @@ extension DJIDroneSession {
             return nil
         }
 
-        if let command = droneCommand as? Mission.MaxDistanceDroneCommand {
+        if let command = droneCommand as? Kernel.MaxDistanceDroneCommand {
             flightController.getMaxFlightRadius { (current, error) in
                 let target = UInt(command.maxDistance)
                 Command.conditionallyExecute(current != target, error: error, finished: finished) {
@@ -68,7 +68,7 @@ extension DJIDroneSession {
             return nil
         }
 
-        if let command = droneCommand as? Mission.MaxDistanceLimitationDroneCommand {
+        if let command = droneCommand as? Kernel.MaxDistanceLimitationDroneCommand {
             flightController.getMaxFlightRadiusLimitationEnabled { (current, error) in
                 Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
                     flightController.setMaxFlightRadiusLimitationEnabled(command.enabled, withCompletion: finished)
@@ -77,7 +77,7 @@ extension DJIDroneSession {
             return nil
         }
 
-        if let command = droneCommand as? Mission.SmartReturnHomeDroneCommand {
+        if let command = droneCommand as? Kernel.SmartReturnHomeDroneCommand {
             flightController.getSmartReturnToHomeEnabled { (current, error) in
                 Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
                     flightController.setSmartReturnToHomeEnabled(command.enabled, withCompletion: finished)
@@ -86,7 +86,7 @@ extension DJIDroneSession {
             return nil
         }
 
-        if let command = droneCommand as? Mission.ReturnHomeAltitudeDroneCommand {
+        if let command = droneCommand as? Kernel.ReturnHomeAltitudeDroneCommand {
             flightController.getGoHomeHeightInMeters { (current, error) in
                 let target = UInt(command.returnHomeAltitude)
                 Command.conditionallyExecute(current != target, error: error, finished: finished) {
@@ -96,7 +96,7 @@ extension DJIDroneSession {
             return nil
         }
         
-        if let command = droneCommand as? Mission.SeriousLowBatteryWarningThresholdDroneCommand {
+        if let command = droneCommand as? Kernel.SeriousLowBatteryWarningThresholdDroneCommand {
             flightController.getSeriousLowBatteryWarningThreshold { (current, error) in
                 let target = UInt8(command.seriousLowBatteryWarningThreshold * 100)
                 Command.conditionallyExecute(current != target, error: error, finished: finished) {
@@ -106,7 +106,7 @@ extension DJIDroneSession {
             return nil
         }
         
-        if let command = droneCommand as? Mission.VisionAssistedPositioningDroneCommand {
+        if let command = droneCommand as? Kernel.VisionAssistedPositioningDroneCommand {
             flightController.getVisionAssistedPositioningEnabled { (current, error) in
                 Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
                     flightController.setVisionAssistedPositioningEnabled(command.enabled, withCompletion: finished)
@@ -118,12 +118,12 @@ extension DJIDroneSession {
         return "MissionDisengageReason.command.type.unhandled".localized
     }
     
-    func execute(flightAssistantCommand: MissionDroneFlightAssistantCommand, finished: @escaping CommandFinished) -> Error? {
+    func execute(flightAssistantCommand: KernelDroneFlightAssistantCommand, finished: @escaping CommandFinished) -> Error? {
         guard let flightAssistant = adapter.drone.flightController?.flightAssistant else {
             return "MissionDisengageReason.drone.flight.assistant.unavailable.title".localized
         }
         
-        if let command = flightAssistantCommand as? Mission.CollisionAvoidanceDroneCommand {
+        if let command = flightAssistantCommand as? Kernel.CollisionAvoidanceDroneCommand {
             flightAssistant.getCollisionAvoidanceEnabled { (current, error) in
                 Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
                     flightAssistant.setCollisionAvoidanceEnabled(command.enabled, withCompletion: finished)
@@ -132,7 +132,7 @@ extension DJIDroneSession {
             return nil
         }
         
-        if let command = flightAssistantCommand as? Mission.LandingProtectionDroneCommand {
+        if let command = flightAssistantCommand as? Kernel.LandingProtectionDroneCommand {
             flightAssistant.getLandingProtectionEnabled { (current, error) in
                 Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
                     flightAssistant.setLandingProtectionEnabled(command.enabled, withCompletion: finished)
@@ -141,7 +141,7 @@ extension DJIDroneSession {
             return nil
         }
         
-        if let command = flightAssistantCommand as? Mission.PrecisionLandingDroneCommand {
+        if let command = flightAssistantCommand as? Kernel.PrecisionLandingDroneCommand {
             flightAssistant.getPrecisionLandingEnabled { (current, error) in
                 Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
                     flightAssistant.setPrecisionLandingEnabled(command.enabled, withCompletion: finished)
@@ -150,7 +150,7 @@ extension DJIDroneSession {
             return nil
         }
         
-        if let command = flightAssistantCommand as? Mission.ReturnHomeObstacleAvoidanceDroneCommand {
+        if let command = flightAssistantCommand as? Kernel.ReturnHomeObstacleAvoidanceDroneCommand {
             flightAssistant.getRTHObstacleAvoidanceEnabled { (current, error) in
                 Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
                     flightAssistant.setRTHObstacleAvoidanceEnabled(command.enabled, withCompletion: finished)
@@ -159,7 +159,7 @@ extension DJIDroneSession {
             return nil
         }
         
-        if let command = flightAssistantCommand as? Mission.ReturnHomeRemoteObstacleAvoidanceDroneCommand {
+        if let command = flightAssistantCommand as? Kernel.ReturnHomeRemoteObstacleAvoidanceDroneCommand {
             flightAssistant.getRTHRemoteObstacleAvoidanceEnabled { (current, error) in
                 Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
                     flightAssistant.setRTHRemoteObstacleAvoidanceEnabled(command.enabled, withCompletion: finished)
@@ -168,7 +168,7 @@ extension DJIDroneSession {
             return nil
         }
         
-        if let command = flightAssistantCommand as? Mission.UpwardsAvoidanceDroneCommand {
+        if let command = flightAssistantCommand as? Kernel.UpwardsAvoidanceDroneCommand {
             flightAssistant.getUpwardAvoidanceEnabled { (current, error) in
                 Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
                     flightAssistant.setUpwardAvoidanceEnabled(command.enabled, withCompletion: finished)
@@ -180,12 +180,12 @@ extension DJIDroneSession {
         return "MissionDisengageReason.command.type.unhandled".localized
     }
     
-    func execute(landingGearCommand: MissionDroneLandingGearCommand, finished: @escaping CommandFinished) -> Error? {
+    func execute(landingGearCommand: KernelDroneLandingGearCommand, finished: @escaping CommandFinished) -> Error? {
         guard let landingGear = adapter.drone.flightController?.landingGear else {
             return "MissionDisengageReason.drone.landing.gear.unavailable.title".localized
         }
         
-        if let command = landingGearCommand as? Mission.LandingGearAutomaticMovementDroneCommand {
+        if let command = landingGearCommand as? Kernel.LandingGearAutomaticMovementDroneCommand {
             landingGear.getAutomaticMovementEnabled { (current, error) in
                 Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
                     landingGear.setAutomaticMovementEnabled(command.enabled, withCompletion: finished)
@@ -194,14 +194,14 @@ extension DJIDroneSession {
             return nil
         }
 
-        if landingGearCommand is Mission.LandingGearDeployDroneCommand {
+        if landingGearCommand is Kernel.LandingGearDeployDroneCommand {
             Command.conditionallyExecute(!(landingGear.state == .deployed || landingGear.state == .deploying), finished: finished) {
                 landingGear.deploy(completion: finished)
             }
             return nil
         }
         
-        if landingGearCommand is Mission.LandingGearRetractDroneCommand {
+        if landingGearCommand is Kernel.LandingGearRetractDroneCommand {
             Command.conditionallyExecute(!(landingGear.state == .retracted || landingGear.state == .retracting), finished: finished) {
                 landingGear.retract(completion: finished)
             }
@@ -211,12 +211,12 @@ extension DJIDroneSession {
         return "MissionDisengageReason.command.type.unhandled".localized
     }
     
-    func execute(lightbridgeCommand: MissionDroneLightbridgeCommand, finished: @escaping CommandFinished) -> Error? {
+    func execute(lightbridgeCommand: KernelDroneLightbridgeCommand, finished: @escaping CommandFinished) -> Error? {
         guard let lightbridgeLink = adapter.drone.airLink?.lightbridgeLink else {
             return "MissionDisengageReason.drone.lightbridge.unavailable.title".localized
         }
         
-        if let command = lightbridgeCommand as? Mission.LightbridgeChannelDroneCommand {
+        if let command = lightbridgeCommand as? Kernel.LightbridgeChannelDroneCommand {
             lightbridgeLink.getChannelNumber { (current, error) in
                 let target = Int32(command.lightbridgeChannel)
                 Command.conditionallyExecute(current != target, error: error, finished: finished) {
@@ -226,7 +226,7 @@ extension DJIDroneSession {
             return nil
         }
 
-        if let command = lightbridgeCommand as? Mission.LightbridgeChannelSelectionModeDroneCommand {
+        if let command = lightbridgeCommand as? Kernel.LightbridgeChannelSelectionModeDroneCommand {
             lightbridgeLink.getChannelSelectionMode { (current, error) in
                 Command.conditionallyExecute(current != command.lightbridgeChannelSelectionMode.djiValue, error: error, finished: finished) {
                     lightbridgeLink.setChannelSelectionMode(command.lightbridgeChannelSelectionMode.djiValue, withCompletion: finished)
@@ -235,7 +235,7 @@ extension DJIDroneSession {
             return nil
         }
 
-        if let command = lightbridgeCommand as? Mission.LightbridgeFrequencyBandDroneCommand {
+        if let command = lightbridgeCommand as? Kernel.LightbridgeFrequencyBandDroneCommand {
             lightbridgeLink.getFrequencyBand { (current, error) in
                 Command.conditionallyExecute(current != command.lightbridgeFrequencyBand.djiValue, error: error, finished: finished) {
                     lightbridgeLink.setFrequencyBand(command.lightbridgeFrequencyBand.djiValue, withCompletion: finished)
@@ -247,12 +247,12 @@ extension DJIDroneSession {
         return "MissionDisengageReason.command.type.unhandled".localized
     }
     
-    func execute(ocuSyncCommand: MissionDroneOcuSyncCommand, finished: @escaping CommandFinished) -> Error? {
+    func execute(ocuSyncCommand: KernelDroneOcuSyncCommand, finished: @escaping CommandFinished) -> Error? {
         guard let ocuSyncLink = adapter.drone.airLink?.ocuSyncLink else {
             return "MissionDisengageReason.drone.ocusync.unavailable.title".localized
         }
         
-        if let command = ocuSyncCommand as? Mission.OcuSyncChannelDroneCommand {
+        if let command = ocuSyncCommand as? Kernel.OcuSyncChannelDroneCommand {
             ocuSyncLink.getChannelNumber { (current, error) in
                 let target = UInt(command.ocuSyncChannel)
                 Command.conditionallyExecute(current != target, error: error, finished: finished) {
@@ -262,7 +262,7 @@ extension DJIDroneSession {
             return nil
         }
 
-        if let command = ocuSyncCommand as? Mission.OcuSyncChannelSelectionModeDroneCommand {
+        if let command = ocuSyncCommand as? Kernel.OcuSyncChannelSelectionModeDroneCommand {
             ocuSyncLink.getChannelSelectionMode { (current, error) in
                 Command.conditionallyExecute(current != command.ocuSyncChannelSelectionMode.djiValue, error: error, finished: finished) {
                     ocuSyncLink.setChannelSelectionMode(command.ocuSyncChannelSelectionMode.djiValue, withCompletion: finished)
@@ -271,7 +271,7 @@ extension DJIDroneSession {
             return nil
         }
 
-        if let command = ocuSyncCommand as? Mission.OcuSyncFrequencyBandDroneCommand {
+        if let command = ocuSyncCommand as? Kernel.OcuSyncFrequencyBandDroneCommand {
             ocuSyncLink.getFrequencyBand { (current, error) in
                 Command.conditionallyExecute(current != command.ocuSyncFrequencyBand.djiValue, error: error, finished: finished) {
                     ocuSyncLink.setFrequencyBand(command.ocuSyncFrequencyBand.djiValue, withCompletion: finished)

@@ -9,7 +9,7 @@ import DronelinkCore
 import DJISDK
 
 extension DJIDroneSession {
-    func execute(gimbalCommand: MissionGimbalCommand, finished: @escaping CommandFinished) -> Error? {
+    func execute(gimbalCommand: KernelGimbalCommand, finished: @escaping CommandFinished) -> Error? {
         guard
             let gimbal = adapter.drone.gimbal(channel: gimbalCommand.channel),
             let state = gimbalState(channel: gimbalCommand.channel)?.value
@@ -17,7 +17,7 @@ extension DJIDroneSession {
             return "MissionDisengageReason.drone.gimbal.unavailable.title".localized
         }
         
-        if let command = gimbalCommand as? Mission.ModeGimbalCommand {
+        if let command = gimbalCommand as? Kernel.ModeGimbalCommand {
             Command.conditionallyExecute(command.mode != state.missionMode, finished: finished) {
                 gimbal.setMode(command.mode.djiValue) { error in
                     if let error = error {
@@ -39,7 +39,7 @@ extension DJIDroneSession {
             return nil
         }
         
-        if let command = gimbalCommand as? Mission.OrientationGimbalCommand {
+        if let command = gimbalCommand as? Kernel.OrientationGimbalCommand {
             if (command.orientation.pitch == nil && command.orientation.roll == nil && command.orientation.yaw == nil) {
                 finished(nil)
                 return nil
@@ -79,7 +79,7 @@ extension DJIDroneSession {
             return nil
         }
         
-        if let command = gimbalCommand as? Mission.YawSimultaneousFollowGimbalCommand {
+        if let command = gimbalCommand as? Kernel.YawSimultaneousFollowGimbalCommand {
             gimbal.getYawSimultaneousFollowEnabled { (current, error) in
                 Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
                     gimbal.setYawSimultaneousFollowEnabled(command.enabled, withCompletion: finished)

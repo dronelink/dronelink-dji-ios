@@ -12,6 +12,10 @@
 "MissionDisengageReason.drone.control.override.title" = "Control Override";
 "MissionDisengageReason.take.off.failed.title" = "Unable to Take Off";
 "MissionDisengageReason.take.control.failed.title" = "Unable to Take Control";
+"MissionDisengageReason.drone.max.altitude.title" = "Max Altitude Reached";
+"MissionDisengageReason.drone.max.altitude.details" = "Increase the max altitude setting to continue.";
+"MissionDisengageReason.drone.max.distance.title" = "Max Distance Reached";
+"MissionDisengageReason.drone.max.distance.details" = "Increase the max distance setting to continue.";
 "MissionDisengageReason.drone.flight.assistant.unavailable.title" = "Flight Assistant Unavailable";
 "MissionDisengageReason.drone.landing.gear.unavailable.title" = "Landing Gear Unavailable";
 "MissionDisengageReason.drone.lightbridge.unavailable.title" = "Lightbridge Link Unavailable";
