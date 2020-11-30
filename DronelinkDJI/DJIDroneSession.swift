@@ -101,12 +101,7 @@ public class DJIDroneSession: NSObject {
             }
         }
         
-        flightController.getSerialNumber { serialNumber, error in
-            self._serialNumber = serialNumber
-            if let serialNumber = serialNumber {
-                os_log(.info, log: self.log, "Serial number: %{public}s", serialNumber)
-            }
-        }
+        initSerialNumber()
         
         flightController.setMultipleFlightModeEnabled(true) { error in
             if error == nil {
@@ -132,6 +127,22 @@ public class DJIDroneSession: NSObject {
             }
             else {
                 self._airLinkSignalQuality = nil
+            }
+        }
+    }
+    
+    private func initSerialNumber(attempt: Int = 0) {
+        if attempt < 3, let flightController = adapter.drone.flightController {
+            flightController.getSerialNumber { serialNumber, error in
+                if error != nil {
+                    self.initSerialNumber(attempt: attempt + 1)
+                    return
+                }
+                
+                self._serialNumber = serialNumber
+                if let serialNumber = serialNumber {
+                    os_log(.info, log: self.log, "Serial number: %{public}s", serialNumber)
+                }
             }
         }
     }
@@ -284,7 +295,7 @@ public class DJIDroneSession: NSObject {
             self.cameraCommands.process()
             self.gimbalCommands.process()
             
-            if Dronelink.shared.missionExecutor?.engaged ?? false {
+            if Dronelink.shared.missionExecutor?.engaged ?? false || Dronelink.shared.modeExecutor?.engaged ?? false {
                 self.gimbalSerialQueue.async {
                     //work-around for this issue: https://support.dronelink.com/hc/en-us/community/posts/360034749773-Seeming-to-have-a-Heading-error-
                     self.adapter.gimbals?.forEach { gimbalAdapter in
@@ -324,7 +335,7 @@ public class DJIDroneSession: NSObject {
                  DJIAircraftModelNamePhantom4ProV2,
                  DJIAircraftModelNamePhantom4Advanced,
                  DJIAircraftModelNamePhantom4RTK:
-                return gimbalState.missionOrientation.yaw.angleDifferenceSigned(angle: missionOrientation.yaw)
+                return gimbalState.kernelOrientation.yaw.angleDifferenceSigned(angle: kernelOrientation.yaw)
             default:
                 break
             }
@@ -346,7 +357,7 @@ public class DJIDroneSession: NSObject {
                 mode: .absoluteAngle,
                 ignore: false)
             
-            if gimbal.isAdjustYawSupported, (gimbalState(channel: gimbal.index)?.value.missionMode ?? .yawFollow) != .yawFollow {
+            if gimbal.isAdjustYawSupported, (gimbalState(channel: gimbal.index)?.value.kernelMode ?? .yawFollow) != .yawFollow {
                 gimbal.setMode(.yawFollow) { yawFollowError in
                     //if we don't give it a delay, it ignores the next command!
                     DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
@@ -570,7 +581,7 @@ extension DJIDroneSession: DroneStateAdapter {
         }
         return minObstacleDistance > 0 ? minObstacleDistance : nil
     }
-    public var missionOrientation: Kernel.Orientation3 { flightControllerState?.value.missionOrientation ?? Kernel.Orientation3() }
+    public var kernelOrientation: Kernel.Orientation3 { flightControllerState?.value.kernelOrientation ?? Kernel.Orientation3() }
     public var gpsSatellites: Int? {
         if let satelliteCount = flightControllerState?.value.satelliteCount {
             return Int(satelliteCount)
@@ -672,12 +683,12 @@ extension DJIDroneSession: DJICameraDelegate {
     }
     
     public func camera(_ camera: DJICamera, didGenerateNewMediaFile newMedia: DJIMediaFile) {
-            var orientation = self.missionOrientation
+            var orientation = self.kernelOrientation
             if let gimbalState = self.gimbalState(channel: camera.index)?.value {
-                orientation.x = gimbalState.missionOrientation.x
-                orientation.y = gimbalState.missionOrientation.y
-                if gimbalState.missionMode == .free {
-                    orientation.z = gimbalState.missionOrientation.z
+                orientation.x = gimbalState.kernelOrientation.x
+                orientation.y = gimbalState.kernelOrientation.y
+                if gimbalState.kernelMode == .free {
+                    orientation.z = gimbalState.kernelOrientation.z
                 }
             }
             else {

@@ -6,6 +6,7 @@
 //  Copyright © 2019 Dronelink. All rights reserved.
 //
 import DronelinkCore
+import CoreLocation
 
 extension DJIDroneSession {
     func execute(droneCommand: KernelDroneCommand, finished: @escaping CommandFinished) -> Error? {
@@ -35,6 +36,11 @@ extension DJIDroneSession {
                     flightController.setConnectionFailSafeBehavior(command.connectionFailSafeBehavior.djiValue, withCompletion: finished)
                 }
             }
+            return nil
+        }
+        
+        if let command = droneCommand as? Kernel.HomeLocationDroneCommand {
+            flightController.setHomeLocation(CLLocation(latitude: command.coordinate.latitude, longitude: command.coordinate.longitude), withCompletion: finished)
             return nil
         }
         

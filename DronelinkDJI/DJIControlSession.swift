@@ -18,6 +18,8 @@ public class DJIControlSession: DroneControlSession {
         case TakeoffStart
         case TakeoffAttempting
         case TakeoffComplete
+        case SoftSwitchJoystickModeStart
+        case SoftSwitchJoystickModeAttempting
         case VirtualStickStart
         case VirtualStickAttempting
         case FlightModeJoystickAttempting
@@ -95,9 +97,36 @@ public class DJIControlSession: DroneControlSession {
             
         case .TakeoffComplete:
             if flightControllerState.value.isFlying && flightControllerState.value.flightMode != .autoTakeoff {
+                state = .SoftSwitchJoystickModeStart
+                return activate()
+            }
+            return nil
+            
+        case .SoftSwitchJoystickModeStart:
+            guard let remoteController = droneSession.adapter.drone.remoteController else {
                 state = .VirtualStickStart
                 return activate()
             }
+            
+            state = .SoftSwitchJoystickModeAttempting
+            os_log(.info, log: log, "Verifying soft switch joystick mode")
+            remoteController.getSoftSwitchJoyStickMode { (mode: DJIRCSoftSwitchJoyStickMode, error: Error?) in
+                if error != nil && mode != ._P {
+                    os_log(.info, log: self.log, "Changing soft switch joystick mode to P")
+                    remoteController.setSoftSwitchJoyStickMode(._P) { error in
+                        //if try to activate virtual stick immediately it can fail, so delay
+                        DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
+                            self.state = .VirtualStickStart
+                        }
+                    }
+                    return
+                }
+                
+                self.state = .VirtualStickStart
+            }
+            return nil
+            
+        case .SoftSwitchJoystickModeAttempting:
             return nil
             
         case .VirtualStickStart:

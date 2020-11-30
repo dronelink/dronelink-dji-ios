@@ -54,7 +54,7 @@ extension DJIFlightControllerState {
     public var verticalSpeed: Double { velocityZ == 0 ? 0 : Double(-velocityZ) }
     public var course: Double { Double(atan2(velocityY, velocityX)) }
     
-    public var missionOrientation: Kernel.Orientation3 {
+    public var kernelOrientation: Kernel.Orientation3 {
         Kernel.Orientation3(
             x: attitude.pitch.convertDegreesToRadians,
             y: attitude.roll.convertDegreesToRadians,
@@ -88,7 +88,6 @@ extension Kernel.DroneConnectionFailSafeBehavior {
         case .returnHome: return .goHome
         case .autoLand: return .landing
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -100,7 +99,6 @@ extension Kernel.CameraAEBCount {
         case ._5: return .count5
         case ._7: return .count7
         case .unknown: return .countUnknown
-        @unknown default: return .countUnknown
         }
     }
 }
@@ -142,7 +140,6 @@ extension Kernel.CameraAperture {
         case .f20: return .F20
         case .f22: return .F22
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -185,7 +182,6 @@ extension Kernel.CameraColor {
         case .filmI: return .colorFilmI
         case .hlg: return .colorHLG
         case .unknown: return .colorUnknown
-        @unknown default: return .colorUnknown
         }
     }
 }
@@ -226,13 +222,12 @@ extension Kernel.CameraExposureCompensation {
         case .p50: return .P50
         case .fixed: return .fixed
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
 
 extension DJICameraExposureCompensation {
-    var missionValue: Kernel.CameraExposureCompensation {
+    var kernelValue: Kernel.CameraExposureCompensation {
         switch self {
             case .N50: return .n50
             case .N47: return .n47
@@ -267,7 +262,7 @@ extension DJICameraExposureCompensation {
             case .P50: return .p50
             case .fixed: return .fixed
             case .unknown: return .unknown
-            @unknown default: return .unknown
+            default: return .unknown
         }
     }
 }
@@ -280,7 +275,6 @@ extension Kernel.CameraExposureMode {
         case .aperturePriority: return .aperturePriority
         case .manual: return .manual
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -291,7 +285,6 @@ extension Kernel.CameraFileIndexMode {
         case .reset: return .reset
         case .sequence: return .sequence
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -303,7 +296,6 @@ extension Kernel.CameraFocusMode {
         case .auto: return .auto
         case .autoContinuous: return .AFC
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -322,13 +314,12 @@ extension Kernel.CameraISO {
         case ._12800: return .ISO12800
         case ._25600: return .ISO25600
         case .unknown: return .isoUnknown
-        @unknown default: return .isoUnknown
         }
     }
 }
 
 extension DJICameraMode {
-    var missionValue: Kernel.CameraMode {
+    var kernelValue: Kernel.CameraMode {
         switch self {
         case .shootPhoto: return .photo
         case .recordVideo: return .video
@@ -336,7 +327,7 @@ extension DJICameraMode {
         case .mediaDownload: return .download
         case .broadcast: return .broadcast
         case .unknown: return .unknown
-        @unknown default: return .unknown
+        default: return .unknown
         }
     }
 }
@@ -348,7 +339,6 @@ extension Kernel.CameraMeteringMode {
         case .average: return .average
         case .spot: return .spot
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -362,7 +352,6 @@ extension Kernel.CameraMode {
         case .download: return .mediaDownload
         case .broadcast: return .broadcast
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -374,7 +363,6 @@ extension Kernel.CameraPhotoAspectRatio {
         case ._16x9: return .ratio16_9
         case ._3x2: return .ratio3_2
         case .unknown: return .ratioUnknown
-        @unknown default: return .ratioUnknown
         }
     }
 }
@@ -390,7 +378,6 @@ extension Kernel.CameraPhotoFileFormat {
         case .tiff14bitLinearLowTempResolution: return .tiff14BitLinearLowTempResolution
         case .tiff14bitLinearHighTempResolution: return .tiff14BitLinearHighTempResolution
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -410,7 +397,6 @@ extension Kernel.CameraPhotoMode {
         case .ehdr: return .EHDR
         case .hyperLight: return .hyperLight
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -422,7 +408,6 @@ extension Kernel.CameraVideoFieldOfView {
         case .narrow: return .narrow
         case .wide: return .wide
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -506,8 +491,7 @@ extension Kernel.CameraShutterSpeed {
         case ._23: return .speed23
         case ._25: return .speed25
         case ._30: return .speed30
-        case .unknown: return .speedUnknown
-        @unknown default: return .speedUnknown
+        case .unknown: return .speed1Dot3
         }
     }
 }
@@ -518,7 +502,6 @@ extension Kernel.CameraStorageLocation {
         case .sdCard: return .sdCard
         case ._internal: return .internalStorage
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -529,7 +512,6 @@ extension Kernel.CameraVideoFileCompressionStandard {
         case .h264: return .H264
         case .h265: return .H265
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -542,7 +524,6 @@ extension Kernel.CameraVideoFileFormat {
         case .tiffSequence: return .tiffSequence
         case .seq: return .SEQ
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -566,7 +547,6 @@ extension Kernel.CameraVideoFrameRate {
         case ._120: return .rate120FPS
         case ._8dot7: return .rate8dot7FPS
         case .unknown: return .rateUnknown
-        @unknown default: return .rateUnknown
         }
     }
 }
@@ -598,7 +578,6 @@ extension Kernel.CameraVideoResolution {
         case .max: return .resolutionMax
         case .noSSDVideo: return .resolutionNoSSDVideo
         case .unknown: return .resolutionUnknown
-        @unknown default: return .resolutionUnknown
         }
     }
 }
@@ -609,7 +588,6 @@ extension Kernel.CameraVideoStandard {
         case .pal: return .PAL
         case .ntsc: return .NTSC
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -626,7 +604,6 @@ extension Kernel.CameraWhiteBalancePreset {
         case .custom: return .custom
         case .neutral: return .neutral
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -637,7 +614,6 @@ extension Kernel.DroneLightbridgeChannelSelectionMode {
         case .auto: return .auto
         case .manual: return .manual
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -649,7 +625,6 @@ extension Kernel.DroneLightbridgeFrequencyBand {
         case ._5dot7ghz: return .band5Dot7GHz
         case ._5dot8ghz: return .band5Dot8GHz
         case .unknown: return .bandUnknown
-        @unknown default: return .bandUnknown
         }
     }
 }
@@ -660,7 +635,6 @@ extension Kernel.DroneOcuSyncChannelSelectionMode {
         case .auto: return .auto
         case .manual: return .manual
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
@@ -672,19 +646,18 @@ extension Kernel.DroneOcuSyncFrequencyBand {
         case ._5dot8ghz: return .band5Dot8GHz
         case .dual: return .bandDual
         case .unknown: return .bandUnknown
-        @unknown default: return .bandUnknown
         }
     }
 }
 
 extension DJIGimbalMode {
-    var missionValue: Kernel.GimbalMode {
+    var kernelValue: Kernel.GimbalMode {
         switch self {
         case .yawFollow: return .yawFollow
         case .free: return .free
         case .FPV: return .fpv
         case .unknown: return .unknown
-        @unknown default: return .unknown
+        default: return .unknown
         }
     }
 }
@@ -697,7 +670,6 @@ extension Kernel.GimbalMode {
         case .free: return .free
         case .fpv: return .FPV
         case .unknown: return .unknown
-        @unknown default: return .unknown
         }
     }
 }
