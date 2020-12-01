@@ -162,12 +162,14 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var isCapturingVideo: Bool { systemState.isCapturingVideo }
     public var isCapturing: Bool { systemState.isCapturing }
     public var isSDCardInserted: Bool { storageState?.isInserted ?? true }
-    public var kernelMode: Kernel.CameraMode { systemState.kernelMode }
-    public var kernelExposureCompensation: Kernel.CameraExposureCompensation { exposureSettings?.exposureCompensation.kernelValue ?? .unknown }
-    public var kernelISO: Kernel.CameraISO { .unknown } //FIXME
-    public var kernelShutterSpeed: Kernel.CameraShutterSpeed { .unknown } //FIXME
-    public var kernelAperture: Kernel.CameraAperture { .unknown } //FIXME
-    public var kernelWhiteBalancePreset: Kernel.CameraWhiteBalancePreset { .unknown } //FIXME
+    public var mode: Kernel.CameraMode { systemState.mode.kernelValue }
+    public var photoMode: Kernel.CameraPhotoMode? { nil } //FIXME
+    public var photoInterval: Int? { nil } //FIXME
+    public var exposureCompensation: Kernel.CameraExposureCompensation { exposureSettings?.exposureCompensation.kernelValue ?? .unknown }
+    public var iso: Kernel.CameraISO { .unknown } //FIXME
+    public var shutterSpeed: Kernel.CameraShutterSpeed { .unknown } //FIXME
+    public var aperture: Kernel.CameraAperture { .unknown } //FIXME
+    public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset { .unknown } //FIXME
     public var lensDetails: String? { lensInformation }
 }
 
@@ -175,7 +177,6 @@ extension DJICameraSystemState {
     public var isCapturingPhotoInterval: Bool { isShootingIntervalPhoto }
     public var isCapturingVideo: Bool { isRecording }
     public var isCapturing: Bool { isRecording || isShootingSinglePhoto || isShootingSinglePhotoInRAWFormat || isShootingIntervalPhoto || isShootingBurstPhoto || isShootingRAWBurstPhoto || isShootingShallowFocusPhoto || isShootingPanoramaPhoto }
-    public var kernelMode: Kernel.CameraMode { mode.kernelValue }
 }
 
 public class DJIGimbalAdapter: GimbalAdapter {
@@ -198,8 +199,7 @@ public class DJIGimbalAdapter: GimbalAdapter {
         pendingSpeedRotation = DJIGimbalRotation(
             pitchValue: gimbal.isAdjustPitchSupported ? max(-90, min(90, velocityCommand.velocity.pitch.convertRadiansToDegrees)) as NSNumber : nil,
             rollValue: gimbal.isAdjustRollSupported ? max(-90, min(90, velocityCommand.velocity.roll.convertRadiansToDegrees)) as NSNumber : nil,
-            //KLUGE: see comment in DJIDroneSession+GimbalCommand.swift on Kernel.OrientationGimbalCommand
-            yawValue: /*mode == .free &&*/ gimbal.isAdjustYawSupported ? velocityCommand.velocity.yaw.convertRadiansToDegrees as NSNumber : nil,
+            yawValue: gimbal.isAdjustYawSupported ? velocityCommand.velocity.yaw.convertRadiansToDegrees as NSNumber : nil,
             time: DJIGimbalRotation.minTime,
             mode: .speed,
             ignore: false)
@@ -214,14 +214,20 @@ public class DJIGimbalAdapter: GimbalAdapter {
     }
 }
 
-extension DJIGimbalState: GimbalStateAdapter {
-    public var kernelMode: Kernel.GimbalMode { mode.kernelValue }
+public class DJIGimbalStateAdapter: GimbalStateAdapter {
+    public let gimbalState: DJIGimbalState
     
-    public var kernelOrientation: Kernel.Orientation3 {
+    public init(gimbalState: DJIGimbalState) {
+        self.gimbalState = gimbalState
+    }
+
+    public var mode: Kernel.GimbalMode { gimbalState.mode.kernelValue }
+    
+    public var orientation: Kernel.Orientation3 {
         Kernel.Orientation3(
-            x: Double(attitudeInDegrees.pitch.convertDegreesToRadians),
-            y: Double(attitudeInDegrees.roll.convertDegreesToRadians),
-            z: Double(attitudeInDegrees.yaw.convertDegreesToRadians)
+            x: Double(gimbalState.attitudeInDegrees.pitch.convertDegreesToRadians),
+            y: Double(gimbalState.attitudeInDegrees.roll.convertDegreesToRadians),
+            z: Double(gimbalState.attitudeInDegrees.yaw.convertDegreesToRadians)
         )
     }
 }
@@ -229,38 +235,44 @@ extension DJIGimbalState: GimbalStateAdapter {
 extension DJIRemoteController: RemoteControllerAdapter {
 }
 
-extension DJIRCHardwareState: RemoteControllerStateAdapter {
-    public var kernelLeftStick: Kernel.RemoteControllerStick {
+public class DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
+    public let rcHardwareState: DJIRCHardwareState
+    
+    public init(rcHardwareState: DJIRCHardwareState) {
+        self.rcHardwareState = rcHardwareState
+    }
+    
+    public var leftStick: Kernel.RemoteControllerStick {
         Kernel.RemoteControllerStick(
-            x: Double(leftStick.horizontalPosition) / 660,
-            y: Double(leftStick.verticalPosition) / 660)
+            x: Double(rcHardwareState.leftStick.horizontalPosition) / 660,
+            y: Double(rcHardwareState.leftStick.verticalPosition) / 660)
     }
     
-    public var kernelLeftWheel: Kernel.RemoteControllerWheel {
-        Kernel.RemoteControllerWheel(present: true, pressed: false, value: Double(leftWheel) / 660)
+    public var leftWheel: Kernel.RemoteControllerWheel {
+        Kernel.RemoteControllerWheel(present: true, pressed: false, value: Double(rcHardwareState.leftWheel) / 660)
     }
     
-    public var kernelRightStick: Kernel.RemoteControllerStick {
+    public var rightStick: Kernel.RemoteControllerStick {
         Kernel.RemoteControllerStick(
-            x: Double(rightStick.horizontalPosition) / 660,
-            y: Double(rightStick.verticalPosition) / 660)
+            x: Double(rcHardwareState.rightStick.horizontalPosition) / 660,
+            y: Double(rcHardwareState.rightStick.verticalPosition) / 660)
     }
     
-    public var kernelPauseButton: Kernel.RemoteControllerButton {
+    public var pauseButton: Kernel.RemoteControllerButton {
         Kernel.RemoteControllerButton(
-            present: pauseButton.isPresent.boolValue,
-            pressed: pauseButton.isClicked.boolValue)
+            present: rcHardwareState.pauseButton.isPresent.boolValue,
+            pressed: rcHardwareState.pauseButton.isClicked.boolValue)
     }
     
-    public var kernelC1Button: Kernel.RemoteControllerButton {
+    public var c1Button: Kernel.RemoteControllerButton {
         Kernel.RemoteControllerButton(
-           present: c1Button.isPresent.boolValue,
-           pressed: c1Button.isClicked.boolValue)
+            present: rcHardwareState.c1Button.isPresent.boolValue,
+            pressed: rcHardwareState.c1Button.isClicked.boolValue)
    }
     
-    public var kernelC2Button: Kernel.RemoteControllerButton {
+    public var c2Button: Kernel.RemoteControllerButton {
         Kernel.RemoteControllerButton(
-           present: c2Button.isPresent.boolValue,
-           pressed: c2Button.isClicked.boolValue)
+            present: rcHardwareState.c2Button.isPresent.boolValue,
+            pressed: rcHardwareState.c2Button.isClicked.boolValue)
    }
 }

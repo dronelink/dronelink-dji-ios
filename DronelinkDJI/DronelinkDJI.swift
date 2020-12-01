@@ -54,7 +54,7 @@ extension DJIFlightControllerState {
     public var verticalSpeed: Double { velocityZ == 0 ? 0 : Double(-velocityZ) }
     public var course: Double { Double(atan2(velocityY, velocityX)) }
     
-    public var kernelOrientation: Kernel.Orientation3 {
+    public var orientation: Kernel.Orientation3 {
         Kernel.Orientation3(
             x: attitude.pitch.convertDegreesToRadians,
             y: attitude.roll.convertDegreesToRadians,
@@ -73,7 +73,10 @@ extension DJIGimbal {
     }
     
     public var isAdjustYawSupported: Bool {
-        return (capabilities[DJIGimbalParamAdjustYaw] as? DJIParamCapability)?.isSupported ?? false
+        if let capability = capabilities[DJIGimbalParamAdjustYaw] as? DJIParamCapabilityMinMax {
+            return capability.isSupported && capability.min.intValue <= -180 && capability.max.intValue >= 180
+        }
+        return false
     }
 }
 
@@ -685,5 +688,429 @@ extension DJIDiagnosticsDeviceHealthInformationWarningLevel {
         case .unknown:  return .info
         default: return .info
         }
+    }
+}
+
+extension DJIFlyZoneState {
+    var message: Kernel.Message? {
+        var level: Kernel.MessageLevel?
+        
+        switch self {
+        case .clear, .unknown:
+            break
+            
+        case .nearRestrictedZone,
+             .inWarningZoneWithHeightLimitation,
+             .inWarningZone:
+            level = .warning
+            break
+            
+        case .inRestrictedZone:
+            level = .danger
+            break
+        }
+        
+        return Kernel.Message(title: "DJIFlyZoneState.title".localized, details: "DJIFlyZoneState.value.\(rawValue)".localized, level: level)
+    }
+}
+
+extension DJIAppActivationState {
+    var message: Kernel.Message? {
+        var level: Kernel.MessageLevel?
+        
+        switch self {
+        case .activated, .unknown:
+            break
+            
+        case .notSupported:
+            level = .error
+            break
+            
+        case .loginRequired:
+            level = .warning
+            break
+        }
+        
+        return Kernel.Message(title: "DJIAppActivationState.title".localized, details: "DJIAppActivationState.value.\(rawValue)".localized, level: level)
+    }
+}
+
+extension DJIDiagnostics {
+    var message: Kernel.Message? {
+        var level: Kernel.MessageLevel?
+        
+        switch component {
+        case .camera:
+            if let code = DJIDiagnosticsErrorCamera(rawValue: code) {
+                switch code {
+                case .upgradeError,
+                     .sensorError,
+                     .overHeat,
+                     .encryptionError,
+                     .sdCardError,
+                     .ssdError,
+                     .chipOverHeat,
+                     .temperaturesTooHighToStopRecord:
+                    level = .error
+                    break
+                    
+                case .usbConnected,
+                     .noSDCard,
+                     .noInternalStorage,
+                     .noSSD:
+                    level = .info
+                    break
+                    
+                case .internalStorageError:
+                    break
+                }
+            }
+            break
+            
+        case .gimbal:
+            if let code = DJIDiagnosticsErrorGimbal(rawValue: code) {
+                switch code {
+                case .gyroscopeError,
+                     .pitchError,
+                     .rollError,
+                     .yawError,
+                     .connectToFCError,
+                     .overload,
+                     .gyroscopeBroken,
+                     .startupBlock,
+                     .calibrateError,
+                     .runCrazy,
+                     .rollMechLimitError,
+                     .pitchMechLimitError,
+                     .sectorsJudgeError:
+                    level = .error
+                    break
+                    
+                case .waitRestart,
+                     .motorProtected,
+                     .vibrationAbnormal:
+                    level = .warning
+                    break
+                }
+            }
+            break
+            
+        case .battery:
+            if let code = DJIDiagnosticsErrorBattery(rawValue: code) {
+                switch code {
+                case .cellBroken,
+                     .illegal,
+                     .notInPosition,
+                     .communicationFailed,
+                     .notEnough,
+                     .shortcut,
+                     .overload:
+                    level = .error
+                    break
+                    
+                case .dangerousWarningSerious:
+                    level = .danger
+                    break
+                    
+                case .lowVoltage,
+                     .dischargeOverCurrent,
+                     .dischargeOverHeat,
+                     .lowTemperature,
+                     .lowTemperatureInAir:
+                    level = .warning
+                    break
+                    
+                case .needStudy:
+                    level = .info
+                    break
+                }
+            }
+            break
+            
+        case .remoteController:
+            if let code = DJIDiagnosticsErrorRemoteController(rawValue: code) {
+                switch code {
+                case .fpgaError,
+                     .transmitterError,
+                     .batteryError,
+                     .gpsError,
+                     .encryptionError,
+                     .idleTooLong,
+                     .reset,
+                     .overHeat,
+                     .goHomeFail:
+                    level = .error
+                    break
+                    
+                case .batteryLow:
+                    level = .warning
+                    break
+                    
+                case .needCalibration:
+                    level = .info
+                    break
+                }
+            }
+            break
+            
+        case .central:
+            if let code = DJIDiagnosticsErrorCentral(rawValue: code) {
+                switch code {
+                case .connectToBatteryError,
+                     .connectToGPSError,
+                     .connectToFlightControllerError,
+                     .connectToRemoteControllerError,
+                     .connectToCameraError,
+                     .connectToGimbalError:
+                    level = .error
+                    break
+                }
+            }
+            break
+            
+        case .video:
+            if let code = DJIDiagnosticsErrorVideo(rawValue: code) {
+                switch code {
+                case .decoderEncryptionError,
+                     .decoderConnectToDeserializerError:
+                    level = .error
+                    break
+                }
+            }
+            break
+            
+        case .airlink:
+            if let code = DJIDiagnosticsErrorAirlink(rawValue: code) {
+                switch code {
+                case .airlinkEncoderError,
+                     .airlinkEncoderUpgrade,
+                     .airLinkNoSignal:
+                    level = .error
+                    break
+                    
+                case .airLinkLowRCSignal,
+                     .airLinkStrongRCRadioSignalNoise,
+                     .airLinkLowRadioSignal,
+                     .airLinkStrongRadioSignalNoise,
+                     .airLinkWiFiMagneticInterferenceHigh:
+                     level = .warning
+                     break
+                }
+            }
+            break
+            
+        case .flightController:
+            if let code = DJIDiagnosticsErrorFlightController(rawValue: code) {
+                switch code {
+                case .imuDataError,
+                     .imuError,
+                     .imuInitFailed,
+                     .barometerInitFailed,
+                     .barometerError,
+                     .accelerometerInitFailed,
+                     .gyroscopeError,
+                     .attitudeError,
+                     .dataRecordError,
+                     .takeoffFailed,
+                     .systemError,
+                     .compassNeedRestart,
+                     .usingWrongPropellers,
+                     .mcDataError,
+                     .notEnoughForce,
+                     .goHomeFailed,
+                     .gpsError,
+                     .compassInstallError,
+                     .motorStopForEscShortCircuit,
+                     .aircraftPropulsionSystemError:
+                    level = .error
+                    break
+                    
+                case .outOfControl,
+                     .barometerStuckInAir,
+                     .compassAbnormal,
+                     .strongGaleWarning,
+                     .gpsSignalBlockedByGimbal:
+                    level = .danger
+                    break
+                    
+                case .imuCalibrationIncomplete,
+                     .warmingUp,
+                     .mcReadingData,
+                     .onlySupportAttiMode,
+                     .waterSurfaceWarning,
+                     .kernelBoardHighTemperature,
+                     .enableNearGroundAlert,
+                     .headingControlAbnormal,
+                     .tiltControlAbnormal,
+                     .aircraftVibrationAbnormal,
+                     .paddleHasIceOnIt,
+                     .motorBlocked,
+                     .smartLowPowerGoHome,
+                     .overHeatGoHome,
+                     .outOfFlightRadiusLimit,
+                     .lowVoltageGoingHome,
+                     .lowVoltageLanding,
+                     .outOfControlGoingHome,
+                     .heightLimitReasonNoGPS,
+                     .heightLimitReasonCompassInterrupt,
+                     .envStateTempTooHigh,
+                     .envStateTempTooLow,
+                     .coverFlightEnableLimit,
+                     .noRealNameHeightLimit,
+                     .threePropellerEmergencyLanding,
+                     .landingProtection:
+                     level = .warning
+                     break
+                    
+                case .imuNeedCalibration:
+                     level = .info
+                     break
+                }
+            }
+            break
+            
+        case .vision:
+            if let code = DJIDiagnosticsErrorVision(rawValue: code) {
+                switch code {
+                case .visionPropellerGuard,
+                     .visionSensorError,
+                     .visionSensorCalibrationError,
+                     .visionSensorCommunicationError,
+                     .visionSystemError,
+                     .visionTofSenserError,
+                     .vision3DTofSenserError:
+                    level = .error
+                    break
+                    
+                case .visionWeakAmbientLight:
+                    level = .warning
+                    break
+                    
+                case .visionSystemNeedCalibration:
+                    level = .info
+                    break
+                }
+            }
+            break
+            
+        case .RTK:
+            if let code = DJIDiagnosticsErrorRTK(rawValue: code) {
+                switch code {
+                case .positioningError,
+                     .orienteeringError:
+                    level = .error
+                    break
+                }
+            }
+            break
+            
+        case .deviceHealthInformation:
+            level =  healthInformation.warningLevel.kernelValue
+            break
+        }
+        
+        return Kernel.Message(title: reason, details: solution, level: level)
+    }
+}
+
+extension DJIGoHomeExecutionState {
+    var message: Kernel.Message? {
+        var level: Kernel.MessageLevel?
+        
+        switch self {
+        case .notExecuting,
+             .completed,
+             .unknown:
+            break
+            
+        case .turnDirectionToHomePoint,
+             .goUpToHeight,
+             .autoFlyToHomePoint,
+             .goDownToGround,
+             .braking,
+             .bypassing,
+             .completed:
+            level = .warning
+            break
+        }
+        
+        return Kernel.Message(title: "DJIGoHomeExecutionState.title".localized, details: "DJIGoHomeExecutionState.value.\(rawValue)".localized, level: level)
+    }
+}
+
+extension DJIFlightControllerState {
+    var statusMessages: [Kernel.Message] {
+        var messages: [Kernel.Message] = []
+        
+        if let goHomeExecutionStateMessage = goHomeExecutionState.message {
+            if flightMode == .confirmLanding {
+                messages.append(Kernel.Message(title: flightModeString, level: .warning))
+            }
+            else {
+                messages.append(goHomeExecutionStateMessage)
+            }
+        }
+        else {
+            if isLowerThanSeriousBatteryWarningThreshold {
+                messages.append(Kernel.Message(title: "DJIDronelink:DJIFlightControllerState.statusMessages.isLowerThanSeriousBatteryWarningThreshold.title".localized, level: .danger))
+            }
+            else if isLowerThanBatteryWarningThreshold {
+                messages.append(Kernel.Message(title: "DJIDronelink:DJIFlightControllerState.statusMessages.isLowerThanBatteryWarningThreshold.title".localized, level: .warning))
+            }
+            
+            if hasReachedMaxFlightRadius {
+                messages.append(Kernel.Message(title: "DJIDronelink:DJIFlightControllerState.statusMessages.hasReachedMaxFlightRadius.title".localized, level: .warning))
+            }
+            
+            if hasReachedMaxFlightHeight {
+                messages.append(Kernel.Message(title: "DJIDronelink:DJIFlightControllerState.statusMessages.hasReachedMaxFlightHeight.title".localized, level: .warning))
+            }
+            
+            switch flightMode {
+            case .assistedTakeoff,
+                 .autoTakeoff,
+                 .autoLanding,
+                 .motorsJustStarted,
+                 .confirmLanding:
+                messages.append(Kernel.Message(title: flightModeString, level: .warning))
+                break
+                
+            case .gpsWaypoint:
+                messages.append(Kernel.Message(title: "DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.title".localized, level: .warning))
+                break
+                
+            case .manual,
+                 .atti,
+                 .attiCourseLock,
+                 .gpsAtti,
+                 .gpsCourseLock,
+                 .gpsHomeLock,
+                 .gpsHotPoint,
+                 .gpsAttiWristband,
+                 .goHome,
+                 .joystick,
+                 .draw,
+                 .gpsFollowMe,
+                 .activeTrack,
+                 .tapFly,
+                 .gpsSport,
+                 .gpsNovice,
+                 .terrainFollow,
+                 .tripod,
+                 .activeTrackSpotlight,
+                 .unknown:
+                break
+            }
+        }
+        
+        if location == nil {
+            messages.append(Kernel.Message(title: "DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.title".localized, level: .warning))
+        }
+        
+        if !isHomeLocationSet {
+            messages.append(Kernel.Message(title: "DJIDronelink:DJIFlightControllerState.statusMessages.homeLocationNotSet.title".localized, level: .warning))
+        }
+        
+        return messages
     }
 }

@@ -32,9 +32,6 @@ public class DJIDroneSession: NSObject {
     private let cameraCommands = MultiChannelCommandQueue()
     private let gimbalCommands = MultiChannelCommandQueue()
     
-    private let diagnosticsInformationSerialQueue = DispatchQueue(label: "DroneSession+diagnosticsInformation")
-    private var _diagnosticsInformationMessages: DatedValue<[Kernel.Message]>?
-    
     private let flightControllerSerialQueue = DispatchQueue(label: "DroneSession+flightControllerState")
     private var _flightControllerState: DatedValue<DJIFlightControllerState>?
     
@@ -54,9 +51,13 @@ public class DJIDroneSession: NSObject {
     private var _cameraLensInformation: [UInt: DatedValue<String>] = [:]
     
     private let gimbalSerialQueue = DispatchQueue(label: "DroneSession+gimbalStates")
-    private var _gimbalStates: [UInt: DatedValue<DJIGimbalState>] = [:]
+    private var _gimbalStates: [UInt: DatedValue<GimbalStateAdapter>] = [:]
     
-    private var _airLinkSignalQuality: DatedValue<UInt>?
+    private var _diagnosticsInformationMessages: DatedValue<[Kernel.Message]>?
+    private var _downlinkSignalQuality: DatedValue<UInt>?
+    private var _uplinkSignalQuality: DatedValue<UInt>?
+    
+    private var listeningDJIKeys: [DJIKey] = []
     
     public init(drone: DJIAircraft) {
         adapter = DJIDroneAdapter(drone: drone)
@@ -73,6 +74,7 @@ public class DJIDroneSession: NSObject {
         adapter.drone.remoteController?.delegate = self
         adapter.cameras?.forEach { initCamera(index: $0.index) }
         adapter.gimbals?.forEach { initGimbal(index: $0.index) }
+        initListeners()
     }
     
     private func initFlightController() {
@@ -123,15 +125,6 @@ public class DJIDroneSession: NSObject {
            if error == nil {
                os_log(.debug, log: self.log, "Flight controller virtual stick mode deactivated")
            }
-        }
-        
-        DJISDKManager.keyManager()?.startListeningForChanges(on: DJIAirLinkKey(param: DJIAirLinkParamDownlinkSignalQuality)!, withListener: self) { (oldValue, newValue) in
-            if let newValue = newValue?.unsignedIntegerValue {
-                self._airLinkSignalQuality = DatedValue(value: newValue)
-            }
-            else {
-                self._airLinkSignalQuality = nil
-            }
         }
     }
     
@@ -191,6 +184,31 @@ public class DJIDroneSession: NSObject {
         }
     }
     
+    private func initListeners() {
+        startListeningForChanges(on: DJIAirLinkKey(param: DJIAirLinkParamDownlinkSignalQuality)!) { (oldValue, newValue) in
+            if let newValue = newValue?.unsignedIntegerValue {
+                self._downlinkSignalQuality = DatedValue(value: newValue)
+            }
+            else {
+                self._downlinkSignalQuality = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJIAirLinkKey(param: DJIAirLinkParamUplinkSignalQuality)!) { (oldValue, newValue) in
+            if let newValue = newValue?.unsignedIntegerValue {
+                self._uplinkSignalQuality = DatedValue(value: newValue)
+            }
+            else {
+                self._uplinkSignalQuality = nil
+            }
+        }
+    }
+    
+    private func startListeningForChanges(on key: DJIKey, andUpdate updateBlock: @escaping DJIKeyedListenerUpdateBlock) {
+        listeningDJIKeys.append(key)
+        DJISDKManager.keyManager()?.startListeningForChanges(on: key, withListener: self, andUpdate: updateBlock)
+    }
+
     public func componentConnected(withKey key: String?, andIndex index: Int) {
         guard let key = key else { return }
         switch key {
@@ -327,7 +345,7 @@ public class DJIDroneSession: NSObject {
             Thread.sleep(forTimeInterval: 0.1)
         }
         
-        DJISDKManager.keyManager()?.stopListening(on: DJIAirLinkKey(param: DJIAirLinkParamDownlinkSignalQuality)!, ofListener: self)
+        listeningDJIKeys.forEach { DJISDKManager.keyManager()?.stopListening(on: $0, ofListener: self) }
         os_log(.info, log: log, "Drone session closed")
     }
     
@@ -339,7 +357,7 @@ public class DJIDroneSession: NSObject {
                  DJIAircraftModelNamePhantom4ProV2,
                  DJIAircraftModelNamePhantom4Advanced,
                  DJIAircraftModelNamePhantom4RTK:
-                return gimbalState.kernelOrientation.yaw.angleDifferenceSigned(angle: kernelOrientation.yaw)
+                return gimbalState.orientation.yaw.angleDifferenceSigned(angle: orientation.yaw)
             default:
                 break
             }
@@ -361,7 +379,7 @@ public class DJIDroneSession: NSObject {
                 mode: .absoluteAngle,
                 ignore: false)
             
-            if gimbal.isAdjustYawSupported, (gimbalState(channel: gimbal.index)?.value.kernelMode ?? .yawFollow) != .yawFollow {
+            if gimbal.isAdjustYawSupported, (gimbalState(channel: gimbal.index)?.value.mode ?? .yawFollow) != .yawFollow {
                 gimbal.setMode(.yawFollow) { yawFollowError in
                     //if we don't give it a delay, it ignores the next command!
                     DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
@@ -559,14 +577,17 @@ extension DJIDroneSession: DroneSession {
 
 extension DJIDroneSession: DroneStateAdapter {
     public var statusMessages: [Kernel.Message]? {
-        var messages = _diagnosticsInformationMessages?.value ?? []
-        if location == nil {
-            messages.append(Kernel.Message(title: "DJIDroneSession.statusMessage.locationUnavailable.title".localized, level: .warning))
+        var messages: [Kernel.Message] = []
+        
+        if let flightControllerMessages = flightControllerState?.value.statusMessages {
+            messages.append(contentsOf: flightControllerMessages)
         }
         
-        return messages.sorted { (l, r) -> Bool in
-            l.level.compare(to: r.level) > 0
+        if let diagnosticMessages = _diagnosticsInformationMessages?.value {
+            messages.append(contentsOf: diagnosticMessages)
         }
+        
+        return messages
     }
     public var mode: String? { flightControllerState?.value.flightModeString }
     public var isFlying: Bool { flightControllerState?.value.isFlying ?? false }
@@ -596,7 +617,7 @@ extension DJIDroneSession: DroneStateAdapter {
         }
         return minObstacleDistance > 0 ? minObstacleDistance : nil
     }
-    public var kernelOrientation: Kernel.Orientation3 { flightControllerState?.value.kernelOrientation ?? Kernel.Orientation3() }
+    public var orientation: Kernel.Orientation3 { flightControllerState?.value.orientation ?? Kernel.Orientation3() }
     public var gpsSatellites: Int? {
         if let satelliteCount = flightControllerState?.value.satelliteCount {
             return Int(satelliteCount)
@@ -605,27 +626,30 @@ extension DJIDroneSession: DroneStateAdapter {
     }
     
     public var downlinkSignalStrength: Double? {
-        if let airLinkSignalQuality = _airLinkSignalQuality?.value {
-            return Double(airLinkSignalQuality) / 100.0
+        if let downlinkSignalQuality = _downlinkSignalQuality?.value {
+            return Double(downlinkSignalQuality) / 100.0
         }
         return nil
     }
     
-    public var uplinkSignalStrength: Double? { nil } //FIXME
+    public var uplinkSignalStrength: Double? {
+        if let uplinkSignalQuality = _uplinkSignalQuality?.value {
+            return Double(uplinkSignalQuality) / 100.0
+        }
+        return nil
+    }
 }
 
 extension DJIDroneSession: DJIBaseProductDelegate {
     public func product(_ product: DJIBaseProduct, didUpdateDiagnosticsInformation info: [Any]) {
-        diagnosticsInformationSerialQueue.async {
-            var messages: [Kernel.Message] = []
-            info.forEach { (value) in
-                if let diagnostics = value as? DJIDiagnostics {
-                    messages.append(Kernel.Message(title: diagnostics.reason, details: diagnostics.solution, level: diagnostics.healthInformation.warningLevel.kernelValue))
-                }
+        var messages: [Kernel.Message] = []
+        info.forEach { (value) in
+            if let message = (value as? DJIDiagnostics)?.message {
+                messages.append(message)
             }
-            
-            self._diagnosticsInformationMessages = DatedValue(value: messages)
         }
+        
+        self._diagnosticsInformationMessages = DatedValue(value: messages)
     }
 }
 
@@ -688,7 +712,7 @@ extension DJIDroneSession: DJIBatteryDelegate {
 extension DJIDroneSession: DJIRemoteControllerDelegate {
     public func remoteController(_ rc: DJIRemoteController, didUpdate state: DJIRCHardwareState) {
         remoteControllerSerialQueue.async {
-            self._remoteControllerState = DatedValue<RemoteControllerStateAdapter>(value: state)
+            self._remoteControllerState = DatedValue<RemoteControllerStateAdapter>(value: DJIRemoteControllerStateAdapter(rcHardwareState: state))
         }
     }
 }
@@ -715,12 +739,12 @@ extension DJIDroneSession: DJICameraDelegate {
     }
     
     public func camera(_ camera: DJICamera, didGenerateNewMediaFile newMedia: DJIMediaFile) {
-            var orientation = self.kernelOrientation
+            var orientation = self.orientation
             if let gimbalState = self.gimbalState(channel: camera.index)?.value {
-                orientation.x = gimbalState.kernelOrientation.x
-                orientation.y = gimbalState.kernelOrientation.y
-                if gimbalState.kernelMode == .free {
-                    orientation.z = gimbalState.kernelOrientation.z
+                orientation.x = gimbalState.orientation.x
+                orientation.y = gimbalState.orientation.y
+                if gimbalState.mode == .free {
+                    orientation.z = gimbalState.orientation.z
                 }
             }
             else {
@@ -734,7 +758,7 @@ extension DJIDroneSession: DJICameraDelegate {
 extension DJIDroneSession: DJIGimbalDelegate {
     public func gimbal(_ gimbal: DJIGimbal, didUpdate state: DJIGimbalState) {
         gimbalSerialQueue.async {
-            self._gimbalStates[gimbal.index] = DatedValue<DJIGimbalState>(value: state)
+            self._gimbalStates[gimbal.index] = DatedValue<GimbalStateAdapter>(value: DJIGimbalStateAdapter(gimbalState: state))
         }
     }
 }

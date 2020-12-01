@@ -24,4 +24,35 @@
 "MissionDisengageReason.drone.gimbal.unavailable.title" = "Gimbal Unavailable";
 "MissionDisengageReason.drone.camera.mode.invalid.title" = "Camera Mode Invalid";
 
-"DJIDroneSession.statusMessage.locationUnavailable.title" = "Location Unavailable";
+"DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.title" = "Location Unavailable";
+"DJIDronelink:DJIFlightControllerState.statusMessages.homeLocationNotSet.title" = "Home Location Not Set";
+"DJIDronelink:DJIFlightControllerState.statusMessages.isLowerThanSeriousBatteryWarningThreshold.title" = "Critically Low Battery";
+"DJIDronelink:DJIFlightControllerState.statusMessages.isLowerThanBatteryWarningThreshold.title" = "Low Battery";
+"DJIDronelink:DJIFlightControllerState.statusMessages.hasReachedMaxFlightRadius.title" = "Max Distance";
+"DJIDronelink:DJIFlightControllerState.statusMessages.hasReachedMaxFlightHeight.title" = "Max Altitude";
+"DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.title" = "Onboard Waypoint Flight";
+
+"DJIGoHomeExecutionState.title" = "RTH";
+"DJIGoHomeExecutionState.value.0" = "Not Executing";
+"DJIGoHomeExecutionState.value.1" = "Turning to Home Point";
+"DJIGoHomeExecutionState.value.2" = "Ascending to Altitude";
+"DJIGoHomeExecutionState.value.3" = "Flying to Home Point";
+"DJIGoHomeExecutionState.value.4" = "Descending to Ground";
+"DJIGoHomeExecutionState.value.5" = "Braking";
+"DJIGoHomeExecutionState.value.6" = "Bypassing";
+"DJIGoHomeExecutionState.value.7" = "Completed";
+"DJIGoHomeExecutionState.value.255" = "Unknown";
+
+"DJIFlyZoneState.title" = "NFZ";
+"DJIFlyZoneState.value.0" = "Clear";
+"DJIFlyZoneState.value.1" = "Near Restricted Zone";
+"DJIFlyZoneState.value.2" = "In Warning Zone with Height Limitation";
+"DJIFlyZoneState.value.3" = "In Warning Zone";
+"DJIFlyZoneState.value.4" = "In Restricted Zone";
+"DJIFlyZoneState.value.255" = "Unknown";
+
+"DJIAppActivationState.title" = "DJI Activation";
+"DJIAppActivationState.value.0" = "Not Supported";
+"DJIAppActivationState.value.1" = "Login Required";
+"DJIAppActivationState.value.2" = "Activated";
+"DJIAppActivationState.value.255" = "Unknown";

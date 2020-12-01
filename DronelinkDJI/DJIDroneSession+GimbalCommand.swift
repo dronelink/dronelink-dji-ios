@@ -18,7 +18,7 @@ extension DJIDroneSession {
         }
         
         if let command = gimbalCommand as? Kernel.ModeGimbalCommand {
-            Command.conditionallyExecute(command.mode != state.kernelMode, finished: finished) {
+            Command.conditionallyExecute(command.mode != state.mode, finished: finished) {
                 gimbal.setMode(command.mode.djiValue) { error in
                     if let error = error {
                         finished(error)
@@ -52,13 +52,12 @@ extension DJIDroneSession {
             
             let roll = command.orientation.roll?.convertRadiansToDegrees
             
-            //KLUGE: unable to check the gimbal mode right now because of a DJI SDK bug (it always reports yawFollow for certain cameras like the X7)
-            if /*state.kernelMode == .free,*/ let yaw = command.orientation.yaw {
+            if gimbal.isAdjustYawSupported, let yaw = command.orientation.yaw {
                 //use relative angle because absolute angle for yaw is not predictable
                 gimbal.rotate(with: DJIGimbalRotation(
-                    pitchValue: gimbal.isAdjustPitchSupported ? pitch?.convertDegreesToRadians.angleDifferenceSigned(angle: state.kernelOrientation.pitch).convertRadiansToDegrees as NSNumber? : nil,
-                    rollValue: gimbal.isAdjustRollSupported ? roll?.convertDegreesToRadians.angleDifferenceSigned(angle: state.kernelOrientation.roll).convertRadiansToDegrees as NSNumber? : nil,
-                    yawValue: yaw.angleDifferenceSigned(angle: state.kernelOrientation.yaw).convertRadiansToDegrees as NSNumber,
+                    pitchValue: gimbal.isAdjustPitchSupported ? pitch?.convertDegreesToRadians.angleDifferenceSigned(angle: state.orientation.pitch).convertRadiansToDegrees as NSNumber? : nil,
+                    rollValue: gimbal.isAdjustRollSupported ? roll?.convertDegreesToRadians.angleDifferenceSigned(angle: state.orientation.roll).convertRadiansToDegrees as NSNumber? : nil,
+                    yawValue: yaw.angleDifferenceSigned(angle: state.orientation.yaw).convertRadiansToDegrees as NSNumber,
                     time: DJIGimbalRotation.minTime,
                     mode: .relativeAngle,
                     ignore: false), completion: finished)

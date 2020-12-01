@@ -15,6 +15,8 @@ public class DJIDroneSessionManager: NSObject {
     private let log = OSLog(subsystem: "DronelinkDJI", category: "DJIDroneSessionManager")
     
     private let delegates = MulticastDelegate<DroneSessionManagerDelegate>()
+    private var _flyZoneState: DatedValue<DJIFlyZoneState>?
+    private var _appActivationState: DatedValue<DJIAppActivationState>?
     private var _session: DJIDroneSession?
     private var videoPreviewerView: UIView?
     
@@ -26,6 +28,8 @@ public class DJIDroneSessionManager: NSObject {
         }
         
         DJISDKManager.registerApp(with: self)
+        DJISDKManager.flyZoneManager()?.delegate = self
+        DJISDKManager.appActivationManager().delegate = self
     }
 }
 
@@ -42,6 +46,24 @@ extension DJIDroneSessionManager: DroneSessionManager {
     }
     
     public var session: DroneSession? { _session }
+    
+    public var statusMessages: [Kernel.Message]? {
+        var messages: [Kernel.Message] = []
+        
+        if let message = _flyZoneState?.value.message {
+            messages.append(message)
+        }
+        
+        if let message = _appActivationState?.value.message {
+            messages.append(message)
+        }
+        
+        if let sessionStatusMessages = session?.state?.value.statusMessages {
+            messages.append(contentsOf: sessionStatusMessages)
+        }
+        
+        return messages
+    }
 }
 
 extension DJIDroneSessionManager: DJISDKManagerDelegate {
@@ -81,5 +103,21 @@ extension DJIDroneSessionManager: DJISDKManagerDelegate {
     }
     
     public func didUpdateDatabaseDownloadProgress(_ progress: Progress) {
+    }
+}
+
+extension DJIDroneSessionManager: DJIFlyZoneDelegate {
+    public func flyZoneManager(_ manager: DJIFlyZoneManager, didUpdate state: DJIFlyZoneState) {
+        _flyZoneState = DatedValue<DJIFlyZoneState>(value: state)
+    }
+    
+    public func flyZoneManager(_ manager: DJIFlyZoneManager, didUpdateBasicDatabaseUpgradeProgress progress: Float, andError error: Error?) {}
+    
+    public func flyZoneManager(_ manager: DJIFlyZoneManager, didUpdateFlyZoneNotification notification: DJIFlySafeNotification) {}
+}
+
+extension DJIDroneSessionManager: DJIAppActivationManagerDelegate {
+    public func manager(_ manager: DJIAppActivationManager!, didUpdate appActivationState: DJIAppActivationState) {
+        _appActivationState = DatedValue<DJIAppActivationState>(value: appActivationState)
     }
 }
