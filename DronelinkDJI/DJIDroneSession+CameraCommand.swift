@@ -79,7 +79,7 @@ extension DJIDroneSession {
         
         
         if let command = cameraCommand as? Kernel.ExposureCompensationStepCameraCommand {
-            let exposureCompensation = state.kernelExposureCompensation.offset(steps: command.exposureCompensationSteps).djiValue
+            let exposureCompensation = state.exposureCompensation.offset(steps: command.exposureCompensationSteps).djiValue
             Command.conditionallyExecute(state.exposureSettings?.exposureCompensation != exposureCompensation, finished: finished) {
                 camera.setExposureCompensation(exposureCompensation, withCompletion: finished)
             }
@@ -144,7 +144,7 @@ extension DJIDroneSession {
         }
         
         if let command = cameraCommand as? Kernel.ModeCameraCommand {
-            Command.conditionallyExecute(command.mode != state.kernelMode, finished: finished) {
+            Command.conditionallyExecute(command.mode != state.mode, finished: finished) {
                 camera.setMode(command.mode.djiValue, withCompletion: finished)
             }
             return nil
@@ -220,7 +220,7 @@ extension DJIDroneSession {
         }
         
         if cameraCommand is Kernel.StartCaptureCameraCommand {
-            switch state.kernelMode {
+            switch state.mode {
             case .photo:
                 if state.isCapturingPhotoInterval {
                     os_log(.debug, log: log, "Camera start capture skipped, already shooting interval photos")
@@ -252,14 +252,14 @@ extension DJIDroneSession {
                 break
                 
             default:
-                os_log(.info, log: log, "Camera start capture invalid mode: %d", state.kernelMode.djiValue.rawValue)
+                os_log(.info, log: log, "Camera start capture invalid mode: %d", state.mode.djiValue.rawValue)
                 return "MissionDisengageReason.drone.camera.mode.invalid.title".localized
             }
             return nil
         }
         
         if cameraCommand is Kernel.StopCaptureCameraCommand {
-            switch state.kernelMode {
+            switch state.mode {
             case .photo:
                 if state.isCapturingPhotoInterval {
                     os_log(.debug, log: log, "Camera stop capture interval photo")
@@ -287,7 +287,7 @@ extension DJIDroneSession {
                 break
                 
             default:
-                os_log(.info, log: log, "Camera stop capture skipped, invalid mode: %d", state.kernelMode.djiValue.rawValue)
+                os_log(.info, log: log, "Camera stop capture skipped, invalid mode: %d", state.mode.djiValue.rawValue)
                 finished(nil)
                 break
             }

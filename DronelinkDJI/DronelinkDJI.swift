@@ -54,7 +54,7 @@ extension DJIFlightControllerState {
     public var verticalSpeed: Double { velocityZ == 0 ? 0 : Double(-velocityZ) }
     public var course: Double { Double(atan2(velocityY, velocityX)) }
     
-    public var kernelOrientation: Kernel.Orientation3 {
+    public var orientation: Kernel.Orientation3 {
         Kernel.Orientation3(
             x: attitude.pitch.convertDegreesToRadians,
             y: attitude.roll.convertDegreesToRadians,
@@ -73,7 +73,10 @@ extension DJIGimbal {
     }
     
     public var isAdjustYawSupported: Bool {
-        return (capabilities[DJIGimbalParamAdjustYaw] as? DJIParamCapability)?.isSupported ?? false
+        if let capability = capabilities[DJIGimbalParamAdjustYaw] as? DJIParamCapabilityMinMax {
+            return capability.isSupported && capability.min.intValue <= -180 && capability.max.intValue >= 180
+        }
+        return false
     }
 }
 

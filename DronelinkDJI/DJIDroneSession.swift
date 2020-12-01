@@ -51,7 +51,7 @@ public class DJIDroneSession: NSObject {
     private var _cameraLensInformation: [UInt: DatedValue<String>] = [:]
     
     private let gimbalSerialQueue = DispatchQueue(label: "DroneSession+gimbalStates")
-    private var _gimbalStates: [UInt: DatedValue<DJIGimbalState>] = [:]
+    private var _gimbalStates: [UInt: DatedValue<GimbalStateAdapter>] = [:]
     
     private var _airLinkSignalQuality: DatedValue<UInt>?
     
@@ -335,7 +335,7 @@ public class DJIDroneSession: NSObject {
                  DJIAircraftModelNamePhantom4ProV2,
                  DJIAircraftModelNamePhantom4Advanced,
                  DJIAircraftModelNamePhantom4RTK:
-                return gimbalState.kernelOrientation.yaw.angleDifferenceSigned(angle: kernelOrientation.yaw)
+                return gimbalState.orientation.yaw.angleDifferenceSigned(angle: orientation.yaw)
             default:
                 break
             }
@@ -357,7 +357,7 @@ public class DJIDroneSession: NSObject {
                 mode: .absoluteAngle,
                 ignore: false)
             
-            if gimbal.isAdjustYawSupported, (gimbalState(channel: gimbal.index)?.value.kernelMode ?? .yawFollow) != .yawFollow {
+            if gimbal.isAdjustYawSupported, (gimbalState(channel: gimbal.index)?.value.mode ?? .yawFollow) != .yawFollow {
                 gimbal.setMode(.yawFollow) { yawFollowError in
                     //if we don't give it a delay, it ignores the next command!
                     DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
@@ -581,7 +581,7 @@ extension DJIDroneSession: DroneStateAdapter {
         }
         return minObstacleDistance > 0 ? minObstacleDistance : nil
     }
-    public var kernelOrientation: Kernel.Orientation3 { flightControllerState?.value.kernelOrientation ?? Kernel.Orientation3() }
+    public var orientation: Kernel.Orientation3 { flightControllerState?.value.orientation ?? Kernel.Orientation3() }
     public var gpsSatellites: Int? {
         if let satelliteCount = flightControllerState?.value.satelliteCount {
             return Int(satelliteCount)
@@ -656,7 +656,7 @@ extension DJIDroneSession: DJIBatteryDelegate {
 extension DJIDroneSession: DJIRemoteControllerDelegate {
     public func remoteController(_ rc: DJIRemoteController, didUpdate state: DJIRCHardwareState) {
         remoteControllerSerialQueue.async {
-            self._remoteControllerState = DatedValue<RemoteControllerStateAdapter>(value: state)
+            self._remoteControllerState = DatedValue<RemoteControllerStateAdapter>(value: DJIRemoteControllerStateAdapter(rcHardwareState: state))
         }
     }
 }
@@ -683,12 +683,12 @@ extension DJIDroneSession: DJICameraDelegate {
     }
     
     public func camera(_ camera: DJICamera, didGenerateNewMediaFile newMedia: DJIMediaFile) {
-            var orientation = self.kernelOrientation
+            var orientation = self.orientation
             if let gimbalState = self.gimbalState(channel: camera.index)?.value {
-                orientation.x = gimbalState.kernelOrientation.x
-                orientation.y = gimbalState.kernelOrientation.y
-                if gimbalState.kernelMode == .free {
-                    orientation.z = gimbalState.kernelOrientation.z
+                orientation.x = gimbalState.orientation.x
+                orientation.y = gimbalState.orientation.y
+                if gimbalState.mode == .free {
+                    orientation.z = gimbalState.orientation.z
                 }
             }
             else {
@@ -702,7 +702,7 @@ extension DJIDroneSession: DJICameraDelegate {
 extension DJIDroneSession: DJIGimbalDelegate {
     public func gimbal(_ gimbal: DJIGimbal, didUpdate state: DJIGimbalState) {
         gimbalSerialQueue.async {
-            self._gimbalStates[gimbal.index] = DatedValue<DJIGimbalState>(value: state)
+            self._gimbalStates[gimbal.index] = DatedValue<GimbalStateAdapter>(value: DJIGimbalStateAdapter(gimbalState: state))
         }
     }
 }
