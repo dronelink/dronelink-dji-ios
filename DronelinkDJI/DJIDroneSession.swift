@@ -32,6 +32,9 @@ public class DJIDroneSession: NSObject {
     private let cameraCommands = MultiChannelCommandQueue()
     private let gimbalCommands = MultiChannelCommandQueue()
     
+    private let diagnosticsInformationSerialQueue = DispatchQueue(label: "DroneSession+diagnosticsInformation")
+    private var _diagnosticsInformationMessages: DatedValue<[Kernel.Message]>?
+    
     private let flightControllerSerialQueue = DispatchQueue(label: "DroneSession+flightControllerState")
     private var _flightControllerState: DatedValue<DJIFlightControllerState>?
     
@@ -65,6 +68,7 @@ public class DJIDroneSession: NSObject {
     private func initDrone() {
         os_log(.info, log: log, "Drone session opened")
         
+        adapter.drone.delegate = self
         initFlightController()
         adapter.drone.remoteController?.delegate = self
         adapter.cameras?.forEach { initCamera(index: $0.index) }
@@ -554,6 +558,17 @@ extension DJIDroneSession: DroneSession {
 }
 
 extension DJIDroneSession: DroneStateAdapter {
+    public var statusMessages: [Kernel.Message]? {
+        var messages = _diagnosticsInformationMessages?.value ?? []
+        if location == nil {
+            messages.append(Kernel.Message(title: "DJIDroneSession.statusMessage.locationUnavailable.title".localized, level: .warning))
+        }
+        
+        return messages.sorted { (l, r) -> Bool in
+            l.level.compare(to: r.level) > 0
+        }
+    }
+    public var mode: String? { flightControllerState?.value.flightModeString }
     public var isFlying: Bool { flightControllerState?.value.isFlying ?? false }
     public var location: CLLocation? { flightControllerState?.value.location }
     public var homeLocation: CLLocation? { flightControllerState?.value.isHomeLocationSet ?? false ? flightControllerState?.value.homeLocation : nil }
@@ -589,11 +604,28 @@ extension DJIDroneSession: DroneStateAdapter {
         return nil
     }
     
-    public var signalStrength: Double? {
+    public var downlinkSignalStrength: Double? {
         if let airLinkSignalQuality = _airLinkSignalQuality?.value {
             return Double(airLinkSignalQuality) / 100.0
         }
         return nil
+    }
+    
+    public var uplinkSignalStrength: Double? { nil } //FIXME
+}
+
+extension DJIDroneSession: DJIBaseProductDelegate {
+    public func product(_ product: DJIBaseProduct, didUpdateDiagnosticsInformation info: [Any]) {
+        diagnosticsInformationSerialQueue.async {
+            var messages: [Kernel.Message] = []
+            info.forEach { (value) in
+                if let diagnostics = value as? DJIDiagnostics {
+                    messages.append(Kernel.Message(title: diagnostics.reason, details: diagnostics.solution, level: diagnostics.healthInformation.warningLevel.kernelValue))
+                }
+            }
+            
+            self._diagnosticsInformationMessages = DatedValue(value: messages)
+        }
     }
 }
 

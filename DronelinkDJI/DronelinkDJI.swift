@@ -673,3 +673,17 @@ extension Kernel.GimbalMode {
         }
     }
 }
+
+extension DJIDiagnosticsDeviceHealthInformationWarningLevel {
+    var kernelValue: Kernel.MessageLevel {
+        switch self {
+        case .none: return .info
+        case .notice: return .info
+        case .caution: return .warning
+        case .warning: return .warning
+        case .seriousWarning: return .danger
+        case .unknown:  return .info
+        default: return .info
+        }
+    }
+}
