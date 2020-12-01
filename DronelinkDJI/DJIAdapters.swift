@@ -164,6 +164,10 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var isSDCardInserted: Bool { storageState?.isInserted ?? true }
     public var kernelMode: Kernel.CameraMode { systemState.kernelMode }
     public var kernelExposureCompensation: Kernel.CameraExposureCompensation { exposureSettings?.exposureCompensation.kernelValue ?? .unknown }
+    public var kernelISO: Kernel.CameraISO { .unknown } //FIXME
+    public var kernelShutterSpeed: Kernel.CameraShutterSpeed { .unknown } //FIXME
+    public var kernelAperture: Kernel.CameraAperture { .unknown } //FIXME
+    public var kernelWhiteBalancePreset: Kernel.CameraWhiteBalancePreset { .unknown } //FIXME
     public var lensDetails: String? { lensInformation }
 }
 
