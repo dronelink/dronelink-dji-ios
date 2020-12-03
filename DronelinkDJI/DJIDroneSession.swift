@@ -302,7 +302,10 @@ public class DJIDroneSession: NSObject {
                         if let gimbalAdapter = gimbalAdapter as? DJIGimbalAdapter {
                             var rotation = gimbalAdapter.pendingSpeedRotation
                             gimbalAdapter.pendingSpeedRotation = nil
-                            if gimbalAdapter.gimbal.isAdjustYawSupported, let gimbalState = self._gimbalStates[gimbalAdapter.index]?.value, gimbalState.mode == .yawFollow {
+                            if gimbalAdapter.gimbal.isAdjustYawSupported,
+                               !gimbalAdapter.gimbal.isAdjustYaw360Supported,
+                               let gimbalState = self._gimbalStates[gimbalAdapter.index]?.value,
+                               gimbalState.mode == .yawFollow {
                                 rotation = DJIGimbalRotation(
                                     pitchValue: rotation?.pitch,
                                     rollValue: rotation?.roll,
@@ -444,7 +447,7 @@ extension DJIDroneSession: DroneSession {
     
     public func add(command: KernelCommand) throws {
         if let command = command as? KernelDroneCommand {
-            droneCommands.add(command: Command(
+            try droneCommands.add(command: Command(
                 id: command.id,
                 name: command.type.rawValue,
                 execute: { finished in
@@ -460,7 +463,7 @@ extension DJIDroneSession: DroneSession {
         }
         
         if let command = command as? KernelCameraCommand {
-            cameraCommands.add(channel: command.channel, command: Command(
+            try cameraCommands.add(channel: command.channel, command: Command(
                 id: command.id,
                 name: command.type.rawValue,
                 execute: {
@@ -476,7 +479,7 @@ extension DJIDroneSession: DroneSession {
         }
 
         if let command = command as? KernelGimbalCommand {
-            gimbalCommands.add(channel: command.channel, command: Command(
+            try gimbalCommands.add(channel: command.channel, command: Command(
                 id: command.id,
                 name: command.type.rawValue,
                 execute: {

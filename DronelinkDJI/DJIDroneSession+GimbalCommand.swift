@@ -52,7 +52,7 @@ extension DJIDroneSession {
             
             let roll = command.orientation.roll?.convertRadiansToDegrees
             
-            if gimbal.isAdjustYawSupported, let yaw = command.orientation.yaw {
+            if let yaw = command.orientation.yaw, (state.mode == .free || gimbal.isAdjustYaw360Supported) {
                 //use relative angle because absolute angle for yaw is not predictable
                 gimbal.rotate(with: DJIGimbalRotation(
                     pitchValue: gimbal.isAdjustPitchSupported ? pitch?.convertDegreesToRadians.angleDifferenceSigned(angle: state.orientation.pitch).convertRadiansToDegrees as NSNumber? : nil,
