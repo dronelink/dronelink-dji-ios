@@ -150,12 +150,14 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public let storageState: DJICameraStorageState?
     public let exposureSettings: DJICameraExposureSettings?
     public let lensInformation: String?
+    public let cameraShotPhotoMode: DJICameraShootPhotoMode?
     
-    public init(systemState: DJICameraSystemState, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensInformation: String?) {
+    public init(systemState: DJICameraSystemState, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensInformation: String?, shotPhotoMode: DJICameraShootPhotoMode?) {
         self.systemState = systemState
         self.storageState = storageState
         self.exposureSettings = exposureSettings
         self.lensInformation = lensInformation
+        self.cameraShotPhotoMode = shotPhotoMode
     }
     
     public var isCapturingPhotoInterval: Bool { systemState.isCapturingPhotoInterval }

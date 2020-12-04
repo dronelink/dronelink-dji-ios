@@ -554,7 +554,7 @@ extension DJIDroneSession: DroneSession {
                     systemState: systemState.value,
                     storageState: self._cameraStorageStates[channel]?.value,
                     exposureSettings: self._cameraExposureSettings[channel]?.value,
-                    lensInformation: self._cameraLensInformation[channel]?.value),
+                                    lensInformation: self._cameraLensInformation[channel]?.value, shotPhotoMode: self._shotPhotoMode?.value),
                     date: systemState.date)
             }
             return nil
