@@ -56,6 +56,7 @@ public class DJIDroneSession: NSObject {
     private var _diagnosticsInformationMessages: DatedValue<[Kernel.Message]>?
     private var _downlinkSignalQuality: DatedValue<UInt>?
     private var _uplinkSignalQuality: DatedValue<UInt>?
+    private var _shotPhotoMode: DatedValue<DJICameraShootPhotoMode>?
     
     private var listeningDJIKeys: [DJIKey] = []
     
@@ -200,6 +201,15 @@ public class DJIDroneSession: NSObject {
             }
             else {
                 self._uplinkSignalQuality = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamShootPhotoMode)!) { (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self._shotPhotoMode = DatedValue(value: DJICameraShootPhotoMode(rawValue: value) ?? DJICameraShootPhotoMode.unknown)
+            }
+            else {
+                self._shotPhotoMode = nil
             }
         }
     }
@@ -544,7 +554,8 @@ extension DJIDroneSession: DroneSession {
                     systemState: systemState.value,
                     storageState: self._cameraStorageStates[channel]?.value,
                     exposureSettings: self._cameraExposureSettings[channel]?.value,
-                    lensInformation: self._cameraLensInformation[channel]?.value), date: systemState.date)
+                    lensInformation: self._cameraLensInformation[channel]?.value),
+                    date: systemState.date)
             }
             return nil
         }
