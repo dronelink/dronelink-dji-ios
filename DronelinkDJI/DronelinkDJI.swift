@@ -385,20 +385,23 @@ extension Kernel.CameraPhotoFileFormat {
     }
 }
 
-extension Kernel.CameraPhotoMode {
-    var djiValue: DJICameraShootPhotoMode {
+extension DJICameraShootPhotoMode {
+    var kernelValue: Kernel.CameraPhotoMode {
         switch self {
         case .single: return .single
-        case .hdr: return .HDR
+        case .HDR: return .hdr
         case .burst: return .burst
-        case .aeb: return .AEB
+        case .AEB: return .aeb
         case .interval: return .interval
         case .timeLapse: return .timeLapse
         case .rawBurst: return .rawBurst
         case .shallowFocus: return .shallowFocus
         case .panorama: return .panorama
-        case .ehdr: return .EHDR
+        case .EHDR: return .ehdr
         case .hyperLight: return .hyperLight
+        case .unknown: return .unknown
+        case .panorama: return .panorama
+        case .cameraPanorama: return .cameraPanorama
         case .unknown: return .unknown
         }
     }
