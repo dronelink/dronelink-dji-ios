@@ -579,8 +579,11 @@ extension DJIDroneSession: DroneStateAdapter {
     public var statusMessages: [Kernel.Message]? {
         var messages: [Kernel.Message] = []
         
-        if let flightControllerMessages = flightControllerState?.value.statusMessages {
-            messages.append(contentsOf: flightControllerMessages)
+        if let state = flightControllerState?.value {
+            messages.append(contentsOf: state.statusMessages)
+        }
+        else {
+            messages.append(Kernel.Message(title: "DJIDroneSession.telemetry.unavailable".localized, level: .danger))
         }
         
         if let diagnosticMessages = _diagnosticsInformationMessages?.value {

@@ -24,6 +24,8 @@
 "MissionDisengageReason.drone.gimbal.unavailable.title" = "Gimbal Unavailable";
 "MissionDisengageReason.drone.camera.mode.invalid.title" = "Camera Mode Invalid";
 
+"DJIDroneSession.telemetry.unavailable" = "Telemetry Unavailable";
+
 "DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.title" = "Location Unavailable";
 "DJIDronelink:DJIFlightControllerState.statusMessages.homeLocationNotSet.title" = "Home Location Not Set";
 "DJIDronelink:DJIFlightControllerState.statusMessages.isLowerThanSeriousBatteryWarningThreshold.title" = "Critically Low Battery";
