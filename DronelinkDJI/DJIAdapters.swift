@@ -153,8 +153,9 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public let cameraShotPhotoMode: DJICameraShootPhotoMode?
     public let burstCountValue: DJICameraPhotoBurstCount?
     public let aebCountValue: DJICameraPhotoAEBCount?
+    public let photoTimeIntervalSettings: DJICameraPhotoTimeIntervalSettings?
     
-    public init(systemState: DJICameraSystemState, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensInformation: String?, shotPhotoMode: DJICameraShootPhotoMode?, burstCount: DJICameraPhotoBurstCount?, aebCount: DJICameraPhotoAEBCount?) {
+    public init(systemState: DJICameraSystemState, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensInformation: String?, shotPhotoMode: DJICameraShootPhotoMode?, burstCount: DJICameraPhotoBurstCount?, aebCount: DJICameraPhotoAEBCount?, intervalSettings: DJICameraPhotoTimeIntervalSettings?) {
         self.systemState = systemState
         self.storageState = storageState
         self.exposureSettings = exposureSettings
@@ -162,6 +163,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         self.cameraShotPhotoMode = shotPhotoMode
         self.burstCountValue = burstCount
         self.aebCountValue = aebCount
+        photoTimeIntervalSettings = intervalSettings
     }
     
     public var isCapturingPhotoInterval: Bool { systemState.isCapturingPhotoInterval }
@@ -172,7 +174,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var photoMode: Kernel.CameraPhotoMode? { cameraShotPhotoMode?.kernelValue }
     public var burstCount: Kernel.CameraBurstCount? { burstCountValue?.kernelValue }
     public var aebCount: Kernel.CameraAEBCount? {aebCountValue?.kernelValue}
-    public var photoInterval: Int? { nil } //FIXME
+    public var photoInterval: Int? { Int(photoTimeIntervalSettings?.timeIntervalInSeconds ?? UInt16()) } //FIXME
     public var exposureCompensation: Kernel.CameraExposureCompensation { exposureSettings?.exposureCompensation.kernelValue ?? .unknown }
     public var iso: Kernel.CameraISO { .unknown } //FIXME
     public var shutterSpeed: Kernel.CameraShutterSpeed { .unknown } //FIXME

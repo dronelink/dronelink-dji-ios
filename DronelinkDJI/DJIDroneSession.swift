@@ -59,6 +59,7 @@ public class DJIDroneSession: NSObject {
     private var _shotPhotoMode: DatedValue<DJICameraShootPhotoMode>?
     private var _burstCount: DatedValue<DJICameraPhotoBurstCount>?
     private var _aebCount: DatedValue<DJICameraPhotoAEBCount>?
+    private var _timeIntervalSettings: DatedValue<DJICameraPhotoTimeIntervalSettings>?
     
     private var listeningDJIKeys: [DJIKey] = []
     
@@ -230,6 +231,15 @@ public class DJIDroneSession: NSObject {
             }
             else {
                 self._aebCount = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamPhotoTimeIntervalSettings)!) { (oldValue, newValue) in
+            if let value = newValue?.value as? DJICameraPhotoTimeIntervalSettings {
+                self._timeIntervalSettings = DatedValue(value: value)
+            }
+            else {
+                self._timeIntervalSettings = nil
             }
         }
     }
@@ -575,7 +585,7 @@ extension DJIDroneSession: DroneSession {
                     storageState: self._cameraStorageStates[channel]?.value,
                     exposureSettings: self._cameraExposureSettings[channel]?.value,
                                     lensInformation: self._cameraLensInformation[channel]?.value, shotPhotoMode: self._shotPhotoMode?.value,
-                                    burstCount: self._burstCount?.value, aebCount: self._aebCount?.value),
+                                    burstCount: self._burstCount?.value, aebCount: self._aebCount?.value, intervalSettings: self._timeIntervalSettings?.value),
                     date: systemState.date)
             }
             return nil
