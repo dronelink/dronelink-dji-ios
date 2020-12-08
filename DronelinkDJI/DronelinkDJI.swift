@@ -106,6 +106,17 @@ extension Kernel.CameraAEBCount {
     }
 }
 
+extension DJICameraPhotoAEBCount {
+    var kernelValue: Kernel.CameraAEBCount {
+        switch self {
+        case .count3: return ._3
+        case .count5: return ._5
+        case .count7: return ._7
+        case .countUnknown: return .unknown
+        }
+    }
+}
+
 extension Kernel.CameraAperture {
     var djiValue: DJICameraAperture {
         switch self {
@@ -385,6 +396,57 @@ extension Kernel.CameraPhotoFileFormat {
     }
 }
 
+extension Kernel.CameraBurstCount {
+    var djiValue: DJICameraPhotoBurstCount {
+        switch self {
+        case ._2: return .count2
+        case ._3: return .count3
+        case ._5: return .count5
+        case ._7: return .count7
+        case ._10: return .count10
+        case ._14: return .count14
+        case .unknown: return .countUnknown
+        case .continuous: return .countContinuous
+        }
+    }
+}
+
+extension DJICameraPhotoBurstCount {
+    var kernelValue: Kernel.CameraBurstCount {
+        switch self {
+        case .count2: return ._2
+        case .count3: return ._3
+        case .count5: return ._5
+        case .count7: return ._7
+        case .count10: return ._10
+        case .count14: return ._14
+        case .countUnknown: return .unknown
+        case .countContinuous: return .continuous
+        }
+    }
+}
+
+extension Kernel.CameraPhotoMode {
+    var djiValue: DJICameraShootPhotoMode {
+        switch self {
+        case .single: return .single
+        case .hdr: return .HDR
+        case .burst: return .burst
+        case .aeb: return .AEB
+        case .interval: return .interval
+        case .timeLapse: return .timeLapse
+        case .rawBurst: return .rawBurst
+        case .shallowFocus: return .shallowFocus
+        case .panorama: return .panorama
+        case .ehdr: return .EHDR
+        case .hyperLight: return .hyperLight
+        case .unknown: return .unknown
+        case .cameraPanorama:
+            return .cameraPanorama
+        }
+    }
+}
+
 extension DJICameraShootPhotoMode {
     var kernelValue: Kernel.CameraPhotoMode {
         switch self {
@@ -402,7 +464,6 @@ extension DJICameraShootPhotoMode {
         case .unknown: return .unknown
         case .panorama: return .panorama
         case .cameraPanorama: return .cameraPanorama
-        case .unknown: return .unknown
         }
     }
 }

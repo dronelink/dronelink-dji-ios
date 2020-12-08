@@ -57,6 +57,8 @@ public class DJIDroneSession: NSObject {
     private var _downlinkSignalQuality: DatedValue<UInt>?
     private var _uplinkSignalQuality: DatedValue<UInt>?
     private var _shotPhotoMode: DatedValue<DJICameraShootPhotoMode>?
+    private var _burstCount: DatedValue<DJICameraPhotoBurstCount>?
+    private var _aebCount: DatedValue<DJICameraPhotoAEBCount>?
     
     private var listeningDJIKeys: [DJIKey] = []
     
@@ -210,6 +212,24 @@ public class DJIDroneSession: NSObject {
             }
             else {
                 self._shotPhotoMode = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamPhotoBurstCount)!) { (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self._burstCount = DatedValue(value: DJICameraPhotoBurstCount(rawValue: value) ?? DJICameraPhotoBurstCount.countUnknown)
+            }
+            else {
+                self._burstCount = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamPhotoAEBCount)!) { (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self._aebCount = DatedValue(value: DJICameraPhotoAEBCount(rawValue: value) ?? DJICameraPhotoAEBCount.countUnknown)
+            }
+            else {
+                self._aebCount = nil
             }
         }
     }
@@ -554,7 +574,8 @@ extension DJIDroneSession: DroneSession {
                     systemState: systemState.value,
                     storageState: self._cameraStorageStates[channel]?.value,
                     exposureSettings: self._cameraExposureSettings[channel]?.value,
-                                    lensInformation: self._cameraLensInformation[channel]?.value, shotPhotoMode: self._shotPhotoMode?.value),
+                                    lensInformation: self._cameraLensInformation[channel]?.value, shotPhotoMode: self._shotPhotoMode?.value,
+                                    burstCount: self._burstCount?.value, aebCount: self._aebCount?.value),
                     date: systemState.date)
             }
             return nil

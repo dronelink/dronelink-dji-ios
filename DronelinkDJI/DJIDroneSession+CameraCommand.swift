@@ -180,8 +180,8 @@ extension DJIDroneSession {
         
         if let command = cameraCommand as? Kernel.PhotoModeCameraCommand {
             camera.getShootPhotoMode { (current, error) in
-                Command.conditionallyExecute(current != command.photoMode, error: error, finished: finished) {
-                    camera.setShootPhotoMode(command.photoMode, withCompletion: finished)
+                Command.conditionallyExecute(current != command.photoMode.djiValue, error: error, finished: finished) {
+                    camera.setShootPhotoMode(command.photoMode.djiValue, withCompletion: finished)
                 }
             }
             return nil
