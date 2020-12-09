@@ -235,13 +235,12 @@ public class DJIDroneSession: NSObject {
         }
         
         startListeningForChanges(on: DJICameraKey(param: DJICameraParamPhotoTimeIntervalSettings)!) { (oldValue, newValue) in
-            if let value = newValue?.value as? DJICameraPhotoTimeIntervalSettings {
-                self._timeIntervalSettings = DatedValue(value: value)
+              var value = DJICameraPhotoTimeIntervalSettings()
+              let valuePointer = UnsafeMutableRawPointer(&value)
+              (newValue?.value as? NSValue)?.getValue(valuePointer)
+              NSLog("captureCount: \(value.captureCount) timeIntervalInSeconds: \(value.timeIntervalInSeconds)")
+            self._timeIntervalSettings = DatedValue(value: value)
             }
-            else {
-                self._timeIntervalSettings = nil
-            }
-        }
     }
     
     private func startListeningForChanges(on key: DJIKey, andUpdate updateBlock: @escaping DJIKeyedListenerUpdateBlock) {

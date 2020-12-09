@@ -174,7 +174,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var photoMode: Kernel.CameraPhotoMode? { cameraShotPhotoMode?.kernelValue }
     public var burstCount: Kernel.CameraBurstCount? { burstCountValue?.kernelValue }
     public var aebCount: Kernel.CameraAEBCount? {aebCountValue?.kernelValue}
-    public var photoInterval: Int? { Int(photoTimeIntervalSettings?.timeIntervalInSeconds ?? UInt16()) } //FIXME
+    public var photoInterval: Int? { Int(photoTimeIntervalSettings?.timeIntervalInSeconds ?? UInt16()) }
     public var exposureCompensation: Kernel.CameraExposureCompensation { exposureSettings?.exposureCompensation.kernelValue ?? .unknown }
     public var iso: Kernel.CameraISO { .unknown } //FIXME
     public var shutterSpeed: Kernel.CameraShutterSpeed { .unknown } //FIXME
