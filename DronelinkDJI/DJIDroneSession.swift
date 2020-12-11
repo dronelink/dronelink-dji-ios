@@ -461,6 +461,7 @@ extension DJIDroneSession: DroneSession {
     public var initialized: Bool { _initialized }
     public var located: Bool { _located }
     public var telemetryDelayed: Bool { -(flightControllerState?.date.timeIntervalSinceNow ?? 0) > 1.0 }
+    public var isLowerThanBatteryWarningThreshold: Bool {flightControllerState?.value.isLowerThanBatteryWarningThreshold ?? false}
     public var disengageReason: Kernel.Message? {
         if adapter.drone.flightController == nil {
             return Kernel.Message(title: "MissionDisengageReason.drone.control.unavailable.title".localized)
@@ -662,9 +663,10 @@ extension DJIDroneSession: DroneStateAdapter {
         return minObstacleDistance > 0 ? minObstacleDistance : nil
     }
     public var orientation: Kernel.Orientation3 { flightControllerState?.value.orientation ?? Kernel.Orientation3() }
-    public var gpsSatellites: Int? {
-        if let satelliteCount = flightControllerState?.value.satelliteCount {
-            return Int(satelliteCount)
+    
+    public var gpsSignalLevel: Kernel.GPSSignalLevel? {
+        if let gpsSignalLevel = flightControllerState?.value.gpsSignalLevel {
+            return gpsSignalLevel.kernelValue
         }
         return nil
     }
