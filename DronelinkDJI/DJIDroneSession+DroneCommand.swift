@@ -175,9 +175,9 @@ extension DJIDroneSession {
         }
         
         if let command = flightAssistantCommand as? Kernel.UpwardsAvoidanceDroneCommand {
-            flightAssistant.getUpwardAvoidanceEnabled { (current, error) in
+            flightAssistant.getUpwardVisionObstacleAvoidanceEnabled { (current, error) in
                 Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
-                    flightAssistant.setUpwardAvoidanceEnabled(command.enabled, withCompletion: finished)
+                    flightAssistant.setUpwardVisionObstacleAvoidanceEnabled(command.enabled, withCompletion: finished)
                 }
             }
             return nil
