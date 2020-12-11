@@ -181,14 +181,14 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var aperture: Kernel.CameraAperture { .unknown } //FIXME
     public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset { .unknown } //FIXME
     public var lensDetails: String? { lensInformation }
-    public var currentVideoTimeInSeconds: Int {systemState.currentVideoTimeInSeconds}
+    public var currentVideoTime: Double {Double( systemState.currentVideoRecordingTimeInSeconds ?? 0)}
 }
 
 extension DJICameraSystemState {
     public var isCapturingPhotoInterval: Bool { isShootingIntervalPhoto }
     public var isCapturingVideo: Bool { isRecording }
     public var isCapturing: Bool { isRecording || isShootingSinglePhoto || isShootingSinglePhotoInRAWFormat || isShootingIntervalPhoto || isShootingBurstPhoto || isShootingRAWBurstPhoto || isShootingShallowFocusPhoto || isShootingPanoramaPhoto }
-    public var currentVideoTimeInSeconds: Int {Int(currentVideoRecordingTimeInSeconds)}
+    public var currentVideoTime: Int {Int(currentVideoRecordingTimeInSeconds)}
     
 }
 
