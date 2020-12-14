@@ -99,6 +99,34 @@ extension Kernel.DroneConnectionFailSafeBehavior {
     }
 }
 
+extension Kernel.GPSSignalLevel {
+    var djiValue: DJIGPSSignalLevel {
+        switch self {
+        case ._0: return .level0
+        case ._1: return .level1
+        case ._2: return .level2
+        case ._3: return .level3
+        case ._4: return .level4
+        case ._5: return .level5
+        case .none: return .levelNone
+        }
+    }
+}
+
+extension DJIGPSSignalLevel {
+    var kernelValue: Kernel.GPSSignalLevel {
+        switch self {
+        case .level0: return ._0
+        case .level1: return ._1
+        case .level2: return ._2
+        case .level3: return ._3
+        case .level4: return ._4
+        case .level5: return ._5
+        case .levelNone: return .none
+        }
+    }
+}
+
 extension Kernel.CameraAEBCount {
     var djiValue: DJICameraPhotoAEBCount {
         switch self {
@@ -106,6 +134,17 @@ extension Kernel.CameraAEBCount {
         case ._5: return .count5
         case ._7: return .count7
         case .unknown: return .countUnknown
+        }
+    }
+}
+
+extension DJICameraPhotoAEBCount {
+    var kernelValue: Kernel.CameraAEBCount {
+        switch self {
+        case .count3: return ._3
+        case .count5: return ._5
+        case .count7: return ._7
+        case .countUnknown: return .unknown
         }
     }
 }
@@ -389,6 +428,36 @@ extension Kernel.CameraPhotoFileFormat {
     }
 }
 
+extension Kernel.CameraBurstCount {
+    var djiValue: DJICameraPhotoBurstCount {
+        switch self {
+        case ._2: return .count2
+        case ._3: return .count3
+        case ._5: return .count5
+        case ._7: return .count7
+        case ._10: return .count10
+        case ._14: return .count14
+        case .unknown: return .countUnknown
+        case .continuous: return .countContinuous
+        }
+    }
+}
+
+extension DJICameraPhotoBurstCount {
+    var kernelValue: Kernel.CameraBurstCount {
+        switch self {
+        case .count2: return ._2
+        case .count3: return ._3
+        case .count5: return ._5
+        case .count7: return ._7
+        case .count10: return ._10
+        case .count14: return ._14
+        case .countUnknown: return .unknown
+        case .countContinuous: return .continuous
+        }
+    }
+}
+
 extension Kernel.CameraPhotoMode {
     var djiValue: DJICameraShootPhotoMode {
         switch self {
@@ -404,6 +473,29 @@ extension Kernel.CameraPhotoMode {
         case .ehdr: return .EHDR
         case .hyperLight: return .hyperLight
         case .unknown: return .unknown
+        case .cameraPanorama:
+            return .cameraPanorama
+        }
+    }
+}
+
+extension DJICameraShootPhotoMode {
+    var kernelValue: Kernel.CameraPhotoMode {
+        switch self {
+        case .single: return .single
+        case .HDR: return .hdr
+        case .burst: return .burst
+        case .AEB: return .aeb
+        case .interval: return .interval
+        case .timeLapse: return .timeLapse
+        case .rawBurst: return .rawBurst
+        case .shallowFocus: return .shallowFocus
+        case .panorama: return .panorama
+        case .EHDR: return .ehdr
+        case .hyperLight: return .hyperLight
+        case .unknown: return .unknown
+        case .panorama: return .panorama
+        case .cameraPanorama: return .cameraPanorama
         }
     }
 }

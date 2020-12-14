@@ -56,6 +56,10 @@ public class DJIDroneSession: NSObject {
     private var _diagnosticsInformationMessages: DatedValue<[Kernel.Message]>?
     private var _downlinkSignalQuality: DatedValue<UInt>?
     private var _uplinkSignalQuality: DatedValue<UInt>?
+    private var _shotPhotoMode: DatedValue<DJICameraShootPhotoMode>?
+    private var _burstCount: DatedValue<DJICameraPhotoBurstCount>?
+    private var _aebCount: DatedValue<DJICameraPhotoAEBCount>?
+    private var _timeIntervalSettings: DatedValue<DJICameraPhotoTimeIntervalSettings>?
     
     private var listeningDJIKeys: [DJIKey] = []
     
@@ -202,6 +206,41 @@ public class DJIDroneSession: NSObject {
                 self._uplinkSignalQuality = nil
             }
         }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamShootPhotoMode)!) { (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self._shotPhotoMode = DatedValue(value: DJICameraShootPhotoMode(rawValue: value) ?? DJICameraShootPhotoMode.unknown)
+            }
+            else {
+                self._shotPhotoMode = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamPhotoBurstCount)!) { (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self._burstCount = DatedValue(value: DJICameraPhotoBurstCount(rawValue: value) ?? DJICameraPhotoBurstCount.countUnknown)
+            }
+            else {
+                self._burstCount = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamPhotoAEBCount)!) { (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self._aebCount = DatedValue(value: DJICameraPhotoAEBCount(rawValue: value) ?? DJICameraPhotoAEBCount.countUnknown)
+            }
+            else {
+                self._aebCount = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamPhotoTimeIntervalSettings)!) { (oldValue, newValue) in
+              var value = DJICameraPhotoTimeIntervalSettings()
+              let valuePointer = UnsafeMutableRawPointer(&value)
+              (newValue?.value as? NSValue)?.getValue(valuePointer)
+              NSLog("captureCount: \(value.captureCount) timeIntervalInSeconds: \(value.timeIntervalInSeconds)")
+            self._timeIntervalSettings = DatedValue(value: value)
+            }
     }
     
     private func startListeningForChanges(on key: DJIKey, andUpdate updateBlock: @escaping DJIKeyedListenerUpdateBlock) {
@@ -425,6 +464,7 @@ extension DJIDroneSession: DroneSession {
     public var initialized: Bool { _initialized }
     public var located: Bool { _located }
     public var telemetryDelayed: Bool { -(flightControllerState?.date.timeIntervalSinceNow ?? 0) > 1.0 }
+    public var isLowerThanBatteryWarningThreshold: Bool {flightControllerState?.value.isLowerThanBatteryWarningThreshold ?? false}
     public var disengageReason: Kernel.Message? {
         if adapter.drone.flightController == nil {
             return Kernel.Message(title: "MissionDisengageReason.drone.control.unavailable.title".localized)
@@ -547,7 +587,9 @@ extension DJIDroneSession: DroneSession {
                     systemState: systemState.value,
                     storageState: self._cameraStorageStates[channel]?.value,
                     exposureSettings: self._cameraExposureSettings[channel]?.value,
-                    lensInformation: self._cameraLensInformation[channel]?.value), date: systemState.date)
+                                    lensInformation: self._cameraLensInformation[channel]?.value, shotPhotoMode: self._shotPhotoMode?.value,
+                                    burstCount: self._burstCount?.value, aebCount: self._aebCount?.value, intervalSettings: self._timeIntervalSettings?.value),
+                    date: systemState.date)
             }
             return nil
         }
@@ -624,9 +666,10 @@ extension DJIDroneSession: DroneStateAdapter {
         return minObstacleDistance > 0 ? minObstacleDistance : nil
     }
     public var orientation: Kernel.Orientation3 { flightControllerState?.value.orientation ?? Kernel.Orientation3() }
-    public var gpsSatellites: Int? {
-        if let satelliteCount = flightControllerState?.value.satelliteCount {
-            return Int(satelliteCount)
+    
+    public var gpsSignalLevel: Kernel.GPSSignalLevel? {
+        if let gpsSignalLevel = flightControllerState?.value.gpsSignalLevel {
+            return gpsSignalLevel.kernelValue
         }
         return nil
     }
