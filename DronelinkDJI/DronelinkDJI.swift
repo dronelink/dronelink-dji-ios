@@ -73,6 +73,10 @@ extension DJIGimbal {
     }
     
     public var isAdjustYawSupported: Bool {
+        return (capabilities[DJIGimbalParamAdjustYaw] as? DJIParamCapability)?.isSupported ?? false
+    }
+    
+    public var isAdjustYaw360Supported: Bool {
         if let capability = capabilities[DJIGimbalParamAdjustYaw] as? DJIParamCapabilityMinMax {
             return capability.isSupported && capability.min.intValue <= -180 && capability.max.intValue >= 180
         }
