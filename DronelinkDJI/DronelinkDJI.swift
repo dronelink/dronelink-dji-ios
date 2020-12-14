@@ -99,30 +99,16 @@ extension Kernel.DroneConnectionFailSafeBehavior {
     }
 }
 
-extension Kernel.GPSSignalLevel {
-    var djiValue: DJIGPSSignalLevel {
-        switch self {
-        case ._0: return .level0
-        case ._1: return .level1
-        case ._2: return .level2
-        case ._3: return .level3
-        case ._4: return .level4
-        case ._5: return .level5
-        case .none: return .levelNone
-        }
-    }
-}
-
 extension DJIGPSSignalLevel {
-    var kernelValue: Kernel.GPSSignalLevel {
+    var doubleValue: Double? {
         switch self {
-        case .level0: return ._0
-        case .level1: return ._1
-        case .level2: return ._2
-        case .level3: return ._3
-        case .level4: return ._4
-        case .level5: return ._5
-        case .levelNone: return .none
+        case .level0: return 0
+        case .level1: return 0.2
+        case .level2: return 0.4
+        case .level3: return 0.6
+        case .level4: return 0.8
+        case .level5: return 1
+        case .levelNone: return nil
         }
     }
 }

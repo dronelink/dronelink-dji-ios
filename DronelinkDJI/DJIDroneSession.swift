@@ -54,6 +54,7 @@ public class DJIDroneSession: NSObject {
     private var _gimbalStates: [UInt: DatedValue<GimbalStateAdapter>] = [:]
     
     private var _diagnosticsInformationMessages: DatedValue<[Kernel.Message]>?
+    private var _lowBatteryWarningThreshold: DatedValue<UInt>?
     private var _downlinkSignalQuality: DatedValue<UInt>?
     private var _uplinkSignalQuality: DatedValue<UInt>?
     private var _shotPhotoMode: DatedValue<DJICameraShootPhotoMode>?
@@ -189,6 +190,15 @@ public class DJIDroneSession: NSObject {
     }
     
     private func initListeners() {
+        startListeningForChanges(on: DJIFlightControllerKey(param: DJIFlightControllerParamLowBatteryWarningThreshold)!) { (oldValue, newValue) in
+            if let newValue = newValue?.unsignedIntegerValue {
+                self._lowBatteryWarningThreshold = DatedValue(value: newValue)
+            }
+            else {
+                self._lowBatteryWarningThreshold = nil
+            }
+        }
+        
         startListeningForChanges(on: DJIAirLinkKey(param: DJIAirLinkParamDownlinkSignalQuality)!) { (oldValue, newValue) in
             if let newValue = newValue?.unsignedIntegerValue {
                 self._downlinkSignalQuality = DatedValue(value: newValue)
@@ -464,7 +474,6 @@ extension DJIDroneSession: DroneSession {
     public var initialized: Bool { _initialized }
     public var located: Bool { _located }
     public var telemetryDelayed: Bool { -(flightControllerState?.date.timeIntervalSinceNow ?? 0) > 1.0 }
-    public var isLowerThanBatteryWarningThreshold: Bool {flightControllerState?.value.isLowerThanBatteryWarningThreshold ?? false}
     public var disengageReason: Kernel.Message? {
         if adapter.drone.flightController == nil {
             return Kernel.Message(title: "MissionDisengageReason.drone.control.unavailable.title".localized)
@@ -658,6 +667,12 @@ extension DJIDroneSession: DroneStateAdapter {
         }
         return nil
     }
+    public var lowBatteryThreshold: Double? {
+        if let lowBatteryWarningThreshold = _lowBatteryWarningThreshold?.value {
+            return Double(lowBatteryWarningThreshold / 100)
+        }
+        return nil
+    }
     public var obstacleDistance: Double? {
         var minObstacleDistance = 0.0
         visionDetectionState?.value.detectionSectors?.forEach {
@@ -666,21 +681,19 @@ extension DJIDroneSession: DroneStateAdapter {
         return minObstacleDistance > 0 ? minObstacleDistance : nil
     }
     public var orientation: Kernel.Orientation3 { flightControllerState?.value.orientation ?? Kernel.Orientation3() }
-    
-    public var gpsSignalLevel: Kernel.GPSSignalLevel? {
-        if let gpsSignalLevel = flightControllerState?.value.gpsSignalLevel {
-            return gpsSignalLevel.kernelValue
+    public var gpsSatellites: Int? {
+        if let satelliteCount = flightControllerState?.value.satelliteCount {
+            return Int(satelliteCount)
         }
         return nil
     }
-    
+    public var gpsSignalStrength: Double? { flightControllerState?.value.gpsSignalLevel.doubleValue }
     public var downlinkSignalStrength: Double? {
         if let downlinkSignalQuality = _downlinkSignalQuality?.value {
             return Double(downlinkSignalQuality) / 100.0
         }
         return nil
     }
-    
     public var uplinkSignalStrength: Double? {
         if let uplinkSignalQuality = _uplinkSignalQuality?.value {
             return Double(uplinkSignalQuality) / 100.0
