@@ -339,17 +339,6 @@ extension DJICameraMode {
     }
 }
 
-extension Kernel.CameraMeteringMode {
-    var djiValue: DJICameraMeteringMode {
-        switch self {
-        case .center: return .center
-        case .average: return .average
-        case .spot: return .spot
-        case .unknown: return .unknown
-        }
-    }
-}
-
 extension Kernel.CameraMode {
     var djiValue: DJICameraMode {
         switch self {
@@ -358,6 +347,28 @@ extension Kernel.CameraMode {
         case .playback: return .playback
         case .download: return .mediaDownload
         case .broadcast: return .broadcast
+        case .unknown: return .unknown
+        }
+    }
+    
+    var djiValueFlat: DJIFlatCameraMode {
+        switch self {
+        case .photo: return .photoSmart
+        case .video: return .videoNormal
+        case .playback: return .unknown
+        case .download: return .unknown
+        case .broadcast: return .unknown
+        case .unknown: return .unknown
+        }
+    }
+}
+
+extension Kernel.CameraMeteringMode {
+    var djiValue: DJICameraMeteringMode {
+        switch self {
+        case .center: return .center
+        case .average: return .average
+        case .spot: return .spot
         case .unknown: return .unknown
         }
     }
@@ -377,7 +388,7 @@ extension Kernel.CameraPhotoAspectRatio {
 extension Kernel.CameraPhotoFileFormat {
     var djiValue: DJICameraPhotoFileFormat {
         switch self {
-        case .raw: return .RAW
+        case .raw: return .RAW  
         case .jpeg: return .JPEG
         case .rawAndJpeg: return .rawAndJPEG
         case .tiff14bit: return .tiff14Bit
@@ -403,6 +414,29 @@ extension Kernel.CameraPhotoMode {
         case .panorama: return .panorama
         case .ehdr: return .EHDR
         case .hyperLight: return .hyperLight
+        case .highResolution: return .unknown
+        case .smart: return .unknown
+        case .internalAISpotChecking: return .unknown
+        case .unknown: return .unknown
+        }
+    }
+    
+    var djiValueFlat: DJIFlatCameraMode {
+        switch self {
+        case .single: return .photoSingle
+        case .hdr: return .photoHDR
+        case .burst: return .photoBurst
+        case .aeb: return .photoAEB
+        case .interval: return .photoInterval
+        case .timeLapse: return .photoTimeLapse
+        case .rawBurst: return .unknown
+        case .shallowFocus: return .unknown
+        case .panorama: return .photoPanorama
+        case .ehdr: return .photoEHDR
+        case .hyperLight: return .photoHyperLight
+        case .highResolution: return .photoHighResolution
+        case .smart: return .photoSmart
+        case .internalAISpotChecking: return .internalAISpotChecking
         case .unknown: return .unknown
         }
     }
@@ -554,6 +588,17 @@ extension Kernel.CameraVideoFrameRate {
         case ._120: return .rate120FPS
         case ._8dot7: return .rate8dot7FPS
         case .unknown: return .rateUnknown
+        }
+    }
+}
+
+extension Kernel.CameraVideoMode {
+    var djiValueFlat: DJIFlatCameraMode {
+        switch self {
+        case .normal: return .videoNormal
+        case .hdr: return .videoHDR
+        case .slowMotion: return .slowMotion
+        case .unknown: return .unknown
         }
     }
 }
