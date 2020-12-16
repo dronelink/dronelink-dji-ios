@@ -191,8 +191,8 @@ public class DJIDroneSession: NSObject {
     
     private func initListeners() {
         startListeningForChanges(on: DJIFlightControllerKey(param: DJIFlightControllerParamLowBatteryWarningThreshold)!) { (oldValue, newValue) in
-            if let newValue = newValue?.unsignedIntegerValue {
-                self._lowBatteryWarningThreshold = DatedValue(value: newValue)
+            if let value = newValue?.unsignedIntegerValue ?? oldValue?.unsignedIntegerValue {
+                self._lowBatteryWarningThreshold = DatedValue(value: value)
             }
             else {
                 self._lowBatteryWarningThreshold = nil
@@ -248,9 +248,8 @@ public class DJIDroneSession: NSObject {
               var value = DJICameraPhotoTimeIntervalSettings()
               let valuePointer = UnsafeMutableRawPointer(&value)
               (newValue?.value as? NSValue)?.getValue(valuePointer)
-              NSLog("captureCount: \(value.captureCount) timeIntervalInSeconds: \(value.timeIntervalInSeconds)")
             self._timeIntervalSettings = DatedValue(value: value)
-            }
+        }
     }
     
     private func startListeningForChanges(on key: DJIKey, andUpdate updateBlock: @escaping DJIKeyedListenerUpdateBlock) {
@@ -669,7 +668,7 @@ extension DJIDroneSession: DroneStateAdapter {
     }
     public var lowBatteryThreshold: Double? {
         if let lowBatteryWarningThreshold = _lowBatteryWarningThreshold?.value {
-            return Double(lowBatteryWarningThreshold / 100)
+            return Double(lowBatteryWarningThreshold) / 100
         }
         return nil
     }

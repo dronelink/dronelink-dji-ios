@@ -166,12 +166,14 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         photoTimeIntervalSettings = intervalSettings
     }
     
+    public var isBusy: Bool { systemState.isBusy || storageState?.isFormatting ?? false || storageState?.isInitializing ?? false }
+    public var isCapturing: Bool { systemState.isCapturing }
     public var isCapturingPhotoInterval: Bool { systemState.isCapturingPhotoInterval }
     public var isCapturingVideo: Bool { systemState.isCapturingVideo }
-    public var isCapturing: Bool { systemState.isCapturing }
+    public var isCapturingContinuous: Bool { systemState.isCapturingContinuous }
     public var isSDCardInserted: Bool { storageState?.isInserted ?? true }
     public var mode: Kernel.CameraMode { systemState.mode.kernelValue }
-    public var photoMode: Kernel.CameraPhotoMode? { cameraShotPhotoMode?.kernelValue }
+    public var photoMode: Kernel.CameraPhotoMode? { systemState.flatCameraMode.kernelValuePhoto ?? cameraShotPhotoMode?.kernelValue }
     public var photoInterval: Int? { Int(photoTimeIntervalSettings?.timeIntervalInSeconds ?? UInt16()) }
     public var burstCount: Kernel.CameraBurstCount? { burstCountValue?.kernelValue }
     public var aebCount: Kernel.CameraAEBCount? {aebCountValue?.kernelValue}
@@ -185,9 +187,11 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
 }
 
 extension DJICameraSystemState {
+    public var isBusy: Bool { isStoringPhoto || isShootingSinglePhoto || isShootingSinglePhotoInRAWFormat || isShootingIntervalPhoto || isShootingBurstPhoto || isShootingRAWBurstPhoto || isShootingShallowFocusPhoto || isShootingPanoramaPhoto || isShootingHyperanalytic }
+    public var isCapturing: Bool { isRecording || isShootingSinglePhoto || isShootingSinglePhotoInRAWFormat || isShootingIntervalPhoto || isShootingBurstPhoto || isShootingRAWBurstPhoto || isShootingShallowFocusPhoto || isShootingPanoramaPhoto || isShootingHyperanalytic }
     public var isCapturingPhotoInterval: Bool { isShootingIntervalPhoto }
     public var isCapturingVideo: Bool { isRecording }
-    public var isCapturing: Bool { isRecording || isShootingSinglePhoto || isShootingSinglePhotoInRAWFormat || isShootingIntervalPhoto || isShootingBurstPhoto || isShootingRAWBurstPhoto || isShootingShallowFocusPhoto || isShootingPanoramaPhoto }
+    public var isCapturingContinuous: Bool { isCapturingPhotoInterval || isCapturingVideo }
     public var currentVideoTime: Double? { isCapturingVideo ? Double(currentVideoRecordingTimeInSeconds) : nil }
 }
 

@@ -388,6 +388,29 @@ extension Kernel.CameraMode {
     }
 }
 
+extension DJIFlatCameraMode {
+    var kernelValuePhoto: Kernel.CameraPhotoMode? {
+        switch self {
+        case .videoNormal: return nil
+        case .photoTimeLapse: return .timeLapse
+        case .photoAEB: return .aeb
+        case .videoHDR: return nil
+        case .photoSingle: return .single
+        case .photoBurst: return .burst
+        case .photoHDR: return .hdr
+        case .photoInterval: return .interval
+        case .photoHyperLight: return .hyperLight
+        case .photoPanorama: return .panorama
+        case .photoEHDR: return .ehdr
+        case .photoHighResolution: return nil
+        case .photoSmart: return .smart
+        case .slowMotion: return nil
+        case .internalAISpotChecking: return .internalAISpotChecking
+        case .unknown: return .unknown
+        }
+    }
+}
+
 extension Kernel.CameraMeteringMode {
     var djiValue: DJICameraMeteringMode {
         switch self {
@@ -493,8 +516,6 @@ extension Kernel.CameraPhotoMode {
         case .smart: return .photoSmart
         case .internalAISpotChecking: return .internalAISpotChecking
         case .unknown: return .unknown
-        case .cameraPanorama:
-            return .cameraPanorama
         }
     }
 }
@@ -511,11 +532,11 @@ extension DJICameraShootPhotoMode {
         case .rawBurst: return .rawBurst
         case .shallowFocus: return .shallowFocus
         case .panorama: return .panorama
+        case .cameraPanorama: return .panorama
         case .EHDR: return .ehdr
         case .hyperLight: return .hyperLight
         case .unknown: return .unknown
         case .panorama: return .panorama
-        case .cameraPanorama: return .cameraPanorama
         }
     }
 }
