@@ -646,6 +646,16 @@ extension Kernel.CameraStorageLocation {
     }
 }
 
+extension DJICameraStorageLocation {
+    var kernelValue: Kernel.CameraStorageLocation {
+        switch self {
+        case .sdCard: return .sdCard
+        case .internalStorage: return ._internal
+        case .unknown: return .unknown
+        }
+    }
+}
+
 extension Kernel.CameraVideoFileCompressionStandard {
     var djiValue: DJIVideoFileCompressionStandard {
         switch self {

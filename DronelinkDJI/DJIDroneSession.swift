@@ -57,7 +57,8 @@ public class DJIDroneSession: NSObject {
     private var _lowBatteryWarningThreshold: DatedValue<UInt>?
     private var _downlinkSignalQuality: DatedValue<UInt>?
     private var _uplinkSignalQuality: DatedValue<UInt>?
-    private var _shotPhotoMode: DatedValue<DJICameraShootPhotoMode>?
+    private var _storageLocation: DatedValue<DJICameraStorageLocation>?
+    private var _photoMode: DatedValue<DJICameraShootPhotoMode>?
     private var _burstCount: DatedValue<DJICameraPhotoBurstCount>?
     private var _aebCount: DatedValue<DJICameraPhotoAEBCount>?
     private var _timeIntervalSettings: DatedValue<DJICameraPhotoTimeIntervalSettings>?
@@ -217,18 +218,27 @@ public class DJIDroneSession: NSObject {
             }
         }
         
-        startListeningForChanges(on: DJICameraKey(param: DJICameraParamShootPhotoMode)!) { (oldValue, newValue) in
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamStorageLocation)!) { (oldValue, newValue) in
             if let value = newValue?.unsignedIntegerValue {
-                self._shotPhotoMode = DatedValue(value: DJICameraShootPhotoMode(rawValue: value) ?? DJICameraShootPhotoMode.unknown)
+                self._storageLocation = DatedValue(value: DJICameraStorageLocation(rawValue: value) ?? .unknown)
             }
             else {
-                self._shotPhotoMode = nil
+                self._storageLocation = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamShootPhotoMode)!) { (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self._photoMode = DatedValue(value: DJICameraShootPhotoMode(rawValue: value) ?? .unknown)
+            }
+            else {
+                self._photoMode = nil
             }
         }
         
         startListeningForChanges(on: DJICameraKey(param: DJICameraParamPhotoBurstCount)!) { (oldValue, newValue) in
             if let value = newValue?.unsignedIntegerValue {
-                self._burstCount = DatedValue(value: DJICameraPhotoBurstCount(rawValue: value) ?? DJICameraPhotoBurstCount.countUnknown)
+                self._burstCount = DatedValue(value: DJICameraPhotoBurstCount(rawValue: value) ?? .countUnknown)
             }
             else {
                 self._burstCount = nil
@@ -237,7 +247,7 @@ public class DJIDroneSession: NSObject {
         
         startListeningForChanges(on: DJICameraKey(param: DJICameraParamPhotoAEBCount)!) { (oldValue, newValue) in
             if let value = newValue?.unsignedIntegerValue {
-                self._aebCount = DatedValue(value: DJICameraPhotoAEBCount(rawValue: value) ?? DJICameraPhotoAEBCount.countUnknown)
+                self._aebCount = DatedValue(value: DJICameraPhotoAEBCount(rawValue: value) ?? .countUnknown)
             }
             else {
                 self._aebCount = nil
@@ -595,8 +605,12 @@ extension DJIDroneSession: DroneSession {
                     systemState: systemState.value,
                     storageState: self._cameraStorageStates[channel]?.value,
                     exposureSettings: self._cameraExposureSettings[channel]?.value,
-                                    lensInformation: self._cameraLensInformation[channel]?.value, shotPhotoMode: self._shotPhotoMode?.value,
-                                    burstCount: self._burstCount?.value, aebCount: self._aebCount?.value, intervalSettings: self._timeIntervalSettings?.value),
+                    lensInformation: self._cameraLensInformation[channel]?.value,
+                    storageLocation: self._storageLocation?.value,
+                    photoMode: self._photoMode?.value,
+                    burstCount: self._burstCount?.value,
+                    aebCount: self._aebCount?.value,
+                    intervalSettings: self._timeIntervalSettings?.value),
                     date: systemState.date)
             }
             return nil

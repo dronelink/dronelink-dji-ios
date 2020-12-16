@@ -150,20 +150,22 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public let storageState: DJICameraStorageState?
     public let exposureSettings: DJICameraExposureSettings?
     public let lensInformation: String?
-    public let cameraShotPhotoMode: DJICameraShootPhotoMode?
+    public let storageLocationValue: DJICameraStorageLocation?
+    public let photoModeValue: DJICameraShootPhotoMode?
     public let burstCountValue: DJICameraPhotoBurstCount?
     public let aebCountValue: DJICameraPhotoAEBCount?
     public let photoTimeIntervalSettings: DJICameraPhotoTimeIntervalSettings?
     
-    public init(systemState: DJICameraSystemState, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensInformation: String?, shotPhotoMode: DJICameraShootPhotoMode?, burstCount: DJICameraPhotoBurstCount?, aebCount: DJICameraPhotoAEBCount?, intervalSettings: DJICameraPhotoTimeIntervalSettings?) {
+    public init(systemState: DJICameraSystemState, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensInformation: String?, storageLocation: DJICameraStorageLocation?, photoMode: DJICameraShootPhotoMode?, burstCount: DJICameraPhotoBurstCount?, aebCount: DJICameraPhotoAEBCount?, intervalSettings: DJICameraPhotoTimeIntervalSettings?) {
         self.systemState = systemState
         self.storageState = storageState
         self.exposureSettings = exposureSettings
         self.lensInformation = lensInformation
-        self.cameraShotPhotoMode = shotPhotoMode
+        self.storageLocationValue = storageLocation
+        self.photoModeValue = photoMode
         self.burstCountValue = burstCount
         self.aebCountValue = aebCount
-        photoTimeIntervalSettings = intervalSettings
+        self.photoTimeIntervalSettings = intervalSettings
     }
     
     public var isBusy: Bool { systemState.isBusy || storageState?.isFormatting ?? false || storageState?.isInitializing ?? false }
@@ -172,8 +174,9 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var isCapturingVideo: Bool { systemState.isCapturingVideo }
     public var isCapturingContinuous: Bool { systemState.isCapturingContinuous }
     public var isSDCardInserted: Bool { storageState?.isInserted ?? true }
+    public var storageLocation: Kernel.CameraStorageLocation { storageLocationValue?.kernelValue ?? .unknown }
     public var mode: Kernel.CameraMode { systemState.mode.kernelValue }
-    public var photoMode: Kernel.CameraPhotoMode? { systemState.flatCameraMode.kernelValuePhoto ?? cameraShotPhotoMode?.kernelValue }
+    public var photoMode: Kernel.CameraPhotoMode? { systemState.flatCameraMode.kernelValuePhoto ?? photoModeValue?.kernelValue }
     public var photoInterval: Int? { Int(photoTimeIntervalSettings?.timeIntervalInSeconds ?? UInt16()) }
     public var burstCount: Kernel.CameraBurstCount? { burstCountValue?.kernelValue }
     public var aebCount: Kernel.CameraAEBCount? {aebCountValue?.kernelValue}
