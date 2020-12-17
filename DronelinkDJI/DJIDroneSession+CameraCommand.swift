@@ -144,17 +144,8 @@ extension DJIDroneSession {
         }
         
         if let command = cameraCommand as? Kernel.ModeCameraCommand {
-            if camera.isFlatCameraModeSupported() {
-                camera.getFlatMode { (current, error) in
-                    Command.conditionallyExecute(current != command.mode.djiValueFlat, error: error, finished: finished) {
-                        camera.setFlatMode(command.mode.djiValueFlat, withCompletion: finished)
-                    }
-                }
-            }
-            else {
-                Command.conditionallyExecute(command.mode != state.mode, finished: finished) {
-                    camera.setMode(command.mode.djiValue, withCompletion: finished)
-                }
+            Command.conditionallyExecute(command.mode != state.mode, finished: finished) {
+                camera.setMode(command.mode.djiValue, withCompletion: finished)
             }
             return nil
         }
@@ -188,18 +179,9 @@ extension DJIDroneSession {
         }
         
         if let command = cameraCommand as? Kernel.PhotoModeCameraCommand {
-            if camera.isFlatCameraModeSupported() {
-                camera.getFlatMode { (current, error) in
-                    Command.conditionallyExecute(current != command.photoMode.djiValueFlat, error: error, finished: finished) {
-                        camera.setFlatMode(command.photoMode.djiValueFlat, withCompletion: finished)
-                    }
-                }
-            }
-            else {
-                camera.getShootPhotoMode { (current, error) in
-                    Command.conditionallyExecute(current != command.photoMode.djiValue, error: error, finished: finished) {
-                        camera.setShootPhotoMode(command.photoMode.djiValue, withCompletion: finished)
-                    }
+            camera.getShootPhotoMode { (current, error) in
+                Command.conditionallyExecute(current != command.photoMode.djiValue, error: error, finished: finished) {
+                    camera.setShootPhotoMode(command.photoMode.djiValue, withCompletion: finished)
                 }
             }
             return nil
@@ -350,19 +332,9 @@ extension DJIDroneSession {
         
         
         if let command = cameraCommand as? Kernel.VideoModeCameraCommand {
-            if camera.isFlatCameraModeSupported() {
-                camera.getFlatMode { (current, error) in
-                    Command.conditionallyExecute(current != command.videoMode.djiValueFlat, error: error, finished: finished) {
-                        camera.setFlatMode(command.videoMode.djiValueFlat, withCompletion: finished)
-                    }
-                }
+            Command.conditionallyExecute(state.mode != .video, finished: finished) {
+                camera.setMode(.recordVideo, withCompletion: finished)
             }
-            else {
-                Command.conditionallyExecute(state.mode != .video, finished: finished) {
-                    camera.setMode(.recordVideo, withCompletion: finished)
-                }
-            }
-            
             return nil
         }
         
