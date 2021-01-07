@@ -218,7 +218,7 @@ public class DJIGimbalAdapter: GimbalAdapter {
         pendingSpeedRotation = DJIGimbalRotation(
             pitchValue: gimbal.isAdjustPitchSupported ? max(-90, min(90, velocityCommand.velocity.pitch.convertRadiansToDegrees)) as NSNumber : nil,
             rollValue: gimbal.isAdjustRollSupported ? max(-90, min(90, velocityCommand.velocity.roll.convertRadiansToDegrees)) as NSNumber : nil,
-            yawValue: mode == .free || gimbal.isAdjustYaw360Supported ? velocityCommand.velocity.yaw.convertRadiansToDegrees as NSNumber : nil,
+            yawValue: mode == .free ? velocityCommand.velocity.yaw.convertRadiansToDegrees as NSNumber : nil,
             time: DJIGimbalRotation.minTime,
             mode: .speed,
             ignore: false)
