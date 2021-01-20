@@ -247,8 +247,9 @@ extension DJIDroneSession {
                 else {
                     os_log(.debug, log: log, "Camera start capture photo")
                     camera.startShootPhoto { error in
-                        DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
-                            finished(error)
+                        //waiting since isBusy will still be false for a bit
+                        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
+                            self.cameraCommandFinishNotBusy(cameraCommand: cameraCommand, finished: finished, error: error)
                         }
                     }
                 }
@@ -262,8 +263,9 @@ extension DJIDroneSession {
                 else {
                     os_log(.debug, log: log, "Camera start capture video")
                     camera.startRecordVideo { error in
-                        DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
-                            finished(error)
+                        //waiting since isBusy will still be false for a bit
+                        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
+                            self.cameraCommandFinishNotBusy(cameraCommand: cameraCommand, finished: finished, error: error)
                         }
                     }
                 }
@@ -406,5 +408,22 @@ extension DJIDroneSession {
         }
         
         return "MissionDisengageReason.command.type.unhandled".localized
+    }
+    
+    func cameraCommandFinishNotBusy(cameraCommand: KernelCameraCommand, attempt: Int = 0, maxAttempts: Int = 10, finished: @escaping CommandFinished, error: Error?) {
+        guard let state = cameraState(channel: cameraCommand.channel)?.value as? DJICameraStateAdapter else {
+            finished(error)
+            return
+        }
+        
+        if attempt >= maxAttempts || error != nil || !state.isBusy {
+            finished(error)
+            return
+        }
+        
+        //os_log(.debug, log: log, "Camera command finished and waiting for camera to not busy...")
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
+            self.cameraCommandFinishNotBusy(cameraCommand: cameraCommand, attempt: attempt + 1, maxAttempts: maxAttempts, finished: finished, error: error)
+        }
     }
 }

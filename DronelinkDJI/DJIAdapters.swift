@@ -150,27 +150,52 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public let storageState: DJICameraStorageState?
     public let exposureSettings: DJICameraExposureSettings?
     public let lensInformation: String?
+    public let storageLocationValue: DJICameraStorageLocation?
+    public let photoModeValue: DJICameraShootPhotoMode?
+    public let burstCountValue: DJICameraPhotoBurstCount?
+    public let aebCountValue: DJICameraPhotoAEBCount?
+    public let photoTimeIntervalSettings: DJICameraPhotoTimeIntervalSettings?
     
-    public init(systemState: DJICameraSystemState, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensInformation: String?) {
+    public init(systemState: DJICameraSystemState, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensInformation: String?, storageLocation: DJICameraStorageLocation?, photoMode: DJICameraShootPhotoMode?, burstCount: DJICameraPhotoBurstCount?, aebCount: DJICameraPhotoAEBCount?, intervalSettings: DJICameraPhotoTimeIntervalSettings?) {
         self.systemState = systemState
         self.storageState = storageState
         self.exposureSettings = exposureSettings
         self.lensInformation = lensInformation
+        self.storageLocationValue = storageLocation
+        self.photoModeValue = photoMode
+        self.burstCountValue = burstCount
+        self.aebCountValue = aebCount
+        self.photoTimeIntervalSettings = intervalSettings
     }
     
+    public var isBusy: Bool { systemState.isBusy || storageState?.isFormatting ?? false || storageState?.isInitializing ?? false }
+    public var isCapturing: Bool { systemState.isCapturing }
     public var isCapturingPhotoInterval: Bool { systemState.isCapturingPhotoInterval }
     public var isCapturingVideo: Bool { systemState.isCapturingVideo }
-    public var isCapturing: Bool { systemState.isCapturing }
+    public var isCapturingContinuous: Bool { systemState.isCapturingContinuous }
     public var isSDCardInserted: Bool { storageState?.isInserted ?? true }
+    public var storageLocation: Kernel.CameraStorageLocation { storageLocationValue?.kernelValue ?? .unknown }
     public var mode: Kernel.CameraMode { systemState.mode.kernelValue }
+    public var photoMode: Kernel.CameraPhotoMode? { systemState.flatCameraMode.kernelValuePhoto ?? photoModeValue?.kernelValue }
+    public var photoInterval: Int? { Int(photoTimeIntervalSettings?.timeIntervalInSeconds ?? UInt16()) }
+    public var burstCount: Kernel.CameraBurstCount? { burstCountValue?.kernelValue }
+    public var aebCount: Kernel.CameraAEBCount? {aebCountValue?.kernelValue}
+    public var currentVideoTime: Double? { systemState.currentVideoTime }
     public var exposureCompensation: Kernel.CameraExposureCompensation { exposureSettings?.exposureCompensation.kernelValue ?? .unknown }
+    public var iso: Kernel.CameraISO { .unknown } //FIXME
+    public var shutterSpeed: Kernel.CameraShutterSpeed { .unknown } //FIXME
+    public var aperture: Kernel.CameraAperture { .unknown } //FIXME
+    public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset { .unknown } //FIXME
     public var lensDetails: String? { lensInformation }
 }
 
 extension DJICameraSystemState {
+    public var isBusy: Bool { isStoringPhoto || isShootingSinglePhoto || isShootingSinglePhotoInRAWFormat || isShootingIntervalPhoto || isShootingBurstPhoto || isShootingRAWBurstPhoto || isShootingShallowFocusPhoto || isShootingPanoramaPhoto || isShootingHyperanalytic }
+    public var isCapturing: Bool { isRecording || isShootingSinglePhoto || isShootingSinglePhotoInRAWFormat || isShootingIntervalPhoto || isShootingBurstPhoto || isShootingRAWBurstPhoto || isShootingShallowFocusPhoto || isShootingPanoramaPhoto || isShootingHyperanalytic }
     public var isCapturingPhotoInterval: Bool { isShootingIntervalPhoto }
     public var isCapturingVideo: Bool { isRecording }
-    public var isCapturing: Bool { isRecording || isShootingSinglePhoto || isShootingSinglePhotoInRAWFormat || isShootingIntervalPhoto || isShootingBurstPhoto || isShootingRAWBurstPhoto || isShootingShallowFocusPhoto || isShootingPanoramaPhoto }
+    public var isCapturingContinuous: Bool { isCapturingPhotoInterval || isCapturingVideo }
+    public var currentVideoTime: Double? { isCapturingVideo ? Double(currentVideoRecordingTimeInSeconds) : nil }
 }
 
 public class DJIGimbalAdapter: GimbalAdapter {
