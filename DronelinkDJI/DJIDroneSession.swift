@@ -36,7 +36,7 @@ public class DJIDroneSession: NSObject {
     private var _flightControllerState: DatedValue<DJIFlightControllerState>?
     
     private let batterySerialQueue = DispatchQueue(label: "DroneSession+batteryState")
-    private var _batterState: DatedValue<DJIBatteryState>?
+    private var _batteryState: DatedValue<DJIBatteryState>?
     
     private let visionDetectionSerialQueue = DispatchQueue(label: "DroneSession+visionDetectionState")
     private var _visionDetectionState: DatedValue<DJIVisionDetectionState>?
@@ -62,6 +62,8 @@ public class DJIDroneSession: NSObject {
     private var _burstCount: DatedValue<DJICameraPhotoBurstCount>?
     private var _aebCount: DatedValue<DJICameraPhotoAEBCount>?
     private var _timeIntervalSettings: DatedValue<DJICameraPhotoTimeIntervalSettings>?
+    private var _mostRecentCameraFile: DatedValue<CameraFile>?
+    public var mostRecentCameraFile: DatedValue<CameraFile>? { get { _mostRecentCameraFile } }
     
     private var listeningDJIKeys: [DJIKey] = []
     
@@ -297,7 +299,7 @@ public class DJIDroneSession: NSObject {
             }
             
             batterySerialQueue.async {
-                self._batterState = nil
+                self._batteryState = nil
             }
             
             visionDetectionSerialQueue.async {
@@ -335,7 +337,7 @@ public class DJIDroneSession: NSObject {
     
     public var batteryState: DatedValue<DJIBatteryState>? {
         batterySerialQueue.sync {
-            return self._batterState
+            return self._batteryState
         }
     }
     
@@ -583,10 +585,10 @@ extension DJIDroneSession: DroneSession {
     
     private func commandFinished(command: KernelCommand, error: Error?) {
         var errorResolved: Error? = error
-        if (error as NSError?)?.code == DJISDKError.productNotSupport.rawValue {
-            os_log(.info, log: log, "Ignoring command failure: product not supported (%{public}s)", command.id)
-            errorResolved = nil
-        }
+//        if (error as NSError?)?.code == DJISDKError.productNotSupport.rawValue {
+//            os_log(.info, log: log, "Ignoring command failure: product not supported (%{public}s)", command.id)
+//            errorResolved = nil
+//        }
         delegates.invoke { $0.onCommandFinished(session: self, command: command, error: errorResolved) }
     }
     
@@ -779,7 +781,7 @@ extension DJIDroneSession: DJIFlightAssistantDelegate {
 extension DJIDroneSession: DJIBatteryDelegate {
     public func battery(_ battery: DJIBattery, didUpdate state: DJIBatteryState) {
         batterySerialQueue.async {
-            self._batterState = DatedValue<DJIBatteryState>(value: state)
+            self._batteryState = DatedValue<DJIBatteryState>(value: state)
         }
     }
 }
@@ -814,19 +816,22 @@ extension DJIDroneSession: DJICameraDelegate {
     }
     
     public func camera(_ camera: DJICamera, didGenerateNewMediaFile newMedia: DJIMediaFile) {
-            var orientation = self.orientation
-            if let gimbalState = self.gimbalState(channel: camera.index)?.value {
-                orientation.x = gimbalState.orientation.x
-                orientation.y = gimbalState.orientation.y
-                if gimbalState.mode == .free {
-                    orientation.z = gimbalState.orientation.z
-                }
+        var orientation = self.orientation
+        if let gimbalState = self.gimbalState(channel: camera.index)?.value {
+            orientation.x = gimbalState.orientation.x
+            orientation.y = gimbalState.orientation.y
+            if gimbalState.mode == .free {
+                orientation.z = gimbalState.orientation.z
             }
-            else {
-                orientation.x = 0
-                orientation.y = 0
-            }
-            self.delegates.invoke { $0.onCameraFileGenerated(session: self, file: DJICameraFile(channel: camera.index, mediaFile: newMedia, coordinate: self.location?.coordinate, altitude: self.altitude, orientation: orientation)) }
+        }
+        else {
+            orientation.x = 0
+            orientation.y = 0
+        }
+    
+        let cameraFile = DJICameraFile(channel: camera.index, mediaFile: newMedia, coordinate: self.location?.coordinate, altitude: self.altitude, orientation: orientation)
+        _mostRecentCameraFile = DatedValue(value: cameraFile)
+        self.delegates.invoke { $0.onCameraFileGenerated(session: self, file: cameraFile) }
     }
 }
 

@@ -237,7 +237,7 @@ extension DJIDroneSession {
             return nil
         }
         
-        if cameraCommand is Kernel.StartCaptureCameraCommand {
+        if let command = cameraCommand as? Kernel.StartCaptureCameraCommand {
             switch state.mode {
             case .photo:
                 if state.isCapturingPhotoInterval {
@@ -246,10 +246,16 @@ extension DJIDroneSession {
                 }
                 else {
                     os_log(.debug, log: log, "Camera start capture photo")
+                    let started = Date()
                     camera.startShootPhoto { error in
+                        if error != nil {
+                            finished(error)
+                            return
+                        }
+                        
                         //waiting since isBusy will still be false for a bit
                         DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
-                            self.cameraCommandFinishNotBusy(cameraCommand: cameraCommand, finished: finished, error: error)
+                            self.cameraCommandFinishStartShootPhoto(cameraCommand: command, started: started, finished: finished)
                         }
                     }
                 }
@@ -263,9 +269,14 @@ extension DJIDroneSession {
                 else {
                     os_log(.debug, log: log, "Camera start capture video")
                     camera.startRecordVideo { error in
+                        if error != nil {
+                            finished(error)
+                            return
+                        }
+                        
                         //waiting since isBusy will still be false for a bit
                         DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
-                            self.cameraCommandFinishNotBusy(cameraCommand: cameraCommand, finished: finished, error: error)
+                            self.cameraCommandFinishNotBusy(cameraCommand: cameraCommand, finished: finished)
                         }
                     }
                 }
@@ -295,8 +306,12 @@ extension DJIDroneSession {
                 if state.isCapturingVideo {
                     os_log(.debug, log: log, "Camera stop capture video")
                     camera.stopRecordVideo { error in
-                        DispatchQueue.global().asyncAfter(deadline: .now() + 2.0) {
+                        if error != nil {
                             finished(error)
+                        }
+                        
+                        DispatchQueue.global().asyncAfter(deadline: .now() + 2.0) {
+                            finished(nil)
                         }
                     }
                 }
@@ -410,20 +425,42 @@ extension DJIDroneSession {
         return "MissionDisengageReason.command.type.unhandled".localized
     }
     
-    func cameraCommandFinishNotBusy(cameraCommand: KernelCameraCommand, attempt: Int = 0, maxAttempts: Int = 10, finished: @escaping CommandFinished, error: Error?) {
+    func cameraCommandFinishStartShootPhoto(cameraCommand: Kernel.StartCaptureCameraCommand, attempt: Int = 0, maxAttempts: Int = 20, started: Date, finished: @escaping CommandFinished) {
+        if attempt >= maxAttempts {
+            finished("DJIDroneSession+CameraCommand.start.shoot.photo.no.file".localized)
+            return
+        }
+        
+        if let mostRecentCameraFile = mostRecentCameraFile {
+            let timeSinceMostRecentCameraFile = mostRecentCameraFile.date.timeIntervalSince(started)
+            if timeSinceMostRecentCameraFile > 0 {
+                os_log(.debug, log: log, "Camera start shoot photo found camera file (%{public}s) after %{public}ss (%{public}s)", mostRecentCameraFile.value.name, String(format: "%.02f", timeSinceMostRecentCameraFile), cameraCommand.id)
+                cameraCommandFinishNotBusy(cameraCommand: cameraCommand, finished: finished)
+                return
+            }
+        }
+        
+        let wait = 0.25
+        os_log(.debug, log: log, "Camera start shoot photo finished and waiting for camera file (%{public}ss)... (%{public}s)", String(format: "%.02f", Double(attempt + 1) * wait), cameraCommand.id)
+        DispatchQueue.global().asyncAfter(deadline: .now() + wait) {
+            self.cameraCommandFinishStartShootPhoto(cameraCommand: cameraCommand, attempt: attempt + 1, maxAttempts: maxAttempts, started: started, finished: finished)
+        }
+    }
+    
+    func cameraCommandFinishNotBusy(cameraCommand: KernelCameraCommand, attempt: Int = 0, maxAttempts: Int = 10, finished: @escaping CommandFinished) {
         guard let state = cameraState(channel: cameraCommand.channel)?.value as? DJICameraStateAdapter else {
-            finished(error)
+            finished("MissionDisengageReason.drone.camera.unavailable.title".localized)
             return
         }
         
-        if attempt >= maxAttempts || error != nil || !state.isBusy {
-            finished(error)
+        if attempt >= maxAttempts || !state.isBusy {
+            finished(nil)
             return
         }
         
-        //os_log(.debug, log: log, "Camera command finished and waiting for camera to not busy...")
+        os_log(.debug, log: log, "Camera command finished and waiting for camera to not be busy (%{public}d)... (%{public}s)", attempt, cameraCommand.id)
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
-            self.cameraCommandFinishNotBusy(cameraCommand: cameraCommand, attempt: attempt + 1, maxAttempts: maxAttempts, finished: finished, error: error)
+            self.cameraCommandFinishNotBusy(cameraCommand: cameraCommand, attempt: attempt + 1, maxAttempts: maxAttempts, finished: finished)
         }
     }
 }

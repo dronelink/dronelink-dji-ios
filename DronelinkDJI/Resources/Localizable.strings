@@ -26,6 +26,8 @@
 
 "DJIDroneSession.telemetry.unavailable" = "Telemetry Unavailable";
 
+"DJIDroneSession+CameraCommand.start.shoot.photo.no.file" = "Media File Not Created";
+
 "DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.title" = "Location Unavailable";
 "DJIDronelink:DJIFlightControllerState.statusMessages.homeLocationNotSet.title" = "Home Location Not Set";
 "DJIDronelink:DJIFlightControllerState.statusMessages.isLowerThanSeriousBatteryWarningThreshold.title" = "Critically Low Battery";
