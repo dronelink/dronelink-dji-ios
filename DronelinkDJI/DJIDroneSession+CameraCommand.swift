@@ -255,7 +255,12 @@ extension DJIDroneSession {
                         
                         //waiting since isBusy will still be false for a bit
                         DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
-                            self.cameraCommandFinishStartShootPhoto(cameraCommand: command, started: started, finished: finished)
+                            if command.verifyFileCreated {
+                                self.cameraCommandFinishStartShootPhotoVerifyFile(cameraCommand: command, started: started, finished: finished)
+                            }
+                            else {
+                                self.cameraCommandFinishNotBusy(cameraCommand: cameraCommand, finished: finished)
+                            }
                         }
                     }
                 }
@@ -425,7 +430,7 @@ extension DJIDroneSession {
         return "MissionDisengageReason.command.type.unhandled".localized
     }
     
-    func cameraCommandFinishStartShootPhoto(cameraCommand: Kernel.StartCaptureCameraCommand, attempt: Int = 0, maxAttempts: Int = 20, started: Date, finished: @escaping CommandFinished) {
+    func cameraCommandFinishStartShootPhotoVerifyFile(cameraCommand: Kernel.StartCaptureCameraCommand, attempt: Int = 0, maxAttempts: Int = 20, started: Date, finished: @escaping CommandFinished) {
         if attempt >= maxAttempts {
             finished("DJIDroneSession+CameraCommand.start.shoot.photo.no.file".localized)
             return
@@ -443,7 +448,7 @@ extension DJIDroneSession {
         let wait = 0.25
         os_log(.debug, log: log, "Camera start shoot photo finished and waiting for camera file (%{public}ss)... (%{public}s)", String(format: "%.02f", Double(attempt + 1) * wait), cameraCommand.id)
         DispatchQueue.global().asyncAfter(deadline: .now() + wait) {
-            self.cameraCommandFinishStartShootPhoto(cameraCommand: cameraCommand, attempt: attempt + 1, maxAttempts: maxAttempts, started: started, finished: finished)
+            self.cameraCommandFinishStartShootPhotoVerifyFile(cameraCommand: cameraCommand, attempt: attempt + 1, maxAttempts: maxAttempts, started: started, finished: finished)
         }
     }
     
