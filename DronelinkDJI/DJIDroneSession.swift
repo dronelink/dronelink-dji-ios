@@ -64,6 +64,7 @@ public class DJIDroneSession: NSObject {
     private var _timeIntervalSettings: DatedValue<DJICameraPhotoTimeIntervalSettings>?
     private var _mostRecentCameraFile: DatedValue<CameraFile>?
     public var mostRecentCameraFile: DatedValue<CameraFile>? { get { _mostRecentCameraFile } }
+    private var _whiteBalance: DatedValue<DJICameraWhiteBalance>?
     
     private var listeningDJIKeys: [DJIKey] = []
     
@@ -261,6 +262,15 @@ public class DJIDroneSession: NSObject {
               let valuePointer = UnsafeMutableRawPointer(&value)
               (newValue?.value as? NSValue)?.getValue(valuePointer)
             self._timeIntervalSettings = DatedValue(value: value)
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamWhiteBalance)!) { (oldValue, newValue) in
+            if let value = newValue?.value as? DJICameraWhiteBalance {
+                self._whiteBalance = DatedValue(value: value)
+            }
+            else {
+                self._whiteBalance = nil
+            }
         }
     }
     
@@ -612,7 +622,8 @@ extension DJIDroneSession: DroneSession {
                     photoMode: self._photoMode?.value,
                     burstCount: self._burstCount?.value,
                     aebCount: self._aebCount?.value,
-                    intervalSettings: self._timeIntervalSettings?.value),
+                    intervalSettings: self._timeIntervalSettings?.value,
+                    whiteBalance: self._whiteBalance?.value),
                     date: systemState.date)
             }
             return nil

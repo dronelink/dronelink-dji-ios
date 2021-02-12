@@ -119,6 +119,7 @@ public class DJIDroneAdapter: DroneAdapter {
         flightController.yawControlMode = .angularVelocity
         flightController.send(DJIVirtualStickFlightControlData(pitch: 0, roll: 0, yaw: 0, verticalThrottle: 0), withCompletion: withCompletion)
     }
+
 }
 
 extension DJICamera : CameraAdapter {
@@ -155,8 +156,9 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public let burstCountValue: DJICameraPhotoBurstCount?
     public let aebCountValue: DJICameraPhotoAEBCount?
     public let photoTimeIntervalSettings: DJICameraPhotoTimeIntervalSettings?
+    public let whiteBalanceValue: DJICameraWhiteBalance?
     
-    public init(systemState: DJICameraSystemState, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensInformation: String?, storageLocation: DJICameraStorageLocation?, photoMode: DJICameraShootPhotoMode?, burstCount: DJICameraPhotoBurstCount?, aebCount: DJICameraPhotoAEBCount?, intervalSettings: DJICameraPhotoTimeIntervalSettings?) {
+    public init(systemState: DJICameraSystemState, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensInformation: String?, storageLocation: DJICameraStorageLocation?, photoMode: DJICameraShootPhotoMode?, burstCount: DJICameraPhotoBurstCount?, aebCount: DJICameraPhotoAEBCount?, intervalSettings: DJICameraPhotoTimeIntervalSettings?, whiteBalance: DJICameraWhiteBalance?) {
         self.systemState = systemState
         self.storageState = storageState
         self.exposureSettings = exposureSettings
@@ -166,6 +168,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         self.burstCountValue = burstCount
         self.aebCountValue = aebCount
         self.photoTimeIntervalSettings = intervalSettings
+        self.whiteBalanceValue = whiteBalance
     }
     
     public var isBusy: Bool { systemState.isBusy || storageState?.isFormatting ?? false || storageState?.isInitializing ?? false }
@@ -182,10 +185,11 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var aebCount: Kernel.CameraAEBCount? {aebCountValue?.kernelValue}
     public var currentVideoTime: Double? { systemState.currentVideoTime }
     public var exposureCompensation: Kernel.CameraExposureCompensation { exposureSettings?.exposureCompensation.kernelValue ?? .unknown }
-    public var iso: Kernel.CameraISO { .unknown } //FIXME
-    public var shutterSpeed: Kernel.CameraShutterSpeed { .unknown } //FIXME
-    public var aperture: Kernel.CameraAperture { .unknown } //FIXME
-    public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset { .unknown } //FIXME
+    public var iso: Kernel.CameraISO { .unknown }
+    public var shutterSpeed: Kernel.CameraShutterSpeed { exposureSettings?.shutterSpeed.kernelValue ?? .unknown }
+    public var aperture: Kernel.CameraAperture { exposureSettings?.aperture.kernelValue ?? .unknown }
+    public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset { whiteBalanceValue?.preset.kernelValue ?? .unknown }
+    public var whiteBalanceCustom: Int? { Int(whiteBalanceValue?.colorTemperature ?? 0) * 100 }
     public var lensDetails: String? { lensInformation }
 }
 

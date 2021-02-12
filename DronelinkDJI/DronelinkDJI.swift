@@ -135,6 +135,47 @@ extension DJICameraPhotoAEBCount {
     }
 }
 
+extension DJICameraAperture {
+    var kernelValue: Kernel.CameraAperture {
+        switch self {
+        case .f1Dot6: return .f1dot6
+        case .f1Dot7: return .f1dot7
+        case .f1Dot8: return .f1dot8
+        case .F2: return .f2
+        case .f2Dot2: return .f2dot2
+        case .f2Dot4: return .f2dot4
+        case .f2Dot5: return .f2dot5
+        case .f2Dot6: return .f2dot6
+        case .f2Dot8: return .f2dot8
+        case .f3Dot2: return .f3dot2
+        case .f3Dot4: return .f3dot4
+        case .f3Dot5: return .f3dot5
+        case .F4: return .f4
+        case .f4Dot5: return .f4dot5
+        case .f4Dot8: return .f4dot8
+        case .F5: return .f5
+        case .f5Dot6: return .f5dot6
+        case .f6Dot3: return .f6dot3
+        case .f6Dot8: return .f6dot8
+        case .f7Dot1: return .f7dot1
+        case .F8: return .f8
+        case .F9: return .f9
+        case .f9Dot5: return .f9dot5
+        case .f9Dot6: return .f9dot6
+        case .F10: return .f10
+        case .F11: return .f11
+        case .F13: return .f13
+        case .F14: return .f14
+        case .F16: return .f16
+        case .F18: return .f18
+        case .F19: return .f19
+        case .F20: return .f20
+        case .F22: return .f22
+        case .unknown: return .unknown
+        }
+    }
+}
+
 extension Kernel.CameraAperture {
     var djiValue: DJICameraAperture {
         switch self {
@@ -328,6 +369,25 @@ extension Kernel.CameraFocusMode {
         case .auto: return .auto
         case .autoContinuous: return .AFC
         case .unknown: return .unknown
+        }
+    }
+}
+
+extension DJICameraISO {
+    var kernelValue: Kernel.CameraISO {
+        switch self {
+        case .isoAuto: return .auto
+        case .ISO100: return ._100
+        case .ISO200: return ._200
+        case .ISO400: return ._400
+        case .ISO800: return ._800
+        case .ISO1600: return ._1600
+        case .ISO3200: return ._3200
+        case .ISO6400: return ._6400
+        case .ISO12800: return ._12800
+        case .ISO25600: return ._25600
+        case .isoUnknown: return .unknown
+        default: return .unknown
         }
     }
 }
@@ -552,6 +612,91 @@ extension Kernel.CameraVideoFieldOfView {
     }
 }
 
+extension DJICameraShutterSpeed {
+    var kernelValue: Kernel.CameraShutterSpeed {
+        switch self {
+        case .speed1_8000 : return ._1_8000
+        case .speed1_6400 : return ._1_6400
+        case .speed1_6000 : return ._1_6000
+        case .speed1_5000 : return ._1_5000
+        case .speed1_4000 : return ._1_4000
+        case .speed1_3200 : return ._1_3200
+        case .speed1_3000 : return ._1_3000
+        case .speed1_2500 : return ._1_2500
+        case .speed1_2000 : return ._1_2000
+        case .speed1_1600 : return ._1_1600
+        case .speed1_1500 : return ._1_1500
+        case .speed1_1250 : return ._1_1250
+        case .speed1_1000 : return ._1_1000
+        case .speed1_800 : return ._1_800
+        case .speed1_750 : return ._1_750
+        case .speed1_725 : return ._1_725
+        case .speed1_640 : return ._1_640
+        case .speed1_500 : return ._1_500
+        case .speed1_400 : return ._1_400
+        case .speed1_350 : return ._1_350
+        case .speed1_320 : return ._1_320
+        case .speed1_250 : return ._1_250
+        case .speed1_240 : return ._1_240
+        case .speed1_200 : return ._1_200
+        case .speed1_180 : return ._1_180
+        case .speed1_160 : return ._1_160
+        case .speed1_125 : return ._1_125
+        case .speed1_120 : return ._1_120
+        case .speed1_100 : return ._1_100
+        case .speed1_90 : return ._1_90
+        case .speed1_80 : return ._1_80
+        case .speed1_60 : return ._1_60
+        case .speed1_50 : return ._1_50
+        case .speed1_45 : return ._1_45
+        case .speed1_40 : return ._1_40
+        case .speed1_30 : return ._1_30
+        case .speed1_25 : return ._1_25
+        case .speed1_20 : return ._1_20
+        case .speed1_15 : return ._1_15
+        case .speed1_12Dot5 : return ._1_12dot5
+        case .speed1_10 : return ._1_10
+        case .speed1_8 : return ._1_8
+        case .speed1_6Dot25 : return ._1_6dot25
+        case .speed1_6 : return ._1_6
+        case .speed1_5 : return ._1_5
+        case .speed1_4 : return ._1_4
+        case .speed1_3 : return ._1_3
+        case .speed1_2Dot5 : return ._1_2dot5
+        case .speed0Dot3 : return ._0dot3
+        case .speed1_2 : return ._1_2
+        case .speed1_1Dot67 : return ._1_1dot67
+        case .speed1_1Dot25 : return ._1_1dot25
+        case .speed0Dot7 : return ._0dot7
+        case .speed1 : return ._1
+        case .speed1Dot3 : return ._1dot3
+        case .speed1Dot4 : return ._1dot4
+        case .speed1Dot6 : return ._1dot6
+        case .speed2 : return ._2
+        case .speed2Dot5 : return ._2dot5
+        case .speed3 : return ._3
+        case .speed3Dot2 : return ._3dot2
+        case .speed4 : return ._4
+        case .speed5 : return ._5
+        case .speed6 : return ._6
+        case .speed7 : return ._7
+        case .speed8 : return ._8
+        case .speed9 : return ._9
+        case .speed10 : return ._10
+        case .speed11 : return ._11
+        case .speed13 : return ._13
+        case .speed15 : return ._15
+        case .speed16 : return ._16
+        case .speed20 : return ._20
+        case .speed23 : return ._23
+        case .speed25 : return ._25
+        case .speed30 : return ._30
+        default: return .unknown
+        }
+    }
+}
+
+
 extension Kernel.CameraShutterSpeed {
     var djiValue: DJICameraShutterSpeed {
         switch self {
@@ -748,6 +893,22 @@ extension Kernel.CameraVideoStandard {
         switch self {
         case .pal: return .PAL
         case .ntsc: return .NTSC
+        case .unknown: return .unknown
+        }
+    }
+}
+
+extension DJICameraWhiteBalancePreset {
+    var kernelValue: Kernel.CameraWhiteBalancePreset {
+        switch self {
+        case .auto: return .auto
+        case .sunny: return .sunny
+        case .cloudy: return .cloudy
+        case .waterSurface: return .waterSurface
+        case .indoorIncandescent: return .indoorIncandescent
+        case .indoorFluorescent: return .indoorFluorescent
+        case .custom: return .custom
+        case .neutral: return .neutral
         case .unknown: return .unknown
         }
     }
