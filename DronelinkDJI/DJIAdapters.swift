@@ -157,8 +157,9 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public let aebCountValue: DJICameraPhotoAEBCount?
     public let photoTimeIntervalSettings: DJICameraPhotoTimeIntervalSettings?
     public let whiteBalanceValue: DJICameraWhiteBalance?
+    public let isoValue: DJICameraISO?
     
-    public init(systemState: DJICameraSystemState, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensInformation: String?, storageLocation: DJICameraStorageLocation?, photoMode: DJICameraShootPhotoMode?, burstCount: DJICameraPhotoBurstCount?, aebCount: DJICameraPhotoAEBCount?, intervalSettings: DJICameraPhotoTimeIntervalSettings?, whiteBalance: DJICameraWhiteBalance?) {
+    public init(systemState: DJICameraSystemState, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensInformation: String?, storageLocation: DJICameraStorageLocation?, photoMode: DJICameraShootPhotoMode?, burstCount: DJICameraPhotoBurstCount?, aebCount: DJICameraPhotoAEBCount?, intervalSettings: DJICameraPhotoTimeIntervalSettings?, whiteBalance: DJICameraWhiteBalance?, iso: DJICameraISO?) {
         self.systemState = systemState
         self.storageState = storageState
         self.exposureSettings = exposureSettings
@@ -169,6 +170,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         self.aebCountValue = aebCount
         self.photoTimeIntervalSettings = intervalSettings
         self.whiteBalanceValue = whiteBalance
+        self.isoValue = iso
     }
     
     public var isBusy: Bool { systemState.isBusy || storageState?.isFormatting ?? false || storageState?.isInitializing ?? false }
@@ -185,11 +187,12 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var aebCount: Kernel.CameraAEBCount? {aebCountValue?.kernelValue}
     public var currentVideoTime: Double? { systemState.currentVideoTime }
     public var exposureCompensation: Kernel.CameraExposureCompensation { exposureSettings?.exposureCompensation.kernelValue ?? .unknown }
-    public var iso: Kernel.CameraISO { .unknown }
+    public var iso: Kernel.CameraISO { isoValue?.kernelValue ?? .unknown }
+    public var isoSensitivity: Int? { Int(exposureSettings?.ISO ?? 0) }
     public var shutterSpeed: Kernel.CameraShutterSpeed { exposureSettings?.shutterSpeed.kernelValue ?? .unknown }
     public var aperture: Kernel.CameraAperture { exposureSettings?.aperture.kernelValue ?? .unknown }
     public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset { whiteBalanceValue?.preset.kernelValue ?? .unknown }
-    public var whiteBalanceCustom: Int? { Int(whiteBalanceValue?.colorTemperature ?? 0) * 100 }
+    public var whiteBalanceColorTemperature: Int? { Int(whiteBalanceValue?.colorTemperature ?? 0) * 100 }
     public var lensDetails: String? { lensInformation }
 }
 
