@@ -63,8 +63,9 @@ public class DJIDroneSession: NSObject {
     private var _aebCount: DatedValue<DJICameraPhotoAEBCount>?
     private var _timeIntervalSettings: DatedValue<DJICameraPhotoTimeIntervalSettings>?
     private var _mostRecentCameraFile: DatedValue<CameraFile>?
+    private var _whiteBalance: DatedValue<DJICameraWhiteBalance>?
+    private var _iso: DatedValue<DJICameraISO>?
     public var mostRecentCameraFile: DatedValue<CameraFile>? { get { _mostRecentCameraFile } }
-    
     private var listeningDJIKeys: [DJIKey] = []
     
     public init(drone: DJIAircraft) {
@@ -261,6 +262,24 @@ public class DJIDroneSession: NSObject {
               let valuePointer = UnsafeMutableRawPointer(&value)
               (newValue?.value as? NSValue)?.getValue(valuePointer)
             self._timeIntervalSettings = DatedValue(value: value)
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamWhiteBalance)!) { (oldValue, newValue) in
+            if let value = newValue?.value as? DJICameraWhiteBalance {
+                self._whiteBalance = DatedValue(value: value)
+            }
+            else {
+                self._whiteBalance = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamISO)!) { (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self._iso = DatedValue(value: DJICameraISO(rawValue: value) ?? .isoUnknown)
+            }
+            else {
+                self._iso = nil
+            }
         }
     }
     
@@ -612,7 +631,9 @@ extension DJIDroneSession: DroneSession {
                     photoMode: self._photoMode?.value,
                     burstCount: self._burstCount?.value,
                     aebCount: self._aebCount?.value,
-                    intervalSettings: self._timeIntervalSettings?.value),
+                    intervalSettings: self._timeIntervalSettings?.value,
+                    whiteBalance: self._whiteBalance?.value,
+                    iso: self._iso?.value),
                     date: systemState.date)
             }
             return nil
