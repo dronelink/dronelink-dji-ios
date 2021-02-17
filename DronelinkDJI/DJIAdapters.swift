@@ -188,11 +188,17 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var currentVideoTime: Double? { systemState.currentVideoTime }
     public var exposureCompensation: Kernel.CameraExposureCompensation { exposureSettings?.exposureCompensation.kernelValue ?? .unknown }
     public var iso: Kernel.CameraISO { isoValue?.kernelValue ?? .unknown }
-    public var isoSensitivity: Int? { Int(exposureSettings?.ISO ?? 0) }
+    public var isoSensitivity: Int? {
+        guard let exposureSettingsISO = exposureSettings.ISO else { return nil }
+        return Int(exposureSettingsISO)
+    }
     public var shutterSpeed: Kernel.CameraShutterSpeed { exposureSettings?.shutterSpeed.kernelValue ?? .unknown }
     public var aperture: Kernel.CameraAperture { exposureSettings?.aperture.kernelValue ?? .unknown }
     public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset { whiteBalanceValue?.preset.kernelValue ?? .unknown }
-    public var whiteBalanceColorTemperature: Int? { Int(whiteBalanceValue?.colorTemperature ?? 0) * 100 }
+    public var whiteBalanceColorTemperature: Int? {
+        guard let colorTemperature = whiteBalanceValue?.colorTemperature else { return nil }
+        return Int(colorTemperature) * 100
+    }
     public var lensDetails: String? { lensInformation }
 }
 
