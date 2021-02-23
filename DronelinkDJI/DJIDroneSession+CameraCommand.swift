@@ -118,6 +118,11 @@ extension DJIDroneSession {
             return nil
         }
         
+        if let command = cameraCommand as? Kernel.FocusRingCameraCommand {
+            camera.setFocusRingValue(command.focusRingValue, withCompletion: finished)
+            return nil
+        }
+        
         if let command = cameraCommand as? Kernel.ISOCameraCommand {
             Command.conditionallyExecute(state.exposureSettings?.ISO != command.iso.djiValue.rawValue, finished: finished) {
                 camera.setISO(command.iso.djiValue, withCompletion: finished)

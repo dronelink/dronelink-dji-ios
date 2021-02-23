@@ -189,7 +189,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var exposureCompensation: Kernel.CameraExposureCompensation { exposureSettings?.exposureCompensation.kernelValue ?? .unknown }
     public var iso: Kernel.CameraISO { isoValue?.kernelValue ?? .unknown }
     public var isoSensitivity: Int? {
-        guard let exposureSettingsISO = exposureSettings.ISO else { return nil }
+        guard let exposureSettingsISO = exposureSettings?.ISO else { return nil }
         return Int(exposureSettingsISO)
     }
     public var shutterSpeed: Kernel.CameraShutterSpeed { exposureSettings?.shutterSpeed.kernelValue ?? .unknown }
