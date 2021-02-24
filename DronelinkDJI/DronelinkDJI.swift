@@ -454,7 +454,7 @@ extension DJIFlatCameraMode {
         case .videoNormal: return nil
         case .photoTimeLapse: return .timeLapse
         case .photoAEB: return .aeb
-        //case .videoHDR: return nil
+        case .videoHDR: return nil
         case .photoSingle: return .single
         case .photoBurst: return .burst
         case .photoHDR: return .hdr
@@ -462,9 +462,9 @@ extension DJIFlatCameraMode {
         case .photoHyperLight: return .hyperLight
         case .photoPanorama: return .panorama
         case .photoEHDR: return .ehdr
-        //case .photoHighResolution: return nil
-        //case .photoSmart: return .smart
-        //case .slowMotion: return nil
+        case .photoHighResolution: return nil
+        case .photoSmart: return .smart
+        case .slowMotion: return nil
         case .internalAISpotChecking: return .internalAISpotChecking
         case .unknown: return .unknown
         }
@@ -572,8 +572,8 @@ extension Kernel.CameraPhotoMode {
         case .panorama: return .photoPanorama
         case .ehdr: return .photoEHDR
         case .hyperLight: return .photoHyperLight
-        case .highResolution: return .unknown //.photoHighResolution
-        case .smart: return .unknown //.photoSmart
+        case .highResolution: return .photoHighResolution
+        case .smart: return .photoSmart
         case .internalAISpotChecking: return .internalAISpotChecking
         case .unknown: return .unknown
         }
@@ -840,6 +840,7 @@ extension Kernel.CameraVideoFrameRate {
         case ._96: return .rate96FPS
         case ._100: return .rate100FPS
         case ._120: return .rate120FPS
+        case ._240: return .rate240FPS
         case ._8dot7: return .rate8dot7FPS
         case .unknown: return .rateUnknown
         }
@@ -850,8 +851,8 @@ extension Kernel.CameraVideoMode {
     var djiValueFlat: DJIFlatCameraMode {
         switch self {
         case .normal: return .videoNormal
-        case .hdr: return .unknown //.videoHDR
-        case .slowMotion: return .unknown //.slowMotion
+        case .hdr: return .videoHDR
+        case .slowMotion: return .slowMotion
         case .unknown: return .unknown
         }
     }

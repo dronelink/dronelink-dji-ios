@@ -119,7 +119,14 @@ extension DJIDroneSession {
         }
         
         if let command = cameraCommand as? Kernel.FocusRingCameraCommand {
-            camera.setFocusRingValue(command.focusRingValue, withCompletion: finished)
+            camera.getFocusRingValueUpperBound { (value, error) in
+                if error != nil {
+                    finished(error)
+                    return
+                }
+                
+                camera.setFocusRingValue(UInt(command.focusRingPercent * Double(value)), withCompletion: finished)
+            }
             return nil
         }
         
