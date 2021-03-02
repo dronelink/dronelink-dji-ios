@@ -153,8 +153,7 @@ public class DJIDroneSession: NSObject {
     }
     
     private func initCamera(index: UInt) {
-        let index = Int(index)
-        if let camera = adapter.drone.cameras?[safeIndex: index] {
+        if let camera = adapter.drone.camera(channel: index) {
             os_log(.info, log: log, "Camera[%{public}d] connected", index)
             camera.delegate = self
             
@@ -179,8 +178,7 @@ public class DJIDroneSession: NSObject {
     }
     
     private func initGimbal(index: UInt) {
-        let index = Int(index)
-        if let gimbal = adapter.drone.gimbals?[safeIndex: index] {
+        if let gimbal = adapter.drone.gimbal(channel: index) {
             os_log(.info, log: log, "Gimbal[%{public}d] connected", index)
             gimbal.delegate = self
             
