@@ -109,6 +109,7 @@ extension DJIGPSSignalLevel {
         case .level4: return 0.8
         case .level5: return 1
         case .levelNone: return nil
+        @unknown default: return nil
         }
     }
 }
@@ -131,6 +132,7 @@ extension DJICameraPhotoAEBCount {
         case .count5: return ._5
         case .count7: return ._7
         case .countUnknown: return .unknown
+        @unknown default: return .unknown
         }
     }
 }
@@ -172,6 +174,7 @@ extension DJICameraAperture {
         case .F20: return .f20
         case .F22: return .f22
         case .unknown: return .unknown
+        @unknown default: return .unknown
         }
     }
 }
@@ -467,6 +470,7 @@ extension DJIFlatCameraMode {
         case .slowMotion: return nil
         case .internalAISpotChecking: return .internalAISpotChecking
         case .unknown: return .unknown
+        @unknown default: return .unknown
         }
     }
 }
@@ -532,8 +536,9 @@ extension DJICameraPhotoBurstCount {
         case .count7: return ._7
         case .count10: return ._10
         case .count14: return ._14
-        case .countUnknown: return .unknown
         case .countContinuous: return .continuous
+        case .countUnknown: return .unknown
+        @unknown default: return .unknown
         }
     }
 }
@@ -596,7 +601,7 @@ extension DJICameraShootPhotoMode {
         case .EHDR: return .ehdr
         case .hyperLight: return .hyperLight
         case .unknown: return .unknown
-        case .panorama: return .panorama
+        @unknown default: return .unknown
         }
     }
 }
@@ -797,6 +802,7 @@ extension DJICameraStorageLocation {
         case .sdCard: return .sdCard
         case .internalStorage: return ._internal
         case .unknown: return .unknown
+        @unknown default: return .unknown
         }
     }
 }
@@ -911,6 +917,7 @@ extension DJICameraWhiteBalancePreset {
         case .custom: return .custom
         case .neutral: return .neutral
         case .unknown: return .unknown
+        @unknown default: return .unknown
         }
     }
 }
@@ -1028,6 +1035,9 @@ extension DJIFlyZoneState {
         case .inRestrictedZone:
             level = .danger
             break
+            
+        @unknown default:
+            return nil
         }
         
         return Kernel.Message(title: "DJIFlyZoneState.title".localized, details: "DJIFlyZoneState.value.\(rawValue)".localized, level: level)
@@ -1049,6 +1059,9 @@ extension DJIAppActivationState {
         case .loginRequired:
             level = .warning
             break
+            
+        @unknown default:
+            return nil
         }
         
         return Kernel.Message(title: "DJIAppActivationState.title".localized, details: "DJIAppActivationState.value.\(rawValue)".localized, level: level)
@@ -1083,6 +1096,9 @@ extension DJIDiagnostics {
                     
                 case .internalStorageError:
                     break
+                    
+                @unknown default:
+                    break
                 }
             }
             break
@@ -1110,6 +1126,9 @@ extension DJIDiagnostics {
                      .motorProtected,
                      .vibrationAbnormal:
                     level = .warning
+                    break
+                    
+                @unknown default:
                     break
                 }
             }
@@ -1143,6 +1162,9 @@ extension DJIDiagnostics {
                 case .needStudy:
                     level = .info
                     break
+                    
+                @unknown default:
+                    break
                 }
             }
             break
@@ -1169,6 +1191,9 @@ extension DJIDiagnostics {
                 case .needCalibration:
                     level = .info
                     break
+                    
+                @unknown default:
+                    break
                 }
             }
             break
@@ -1184,6 +1209,9 @@ extension DJIDiagnostics {
                      .connectToGimbalError:
                     level = .error
                     break
+                    
+                @unknown default:
+                    break
                 }
             }
             break
@@ -1195,6 +1223,9 @@ extension DJIDiagnostics {
                      .decoderConnectToDeserializerError:
                     level = .error
                     break
+                    
+                @unknown default:
+                    break
                 }
             }
             break
@@ -1202,8 +1233,7 @@ extension DJIDiagnostics {
         case .airlink:
             if let code = DJIDiagnosticsErrorAirlink(rawValue: code) {
                 switch code {
-                case .airlinkEncoderError,
-                     .airlinkEncoderUpgrade,
+                case .airlinkEncoderUpgrade,
                      .airLinkNoSignal:
                     level = .error
                     break
@@ -1215,6 +1245,14 @@ extension DJIDiagnostics {
                      .airLinkWiFiMagneticInterferenceHigh:
                      level = .warning
                      break
+                    
+                //ignoring this because DJI reports too many false positives at the moment
+                //we should remove this when we enable the user to dismiss the status messages eventually
+                case .airlinkEncoderError:
+                    break
+                    
+                @unknown default:
+                    break
                 }
             }
             break
@@ -1285,6 +1323,9 @@ extension DJIDiagnostics {
                 case .imuNeedCalibration:
                      level = .info
                      break
+                    
+                @unknown default:
+                    break
                 }
             }
             break
@@ -1309,6 +1350,9 @@ extension DJIDiagnostics {
                 case .visionSystemNeedCalibration:
                     level = .info
                     break
+                    
+                @unknown default:
+                    break
                 }
             }
             break
@@ -1320,12 +1364,18 @@ extension DJIDiagnostics {
                      .orienteeringError:
                     level = .error
                     break
+                    
+                @unknown default:
+                    break
                 }
             }
             break
             
         case .deviceHealthInformation:
             level =  healthInformation.warningLevel.kernelValue
+            break
+            
+        @unknown default:
             break
         }
         
@@ -1348,10 +1398,12 @@ extension DJIGoHomeExecutionState {
              .autoFlyToHomePoint,
              .goDownToGround,
              .braking,
-             .bypassing,
-             .completed:
+             .bypassing:
             level = .warning
             break
+            
+        @unknown default:
+            return nil
         }
         
         return Kernel.Message(title: "DJIGoHomeExecutionState.title".localized, details: "DJIGoHomeExecutionState.value.\(rawValue)".localized, level: level)
@@ -1419,6 +1471,9 @@ extension DJIFlightControllerState {
                  .tripod,
                  .activeTrackSpotlight,
                  .unknown:
+                break
+                
+            @unknown default:
                 break
             }
         }
