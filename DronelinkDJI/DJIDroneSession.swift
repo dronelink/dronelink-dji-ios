@@ -42,6 +42,7 @@ public class DJIDroneSession: NSObject {
     private var _visionDetectionState: DatedValue<DJIVisionDetectionState>?
     
     private let remoteControllerSerialQueue = DispatchQueue(label: "DroneSession+remoteControllerState")
+    private var remoteControllerInitialized: Date?
     private var _remoteControllerState: DatedValue<RemoteControllerStateAdapter>?
     
     private let cameraSerialQueue = DispatchQueue(label: "DroneSession+cameraStates")
@@ -80,9 +81,9 @@ public class DJIDroneSession: NSObject {
         
         adapter.drone.delegate = self
         initFlightController()
-        adapter.drone.remoteController?.delegate = self
         adapter.cameras?.forEach { initCamera(index: $0.index) }
         adapter.gimbals?.forEach { initGimbal(index: $0.index) }
+        initRemoteController()
         initListeners()
     }
     
@@ -188,6 +189,13 @@ public class DJIDroneSession: NSObject {
                     os_log(.debug, log: self.log, "Gimbal[%{public}d] pitch range extension enabled", index)
                 }
             }
+        }
+    }
+    
+    private func initRemoteController() {
+        if let remoteController = adapter.drone.remoteController {
+            remoteControllerInitialized = Date()
+            remoteController.delegate = self
         }
     }
     
@@ -301,6 +309,10 @@ public class DJIDroneSession: NSObject {
             initGimbal(index: UInt(index))
             break
             
+        case DJIRemoteControllerComponent:
+            initRemoteController()
+            break
+            
         default:
             break
         }
@@ -390,6 +402,10 @@ public class DJIDroneSession: NSObject {
                 }
             }
             
+            if remoteControllerInitialized == nil {
+                initRemoteController()
+            }
+            
             self.droneCommands.process()
             self.cameraCommands.process()
             self.gimbalCommands.process()
@@ -476,16 +492,16 @@ public class DJIDroneSession: NSObject {
     }
     
     internal func sendResetCameraCommands() {
-        adapter.drone.cameras?.forEach {
-            if let cameraState = cameraState(channel: $0.index)?.value {
-                if (cameraState.isCapturingVideo) {
-                    $0.stopRecordVideo(completion: nil)
-                }
-                else if (cameraState.isCapturing) {
-                    $0.stopShootPhoto(completion: nil)
-                }
-            }
-        }
+//        adapter.drone.cameras?.forEach {
+//            if let cameraState = cameraState(channel: $0.index)?.value {
+//                if (cameraState.isCapturingVideo) {
+//                    $0.stopRecordVideo(completion: nil)
+//                }
+//                else if (cameraState.isCapturing) {
+//                    $0.stopShootPhoto(completion: nil)
+//                }
+//            }
+//        }
     }
 }
 
