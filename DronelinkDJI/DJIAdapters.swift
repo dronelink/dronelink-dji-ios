@@ -27,7 +27,7 @@ public class DJIDroneAdapter: DroneAdapter {
 
     public var cameras: [CameraAdapter]? { drone.cameras }
     
-    public func camera(channel: UInt) -> CameraAdapter? { cameras?[safeIndex: Int(channel)] }
+    public func camera(channel: UInt) -> CameraAdapter? { camera(channel: channel) }
     
     public var gimbals: [GimbalAdapter]? {
         if let gimbals = drone.gimbals {
@@ -47,7 +47,7 @@ public class DJIDroneAdapter: DroneAdapter {
             return gimbalAdapter
         }
         
-        if let gimbal = drone.gimbals?[safeIndex: Int(channel)] {
+        if let gimbal = drone.gimbal(channel: channel) {
             let gimbalAdapter = DJIGimbalAdapter(gimbal: gimbal)
             gimbalAdapters[channel] = gimbalAdapter
             return gimbalAdapter
