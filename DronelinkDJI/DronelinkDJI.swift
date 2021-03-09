@@ -114,6 +114,29 @@ extension DJIGPSSignalLevel {
     }
 }
 
+
+extension DJICameraSystemState {
+    public var isBusy: Bool { isStoringPhoto || isShootingSinglePhoto || isShootingSinglePhotoInRAWFormat || isShootingIntervalPhoto || isShootingBurstPhoto || isShootingRAWBurstPhoto || isShootingShallowFocusPhoto || isShootingPanoramaPhoto || isShootingHyperanalytic }
+    public var isCapturing: Bool { isRecording || isShootingSinglePhoto || isShootingSinglePhotoInRAWFormat || isShootingIntervalPhoto || isShootingBurstPhoto || isShootingRAWBurstPhoto || isShootingShallowFocusPhoto || isShootingPanoramaPhoto || isShootingHyperanalytic }
+    public var isCapturingPhotoInterval: Bool { isShootingIntervalPhoto }
+    public var isCapturingVideo: Bool { isRecording }
+    public var isCapturingContinuous: Bool { isCapturingPhotoInterval || isCapturingVideo }
+    public var currentVideoTime: Double? { isCapturingVideo ? Double(currentVideoRecordingTimeInSeconds) : nil }
+}
+
+extension DJICameraFocusStatus {
+    public var isBusy: Bool {
+        switch self {
+        case .idle: return false
+        case .focusing: return true
+        case .successful: return false
+        case .failed: return false
+        case .unknown: return false
+        @unknown default: return false
+        }
+    }
+}
+
 extension Kernel.CameraAEBCount {
     var djiValue: DJICameraPhotoAEBCount {
         switch self {

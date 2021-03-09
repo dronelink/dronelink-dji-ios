@@ -12,7 +12,7 @@ import DJISDK
 import JavaScriptCore
 
 public class DJIControlSession: DroneControlSession {
-    private let log = OSLog(subsystem: "DronelinkDJI", category: "DJIDroneControlSession")
+    private static let log = OSLog(subsystem: "DronelinkDJI", category: "DJIDroneControlSession")
     
     private enum State {
         case TakeoffStart
@@ -68,27 +68,27 @@ public class DJIControlSession: DroneControlSession {
             }
 
             state = .TakeoffAttempting
-            os_log(.info, log: log, "Attempting precision takeoff")
-            flightController.startPrecisionTakeoff { error in
+            os_log(.info, log: DJIControlSession.log, "Attempting precision takeoff")
+            flightController.startPrecisionTakeoff {[weak self] error in
                 if let error = error {
-                    os_log(.error, log: self.log, "Precision takeoff failed: %{public}s", error.localizedDescription)
-                    os_log(.info, log: self.log, "Attempting takeoff")
+                    os_log(.error, log: DJIControlSession.log, "Precision takeoff failed: %{public}s", error.localizedDescription)
+                    os_log(.info, log: DJIControlSession.log, "Attempting takeoff")
                     flightController.startTakeoff { error in
                         if let error = error {
-                            os_log(.error, log: self.log, "Takeoff failed: %{public}s", error.localizedDescription)
-                           self.attemptDisengageReason = Kernel.Message(title: "MissionDisengageReason.take.off.failed.title".localized, details: error.localizedDescription)
-                           self.deactivate()
+                            os_log(.error, log: DJIControlSession.log, "Takeoff failed: %{public}s", error.localizedDescription)
+                           self?.attemptDisengageReason = Kernel.Message(title: "MissionDisengageReason.take.off.failed.title".localized, details: error.localizedDescription)
+                           self?.deactivate()
                            return
                         }
 
-                        os_log(.info, log: self.log, "Takeoff succeeded")
-                        self.state = .TakeoffComplete
+                        os_log(.info, log: DJIControlSession.log, "Takeoff succeeded")
+                        self?.state = .TakeoffComplete
                     }
                     return
                 }
                 
-                os_log(.info, log: self.log, "Precision takeoff succeeded")
-                self.state = .TakeoffComplete
+                os_log(.info, log: DJIControlSession.log, "Precision takeoff succeeded")
+                self?.state = .TakeoffComplete
             }
             return nil
             
@@ -109,20 +109,20 @@ public class DJIControlSession: DroneControlSession {
             }
             
             state = .SoftSwitchJoystickModeAttempting
-            os_log(.info, log: log, "Verifying soft switch joystick mode")
-            remoteController.getSoftSwitchJoyStickMode { (mode: DJIRCSoftSwitchJoyStickMode, error: Error?) in
+            os_log(.info, log: DJIControlSession.log, "Verifying soft switch joystick mode")
+            remoteController.getSoftSwitchJoyStickMode { [weak self] (mode: DJIRCSoftSwitchJoyStickMode, error: Error?) in
                 if error != nil && mode != ._P {
-                    os_log(.info, log: self.log, "Changing soft switch joystick mode to P")
+                    os_log(.info, log: DJIControlSession.log, "Changing soft switch joystick mode to P")
                     remoteController.setSoftSwitchJoyStickMode(._P) { error in
                         //if try to activate virtual stick immediately it can fail, so delay
                         DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
-                            self.state = .VirtualStickStart
+                            self?.state = .VirtualStickStart
                         }
                     }
                     return
                 }
                 
-                self.state = .VirtualStickStart
+                self?.state = .VirtualStickStart
             }
             return nil
             
@@ -134,22 +134,26 @@ public class DJIControlSession: DroneControlSession {
                 state = .VirtualStickAttempting
                 virtualStickAttemptPrevious = Date()
                 virtualStickAttempts += 1
-                os_log(.info, log: log, "Attempting virtual stick mode control: %{public}d", virtualStickAttempts)
-                flightController.setVirtualStickModeEnabled(true) { error in
+                os_log(.info, log: DJIControlSession.log, "Attempting virtual stick mode control: %{public}d", virtualStickAttempts)
+                flightController.setVirtualStickModeEnabled(true) { [weak self] error in
+                    guard let controlSession = self else {
+                        return
+                    }
+                    
                     if let error = error {
-                        if self.virtualStickAttempts >= 5 {
-                            self.attemptDisengageReason = Kernel.Message(title: "MissionDisengageReason.take.control.failed.title".localized, details: error.localizedDescription)
-                            self.deactivate()
+                        if controlSession.virtualStickAttempts >= 5 {
+                            controlSession.attemptDisengageReason = Kernel.Message(title: "MissionDisengageReason.take.control.failed.title".localized, details: error.localizedDescription)
+                            controlSession.deactivate()
                         }
                         else {
-                            self.state = .VirtualStickStart
+                            controlSession.state = .VirtualStickStart
                         }
                         return
                     }
                     
-                    os_log(.info, log: self.log, "Virtual stick mode control enabled")
-                    self.flightModeJoystickAttemptingStarted = Date()
-                    self.state = .FlightModeJoystickAttempting
+                    os_log(.info, log: DJIControlSession.log, "Virtual stick mode control enabled")
+                    controlSession.flightModeJoystickAttemptingStarted = Date()
+                    controlSession.state = .FlightModeJoystickAttempting
                 }
             }
             return nil
@@ -159,7 +163,7 @@ public class DJIControlSession: DroneControlSession {
             
         case .FlightModeJoystickAttempting:
             if flightControllerState.value.flightMode == .joystick {
-                os_log(.info, log: log, "Flight mode joystick achieved")
+                os_log(.info, log: DJIControlSession.log, "Flight mode joystick achieved")
                 DJISDKManager.closeConnection(whenEnteringBackground: false)
                 self.state = .FlightModeJoystickComplete
                 return activate()
@@ -184,8 +188,8 @@ public class DJIControlSession: DroneControlSession {
     
     public func deactivate() {
         DJISDKManager.closeConnection(whenEnteringBackground: true)
-        droneSession.sendResetVelocityCommand  { error in
-            self.droneSession.adapter.drone.flightController?.setVirtualStickModeEnabled(false, withCompletion: nil)
+        droneSession.sendResetVelocityCommand  { [weak self] error in
+            self?.droneSession.adapter.drone.flightController?.setVirtualStickModeEnabled(false, withCompletion: nil)
         }
         
         state = .Deactivated

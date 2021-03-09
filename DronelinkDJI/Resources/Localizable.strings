@@ -26,7 +26,10 @@
 
 "DJIDroneSession.telemetry.unavailable" = "Telemetry Unavailable";
 
+"DJIDroneSession+CameraCommand.stop.capture.error" = "Camera still capturing";
 "DJIDroneSession+CameraCommand.start.shoot.photo.no.file" = "Media File Not Created";
+
+"DJIDroneSession+GimbalCommand.orientation.not.achieved" = "Gimbal Not Rotated";
 
 "DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.title" = "Location Unavailable";
 "DJIDronelink:DJIFlightControllerState.statusMessages.homeLocationNotSet.title" = "Home Location Not Set";

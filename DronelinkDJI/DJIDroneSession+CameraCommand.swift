@@ -253,11 +253,11 @@ extension DJIDroneSession {
             switch state.mode {
             case .photo:
                 if state.isCapturingPhotoInterval {
-                    os_log(.debug, log: log, "Camera start capture skipped, already shooting interval photos")
+                    os_log(.debug, log: DJIDroneSession.log, "Camera start capture skipped, already shooting interval photos")
                     finished(nil)
                 }
                 else {
-                    os_log(.debug, log: log, "Camera start capture photo")
+                    os_log(.debug, log: DJIDroneSession.log, "Camera start capture photo")
                     let started = Date()
                     camera.startShootPhoto { error in
                         if error != nil {
@@ -266,12 +266,12 @@ extension DJIDroneSession {
                         }
                         
                         //waiting since isBusy will still be false for a bit
-                        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
+                        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) { [weak self] in
                             if command.verifyFileCreated {
-                                self.cameraCommandFinishStartShootPhotoVerifyFile(cameraCommand: command, started: started, finished: finished)
+                                self?.cameraCommandFinishStartShootPhotoVerifyFile(cameraCommand: command, started: started, finished: finished)
                             }
                             else {
-                                self.cameraCommandFinishNotBusy(cameraCommand: cameraCommand, finished: finished)
+                                self?.cameraCommandFinishNotBusy(cameraCommand: cameraCommand, finished: finished)
                             }
                         }
                     }
@@ -280,11 +280,11 @@ extension DJIDroneSession {
                 
             case .video:
                 if state.isCapturingVideo {
-                    os_log(.debug, log: log, "Camera start capture skipped, already recording video")
+                    os_log(.debug, log: DJIDroneSession.log, "Camera start capture skipped, already recording video")
                     finished(nil)
                 }
                 else {
-                    os_log(.debug, log: log, "Camera start capture video")
+                    os_log(.debug, log: DJIDroneSession.log, "Camera start capture video")
                     camera.startRecordVideo { error in
                         if error != nil {
                             finished(error)
@@ -292,15 +292,15 @@ extension DJIDroneSession {
                         }
                         
                         //waiting since isBusy will still be false for a bit
-                        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
-                            self.cameraCommandFinishNotBusy(cameraCommand: cameraCommand, finished: finished)
+                        DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                            self?.cameraCommandFinishNotBusy(cameraCommand: cameraCommand, finished: finished)
                         }
                     }
                 }
                 break
                 
             default:
-                os_log(.info, log: log, "Camera start capture invalid mode: %d", state.mode.djiValue.rawValue)
+                os_log(.info, log: DJIDroneSession.log, "Camera start capture invalid mode: %d", state.mode.djiValue.rawValue)
                 return "MissionDisengageReason.drone.camera.mode.invalid.title".localized
             }
             return nil
@@ -310,36 +310,40 @@ extension DJIDroneSession {
             switch state.mode {
             case .photo:
                 if state.isCapturingPhotoInterval {
-                    os_log(.debug, log: log, "Camera stop capture interval photo")
-                    camera.stopShootPhoto(completion: finished)
+                    os_log(.debug, log: DJIDroneSession.log, "Camera stop capture interval photo")
+                    camera.stopShootPhoto { [weak self] error in
+                        if error != nil {
+                            finished(error)
+                        }
+                        
+                        self?.cameraCommandFinishStopCapture(cameraCommand: cameraCommand, finished: finished)
+                    }
                 }
                 else {
-                    os_log(.debug, log: log, "Camera stop capture skipped, not shooting interval photos")
+                    os_log(.debug, log: DJIDroneSession.log, "Camera stop capture skipped, not shooting interval photos")
                     finished(nil)
                 }
                 break
                 
             case .video:
                 if state.isCapturingVideo {
-                    os_log(.debug, log: log, "Camera stop capture video")
-                    camera.stopRecordVideo { error in
+                    os_log(.debug, log: DJIDroneSession.log, "Camera stop capture video")
+                    camera.stopRecordVideo { [weak self] error in
                         if error != nil {
                             finished(error)
                         }
                         
-                        DispatchQueue.global().asyncAfter(deadline: .now() + 2.0) {
-                            finished(nil)
-                        }
+                        self?.cameraCommandFinishStopCapture(cameraCommand: cameraCommand, finished: finished)
                     }
                 }
                 else {
-                    os_log(.debug, log: log, "Camera stop capture skipped, not recording video")
+                    os_log(.debug, log: DJIDroneSession.log, "Camera stop capture skipped, not recording video")
                     finished(nil)
                 }
                 break
                 
             default:
-                os_log(.info, log: log, "Camera stop capture skipped, invalid mode: %d", state.mode.djiValue.rawValue)
+                os_log(.info, log: DJIDroneSession.log, "Camera stop capture skipped, invalid mode: %d", state.mode.djiValue.rawValue)
                 finished(nil)
                 break
             }
@@ -442,6 +446,29 @@ extension DJIDroneSession {
         return "MissionDisengageReason.command.type.unhandled".localized
     }
     
+    func cameraCommandFinishStopCapture(cameraCommand: KernelCameraCommand, attempt: Int = 0, maxAttempts: Int = 20, finished: @escaping CommandFinished) {
+        if attempt >= maxAttempts {
+            finished("DJIDroneSession+CameraCommand.stop.capture.error".localized)
+            return
+        }
+        
+        guard let state = cameraState(channel: cameraCommand.channel)?.value as? DJICameraStateAdapter else {
+            finished("MissionDisengageReason.drone.camera.unavailable.title".localized)
+            return
+        }
+        
+        if !state.isCapturing {
+            finished(nil)
+            return
+        }
+        
+        let wait = 0.25
+        os_log(.debug, log: DJIDroneSession.log, "Camera command finished and waiting for camera to stop capturing (%{public}ss)... (%{public}s)", String(format: "%.02f", Double(attempt + 1) * wait), cameraCommand.id)
+        DispatchQueue.global().asyncAfter(deadline: .now() + wait) { [weak self] in
+            self?.cameraCommandFinishStopCapture(cameraCommand: cameraCommand, attempt: attempt + 1, maxAttempts: maxAttempts, finished: finished)
+        }
+    }
+    
     func cameraCommandFinishStartShootPhotoVerifyFile(cameraCommand: Kernel.StartCaptureCameraCommand, attempt: Int = 0, maxAttempts: Int = 20, started: Date, finished: @escaping CommandFinished) {
         if attempt >= maxAttempts {
             finished("DJIDroneSession+CameraCommand.start.shoot.photo.no.file".localized)
@@ -451,16 +478,16 @@ extension DJIDroneSession {
         if let mostRecentCameraFile = mostRecentCameraFile {
             let timeSinceMostRecentCameraFile = mostRecentCameraFile.date.timeIntervalSince(started)
             if timeSinceMostRecentCameraFile > 0 {
-                os_log(.debug, log: log, "Camera start shoot photo found camera file (%{public}s) after %{public}ss (%{public}s)", mostRecentCameraFile.value.name, String(format: "%.02f", timeSinceMostRecentCameraFile), cameraCommand.id)
+                os_log(.debug, log: DJIDroneSession.log, "Camera start shoot photo found camera file (%{public}s) after %{public}ss (%{public}s)", mostRecentCameraFile.value.name, String(format: "%.02f", timeSinceMostRecentCameraFile), cameraCommand.id)
                 cameraCommandFinishNotBusy(cameraCommand: cameraCommand, finished: finished)
                 return
             }
         }
         
         let wait = 0.25
-        os_log(.debug, log: log, "Camera start shoot photo finished and waiting for camera file (%{public}ss)... (%{public}s)", String(format: "%.02f", Double(attempt + 1) * wait), cameraCommand.id)
-        DispatchQueue.global().asyncAfter(deadline: .now() + wait) {
-            self.cameraCommandFinishStartShootPhotoVerifyFile(cameraCommand: cameraCommand, attempt: attempt + 1, maxAttempts: maxAttempts, started: started, finished: finished)
+        os_log(.debug, log: DJIDroneSession.log, "Camera start shoot photo finished and waiting for camera file (%{public}ss)... (%{public}s)", String(format: "%.02f", Double(attempt + 1) * wait), cameraCommand.id)
+        DispatchQueue.global().asyncAfter(deadline: .now() + wait) { [weak self] in
+            self?.cameraCommandFinishStartShootPhotoVerifyFile(cameraCommand: cameraCommand, attempt: attempt + 1, maxAttempts: maxAttempts, started: started, finished: finished)
         }
     }
     
@@ -475,9 +502,9 @@ extension DJIDroneSession {
             return
         }
         
-        os_log(.debug, log: log, "Camera command finished and waiting for camera to not be busy (%{public}d)... (%{public}s)", attempt, cameraCommand.id)
-        DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) {
-            self.cameraCommandFinishNotBusy(cameraCommand: cameraCommand, attempt: attempt + 1, maxAttempts: maxAttempts, finished: finished)
+        os_log(.debug, log: DJIDroneSession.log, "Camera command finished and waiting for camera to not be busy (%{public}d)... (%{public}s)", attempt, cameraCommand.id)
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.cameraCommandFinishNotBusy(cameraCommand: cameraCommand, attempt: attempt + 1, maxAttempts: maxAttempts, finished: finished)
         }
     }
 }

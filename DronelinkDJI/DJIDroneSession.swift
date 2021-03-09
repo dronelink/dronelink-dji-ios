@@ -11,7 +11,7 @@ import DronelinkCore
 import DJISDK
 
 public class DJIDroneSession: NSObject {
-    internal let log = OSLog(subsystem: "DronelinkDJI", category: "DJIDroneSession")
+    internal static let log = OSLog(subsystem: "DronelinkDJI", category: "DJIDroneSession")
     
     public let adapter: DJIDroneAdapter
     
@@ -47,6 +47,7 @@ public class DJIDroneSession: NSObject {
     
     private let cameraSerialQueue = DispatchQueue(label: "DroneSession+cameraStates")
     private var _cameraStates: [UInt: DatedValue<DJICameraSystemState>] = [:]
+    private var _cameraFocusStates: [UInt: DatedValue<DJICameraFocusState>] = [:]
     private var _cameraStorageStates: [UInt: DatedValue<DJICameraStorageState>] = [:]
     private var _cameraExposureSettings: [UInt: DatedValue<DJICameraExposureSettings>] = [:]
     private var _cameraLensInformation: [UInt: DatedValue<String>] = [:]
@@ -77,7 +78,7 @@ public class DJIDroneSession: NSObject {
     }
     
     private func initDrone() {
-        os_log(.info, log: log, "Drone session opened")
+        os_log(.info, log: DJIDroneSession.log, "Drone session opened")
         
         adapter.drone.delegate = self
         initFlightController()
@@ -89,31 +90,31 @@ public class DJIDroneSession: NSObject {
     
     private func initFlightController() {
         guard let flightController = adapter.drone.flightController else {
-            os_log(.error, log: log, "Flight controller unavailable")
+            os_log(.error, log: DJIDroneSession.log, "Flight controller unavailable")
             return
         }
         
-        os_log(.info, log: log, "Flight controller connected")
+        os_log(.info, log: DJIDroneSession.log, "Flight controller connected")
         flightController.delegate = self
         adapter.drone.battery?.delegate = self
         flightController.flightAssistant?.delegate = self
         
         _model = adapter.drone.model ?? ""
         if let model = adapter.drone.model {
-            os_log(.info, log: log, "Model: %{public}s", model)
+            os_log(.info, log: DJIDroneSession.log, "Model: %{public}s", model)
         }
         
-        adapter.drone.getFirmwarePackageVersion { (firmwarePackageVersion, error) in
-            self._firmwarePackageVersion = firmwarePackageVersion ?? ""
+        adapter.drone.getFirmwarePackageVersion { [weak self] (firmwarePackageVersion, error) in
+            self?._firmwarePackageVersion = firmwarePackageVersion ?? ""
             if let firmwarePackageVersion = firmwarePackageVersion {
-                os_log(.info, log: self.log, "Firmware package version: %{public}s", firmwarePackageVersion)
+                os_log(.info, log: DJIDroneSession.log, "Firmware package version: %{public}s", firmwarePackageVersion)
             }
         }
         
-        adapter.drone.getNameWithCompletion { (name, error) in
-            self._name = name ?? ""
+        adapter.drone.getNameWithCompletion { [weak self] (name, error) in
+            self?._name = name ?? ""
             if let name = name {
-                os_log(.info, log: self.log, "Name: %{public}s", name)
+                os_log(.info, log: DJIDroneSession.log, "Name: %{public}s", name)
             }
         }
         
@@ -121,34 +122,34 @@ public class DJIDroneSession: NSObject {
         
         flightController.setMultipleFlightModeEnabled(true) { error in
             if error == nil {
-                os_log(.debug, log: self.log, "Flight controller multiple flight mode enabled")
+                os_log(.debug, log: DJIDroneSession.log, "Flight controller multiple flight mode enabled")
             }
         }
         
         flightController.setNoviceModeEnabled(false)  { error in
            if error == nil {
-               os_log(.debug, log: self.log, "Flight controller novice mode disabled")
+               os_log(.debug, log: DJIDroneSession.log, "Flight controller novice mode disabled")
            }
         }
         
         flightController.setVirtualStickModeEnabled(false)  { error in
            if error == nil {
-               os_log(.debug, log: self.log, "Flight controller virtual stick mode deactivated")
+               os_log(.debug, log: DJIDroneSession.log, "Flight controller virtual stick mode deactivated")
            }
         }
     }
     
     private func initSerialNumber(attempt: Int = 0) {
         if attempt < 3, let flightController = adapter.drone.flightController {
-            flightController.getSerialNumber { serialNumber, error in
+            flightController.getSerialNumber { [weak self] serialNumber, error in
                 if error != nil {
-                    self.initSerialNumber(attempt: attempt + 1)
+                    self?.initSerialNumber(attempt: attempt + 1)
                     return
                 }
                 
-                self._serialNumber = serialNumber
+                self?._serialNumber = serialNumber
                 if let serialNumber = serialNumber {
-                    os_log(.info, log: self.log, "Serial number: %{public}s", serialNumber)
+                    os_log(.info, log: DJIDroneSession.log, "Serial number: %{public}s", serialNumber)
                 }
             }
         }
@@ -156,23 +157,23 @@ public class DJIDroneSession: NSObject {
     
     private func initCamera(index: UInt) {
         if let camera = adapter.drone.camera(channel: index) {
-            os_log(.info, log: log, "Camera[%{public}d] connected", index)
+            os_log(.info, log: DJIDroneSession.log, "Camera[%{public}d] connected", index)
             camera.delegate = self
             
             let xmp = "dronelink:\(Dronelink.shared.kernelVersion?.display ?? "")"
             camera.setMediaFileCustomInformation(xmp) { error in
                 if let error = error {
-                    os_log(.info, log: self.log, "Unable to set media file custom information: %{public}s", error.localizedDescription)
+                    os_log(.info, log: DJIDroneSession.log, "Unable to set media file custom information: %{public}s", error.localizedDescription)
                 }
                 else {
-                    os_log(.info, log: self.log, "Set media file custom information: %{public}s", xmp)
+                    os_log(.info, log: DJIDroneSession.log, "Set media file custom information: %{public}s", xmp)
                 }
             }
             
-            camera.getLensInformation { (info, error) in
+            camera.getLensInformation { [weak self] (info, error) in
                 if let info = info {
-                    self.cameraSerialQueue.async {
-                        self._cameraLensInformation[camera.index] = DatedValue<String>(value: info)
+                    self?.cameraSerialQueue.async {
+                        self?._cameraLensInformation[camera.index] = DatedValue<String>(value: info)
                     }
                 }
             }
@@ -181,12 +182,12 @@ public class DJIDroneSession: NSObject {
     
     private func initGimbal(index: UInt) {
         if let gimbal = adapter.drone.gimbal(channel: index) {
-            os_log(.info, log: log, "Gimbal[%{public}d] connected", index)
+            os_log(.info, log: DJIDroneSession.log, "Gimbal[%{public}d] connected", index)
             gimbal.delegate = self
             
             gimbal.setPitchRangeExtensionEnabled(true) { error in
                 if error == nil {
-                    os_log(.debug, log: self.log, "Gimbal[%{public}d] pitch range extension enabled", index)
+                    os_log(.debug, log: DJIDroneSession.log, "Gimbal[%{public}d] pitch range extension enabled", index)
                 }
             }
         }
@@ -200,91 +201,91 @@ public class DJIDroneSession: NSObject {
     }
     
     private func initListeners() {
-        startListeningForChanges(on: DJIFlightControllerKey(param: DJIFlightControllerParamLowBatteryWarningThreshold)!) { (oldValue, newValue) in
+        startListeningForChanges(on: DJIFlightControllerKey(param: DJIFlightControllerParamLowBatteryWarningThreshold)!) { [weak self] (oldValue, newValue) in
             if let value = newValue?.unsignedIntegerValue ?? oldValue?.unsignedIntegerValue {
-                self._lowBatteryWarningThreshold = DatedValue(value: value)
+                self?._lowBatteryWarningThreshold = DatedValue(value: value)
             }
             else {
-                self._lowBatteryWarningThreshold = nil
+                self?._lowBatteryWarningThreshold = nil
             }
         }
         
-        startListeningForChanges(on: DJIAirLinkKey(param: DJIAirLinkParamDownlinkSignalQuality)!) { (oldValue, newValue) in
+        startListeningForChanges(on: DJIAirLinkKey(param: DJIAirLinkParamDownlinkSignalQuality)!) { [weak self] (oldValue, newValue) in
             if let newValue = newValue?.unsignedIntegerValue {
-                self._downlinkSignalQuality = DatedValue(value: newValue)
+                self?._downlinkSignalQuality = DatedValue(value: newValue)
             }
             else {
-                self._downlinkSignalQuality = nil
+                self?._downlinkSignalQuality = nil
             }
         }
         
-        startListeningForChanges(on: DJIAirLinkKey(param: DJIAirLinkParamUplinkSignalQuality)!) { (oldValue, newValue) in
+        startListeningForChanges(on: DJIAirLinkKey(param: DJIAirLinkParamUplinkSignalQuality)!) { [weak self] (oldValue, newValue) in
             if let newValue = newValue?.unsignedIntegerValue {
-                self._uplinkSignalQuality = DatedValue(value: newValue)
+                self?._uplinkSignalQuality = DatedValue(value: newValue)
             }
             else {
-                self._uplinkSignalQuality = nil
+                self?._uplinkSignalQuality = nil
             }
         }
         
-        startListeningForChanges(on: DJICameraKey(param: DJICameraParamStorageLocation)!) { (oldValue, newValue) in
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamStorageLocation)!) { [weak self] (oldValue, newValue) in
             if let value = newValue?.unsignedIntegerValue {
-                self._storageLocation = DatedValue(value: DJICameraStorageLocation(rawValue: value) ?? .unknown)
+                self?._storageLocation = DatedValue(value: DJICameraStorageLocation(rawValue: value) ?? .unknown)
             }
             else {
-                self._storageLocation = nil
+                self?._storageLocation = nil
             }
         }
         
-        startListeningForChanges(on: DJICameraKey(param: DJICameraParamShootPhotoMode)!) { (oldValue, newValue) in
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamShootPhotoMode)!) { [weak self] (oldValue, newValue) in
             if let value = newValue?.unsignedIntegerValue {
-                self._photoMode = DatedValue(value: DJICameraShootPhotoMode(rawValue: value) ?? .unknown)
+                self?._photoMode = DatedValue(value: DJICameraShootPhotoMode(rawValue: value) ?? .unknown)
             }
             else {
-                self._photoMode = nil
+                self?._photoMode = nil
             }
         }
         
-        startListeningForChanges(on: DJICameraKey(param: DJICameraParamPhotoBurstCount)!) { (oldValue, newValue) in
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamPhotoBurstCount)!) { [weak self] (oldValue, newValue) in
             if let value = newValue?.unsignedIntegerValue {
-                self._burstCount = DatedValue(value: DJICameraPhotoBurstCount(rawValue: value) ?? .countUnknown)
+                self?._burstCount = DatedValue(value: DJICameraPhotoBurstCount(rawValue: value) ?? .countUnknown)
             }
             else {
-                self._burstCount = nil
+                self?._burstCount = nil
             }
         }
         
-        startListeningForChanges(on: DJICameraKey(param: DJICameraParamPhotoAEBCount)!) { (oldValue, newValue) in
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamPhotoAEBCount)!) { [weak self] (oldValue, newValue) in
             if let value = newValue?.unsignedIntegerValue {
-                self._aebCount = DatedValue(value: DJICameraPhotoAEBCount(rawValue: value) ?? .countUnknown)
+                self?._aebCount = DatedValue(value: DJICameraPhotoAEBCount(rawValue: value) ?? .countUnknown)
             }
             else {
-                self._aebCount = nil
+                self?._aebCount = nil
             }
         }
         
-        startListeningForChanges(on: DJICameraKey(param: DJICameraParamPhotoTimeIntervalSettings)!) { (oldValue, newValue) in
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamPhotoTimeIntervalSettings)!) { [weak self] (oldValue, newValue) in
               var value = DJICameraPhotoTimeIntervalSettings()
               let valuePointer = UnsafeMutableRawPointer(&value)
               (newValue?.value as? NSValue)?.getValue(valuePointer)
-            self._timeIntervalSettings = DatedValue(value: value)
+            self?._timeIntervalSettings = DatedValue(value: value)
         }
         
-        startListeningForChanges(on: DJICameraKey(param: DJICameraParamWhiteBalance)!) { (oldValue, newValue) in
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamWhiteBalance)!) { [weak self] (oldValue, newValue) in
             if let value = newValue?.value as? DJICameraWhiteBalance {
-                self._whiteBalance = DatedValue(value: value)
+                self?._whiteBalance = DatedValue(value: value)
             }
             else {
-                self._whiteBalance = nil
+                self?._whiteBalance = nil
             }
         }
         
-        startListeningForChanges(on: DJICameraKey(param: DJICameraParamISO)!) { (oldValue, newValue) in
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamISO)!) { [weak self] (oldValue, newValue) in
             if let value = newValue?.unsignedIntegerValue {
-                self._iso = DatedValue(value: DJICameraISO(rawValue: value) ?? .isoUnknown)
+                self?._iso = DatedValue(value: DJICameraISO(rawValue: value) ?? .isoUnknown)
             }
             else {
-                self._iso = nil
+                self?._iso = nil
             }
         }
     }
@@ -322,34 +323,35 @@ public class DJIDroneSession: NSObject {
         guard let key = key else { return }
         switch key {
         case DJIFlightControllerComponent:
-            os_log(.info, log: log, "Flight controller disconnected")
-            flightControllerSerialQueue.async {
-                self._flightControllerState = nil
+            os_log(.info, log: DJIDroneSession.log, "Flight controller disconnected")
+            flightControllerSerialQueue.async { [weak self] in
+                self?._flightControllerState = nil
             }
             
-            batterySerialQueue.async {
-                self._batteryState = nil
+            batterySerialQueue.async { [weak self] in
+                self?._batteryState = nil
             }
             
-            visionDetectionSerialQueue.async {
-                self._visionDetectionState = nil
+            visionDetectionSerialQueue.async { [weak self] in
+                self?._visionDetectionState = nil
             }
             break
             
         case DJICameraComponent:
-            os_log(.info, log: log, "Camera[%{public}d] disconnected", index)
-            cameraSerialQueue.async {
-                self._cameraStates[UInt(index)] = nil
-                self._cameraStorageStates[UInt(index)] = nil
-                self._cameraExposureSettings[UInt(index)] = nil
-                self._cameraLensInformation[UInt(index)] = nil
+            os_log(.info, log: DJIDroneSession.log, "Camera[%{public}d] disconnected", index)
+            cameraSerialQueue.async { [weak self] in
+                self?._cameraStates[UInt(index)] = nil
+                self?._cameraFocusStates[UInt(index)] = nil
+                self?._cameraStorageStates[UInt(index)] = nil
+                self?._cameraExposureSettings[UInt(index)] = nil
+                self?._cameraLensInformation[UInt(index)] = nil
             }
             break
             
         case DJIGimbalComponent:
-            os_log(.info, log: log, "Gimbal[%{public}d] disconnected", index)
-            gimbalSerialQueue.async {
-                self._gimbalStates[UInt(index)] = nil
+            os_log(.info, log: DJIDroneSession.log, "Gimbal[%{public}d] disconnected", index)
+            gimbalSerialQueue.async { [weak self] in
+                self?._gimbalStates[UInt(index)] = nil
             }
             break
             
@@ -359,20 +361,20 @@ public class DJIDroneSession: NSObject {
     }
 
     public var flightControllerState: DatedValue<DJIFlightControllerState>? {
-        flightControllerSerialQueue.sync {
-            return self._flightControllerState
+        flightControllerSerialQueue.sync { [weak self] in
+            return self?._flightControllerState
         }
     }
     
     public var batteryState: DatedValue<DJIBatteryState>? {
-        batterySerialQueue.sync {
-            return self._batteryState
+        batterySerialQueue.sync { [weak self] in
+            return self?._batteryState
         }
     }
     
     public var visionDetectionState: DatedValue<DJIVisionDetectionState>? {
-        visionDetectionSerialQueue.sync {
-            return self._visionDetectionState
+        visionDetectionSerialQueue.sync { [weak self] in
+            return self?._visionDetectionState
         }
     }
     
@@ -384,16 +386,22 @@ public class DJIDroneSession: NSObject {
                 _model != nil,
                 _firmwarePackageVersion != nil {
                 _initialized = true
-                DispatchQueue.global().async {
-                    self.delegates.invoke { $0.onInitialized(session: self) }
+                DispatchQueue.global().async { [weak self] in
+                    guard let session = self else {
+                        return
+                    }
+                    session.delegates.invoke { $0.onInitialized(session: session) }
                 }
             }
             
             if let location = location {
                 if (!_located) {
                     _located = true
-                    DispatchQueue.global().async {
-                        self.delegates.invoke { $0.onLocated(session: self) }
+                    DispatchQueue.global().async { [weak self] in
+                        guard let session = self else {
+                            return
+                        }
+                        session.delegates.invoke { $0.onLocated(session: session) }
                     }
                 }
                 
@@ -411,20 +419,24 @@ public class DJIDroneSession: NSObject {
             self.gimbalCommands.process()
             
             if Dronelink.shared.missionExecutor?.engaged ?? false || Dronelink.shared.modeExecutor?.engaged ?? false {
-                self.gimbalSerialQueue.async {
+                self.gimbalSerialQueue.async { [weak self] in
+                    guard let session = self else {
+                        return
+                    }
+                    
                     //work-around for this issue: https://support.dronelink.com/hc/en-us/community/posts/360034749773-Seeming-to-have-a-Heading-error-
-                    self.adapter.gimbals?.forEach { gimbalAdapter in
+                    session.adapter.gimbals?.forEach { gimbalAdapter in
                         if let gimbalAdapter = gimbalAdapter as? DJIGimbalAdapter {
                             var rotation = gimbalAdapter.pendingSpeedRotation
                             gimbalAdapter.pendingSpeedRotation = nil
                             if gimbalAdapter.gimbal.isAdjustYawSupported,
                                !gimbalAdapter.gimbal.isAdjustYaw360Supported,
-                               let gimbalState = self._gimbalStates[gimbalAdapter.index]?.value,
+                               let gimbalState = session._gimbalStates[gimbalAdapter.index]?.value,
                                gimbalState.mode == .yawFollow {
                                 rotation = DJIGimbalRotation(
                                     pitchValue: rotation?.pitch,
                                     rollValue: rotation?.roll,
-                                    yawValue: min(max(-self.gimbalYawRelativeToAircraftHeadingCorrected(gimbalState: gimbalState).convertRadiansToDegrees * 0.25, -25), 25) as NSNumber,
+                                    yawValue: min(max(-session.gimbalYawRelativeToAircraftHeadingCorrected(gimbalState: gimbalState).convertRadiansToDegrees * 0.25, -25), 25) as NSNumber,
                                     time: DJIGimbalRotation.minTime,
                                     mode: .speed,
                                     ignore: false)
@@ -442,7 +454,7 @@ public class DJIDroneSession: NSObject {
         }
         
         listeningDJIKeys.forEach { DJISDKManager.keyManager()?.stopListening(on: $0, ofListener: self) }
-        os_log(.info, log: log, "Drone session closed")
+        os_log(.info, log: DJIDroneSession.log, "Drone session closed")
     }
     
     private func gimbalYawRelativeToAircraftHeadingCorrected(gimbalState: GimbalStateAdapter) -> Double {
@@ -492,16 +504,16 @@ public class DJIDroneSession: NSObject {
     }
     
     internal func sendResetCameraCommands() {
-//        adapter.drone.cameras?.forEach {
-//            if let cameraState = cameraState(channel: $0.index)?.value {
-//                if (cameraState.isCapturingVideo) {
-//                    $0.stopRecordVideo(completion: nil)
-//                }
-//                else if (cameraState.isCapturing) {
-//                    $0.stopShootPhoto(completion: nil)
-//                }
-//            }
-//        }
+        adapter.drone.cameras?.forEach {
+            if let cameraState = cameraState(channel: $0.index)?.value {
+                if (cameraState.isCapturingVideo) {
+                    $0.stopRecordVideo(completion: nil)
+                }
+                else if (cameraState.isCapturing) {
+                    $0.stopShootPhoto(completion: nil)
+                }
+            }
+        }
     }
 }
 
@@ -565,12 +577,12 @@ extension DJIDroneSession: DroneSession {
             try droneCommands.add(command: Command(
                 id: command.id,
                 name: command.type.rawValue,
-                execute: { finished in
-                    self.commandExecuted(command: command)
-                    return self.execute(droneCommand: command, finished: finished)
+                execute: { [weak self] finished in
+                    self?.commandExecuted(command: command)
+                    return self?.execute(droneCommand: command, finished: finished)
                 },
-                finished: { error in
-                    self.commandFinished(command: command, error: error)
+                finished: { [weak self] error in
+                    self?.commandFinished(command: command, error: error)
                 },
                 config: command.config
             ))
@@ -581,9 +593,9 @@ extension DJIDroneSession: DroneSession {
             try cameraCommands.add(channel: command.channel, command: Command(
                 id: command.id,
                 name: command.type.rawValue,
-                execute: {
-                    self.commandExecuted(command: command)
-                    return self.execute(cameraCommand: command, finished: $0)
+                execute: { [weak self] in
+                    self?.commandExecuted(command: command)
+                    return self?.execute(cameraCommand: command, finished: $0)
                 },
                 finished: { error in
                     self.commandFinished(command: command, error: error)
@@ -597,12 +609,12 @@ extension DJIDroneSession: DroneSession {
             try gimbalCommands.add(channel: command.channel, command: Command(
                 id: command.id,
                 name: command.type.rawValue,
-                execute: {
-                    self.commandExecuted(command: command)
-                    return self.execute(gimbalCommand: command, finished: $0)
+                execute: { [weak self] in
+                    self?.commandExecuted(command: command)
+                    return self?.execute(gimbalCommand: command, finished: $0)
                 },
-                finished: { error in
-                    self.commandFinished(command: command, error: error)
+                finished: { [weak self] error in
+                    self?.commandFinished(command: command, error: error)
                 },
                 config: command.config
             ))
@@ -619,7 +631,7 @@ extension DJIDroneSession: DroneSession {
     private func commandFinished(command: KernelCommand, error: Error?) {
         let errorResolved: Error? = error
 //        if (error as NSError?)?.code == DJISDKError.productNotSupport.rawValue {
-//            os_log(.info, log: log, "Ignoring command failure: product not supported (%{public}s)", command.id)
+//            os_log(.info, log: DJIDroneSession.log, "Ignoring command failure: product not supported (%{public}s)", command.id)
 //            errorResolved = nil
 //        }
         delegates.invoke { $0.onCommandFinished(session: self, command: command, error: errorResolved) }
@@ -634,20 +646,25 @@ extension DJIDroneSession: DroneSession {
     public func createControlSession() -> DroneControlSession { DJIControlSession(droneSession: self) }
     
     public func cameraState(channel: UInt) -> DatedValue<CameraStateAdapter>? {
-        cameraSerialQueue.sync {
-            if let systemState = self._cameraStates[channel] {
+        cameraSerialQueue.sync { [weak self] in
+            guard let session = self else {
+                return nil
+            }
+            
+            if let systemState = session._cameraStates[channel] {
                 return DatedValue(value: DJICameraStateAdapter(
                     systemState: systemState.value,
-                    storageState: self._cameraStorageStates[channel]?.value,
-                    exposureSettings: self._cameraExposureSettings[channel]?.value,
-                    lensInformation: self._cameraLensInformation[channel]?.value,
-                    storageLocation: self._storageLocation?.value,
-                    photoMode: self._photoMode?.value,
-                    burstCount: self._burstCount?.value,
-                    aebCount: self._aebCount?.value,
-                    intervalSettings: self._timeIntervalSettings?.value,
-                    whiteBalance: self._whiteBalance?.value,
-                    iso: self._iso?.value),
+                    focusState: session._cameraFocusStates[channel]?.value,
+                    storageState: session._cameraStorageStates[channel]?.value,
+                    exposureSettings: session._cameraExposureSettings[channel]?.value,
+                    lensInformation: session._cameraLensInformation[channel]?.value,
+                    storageLocation: session._storageLocation?.value,
+                    photoMode: session._photoMode?.value,
+                    burstCount: session._burstCount?.value,
+                    aebCount: session._aebCount?.value,
+                    intervalSettings: session._timeIntervalSettings?.value,
+                    whiteBalance: session._whiteBalance?.value,
+                    iso: session._iso?.value),
                     date: systemState.date)
             }
             return nil
@@ -655,8 +672,8 @@ extension DJIDroneSession: DroneSession {
     }
 
     public func gimbalState(channel: UInt) -> DatedValue<GimbalStateAdapter>? {
-        gimbalSerialQueue.sync {
-            if let gimbalState = _gimbalStates[channel] {
+        gimbalSerialQueue.sync { [weak self] in
+            if let gimbalState = self?._gimbalStates[channel] {
                 return DatedValue<GimbalStateAdapter>(value: gimbalState.value, date: gimbalState.date)
             }
             return nil
@@ -664,8 +681,8 @@ extension DJIDroneSession: DroneSession {
     }
 
     public func remoteControllerState(channel: UInt) -> DatedValue<RemoteControllerStateAdapter>? {
-        remoteControllerSerialQueue.sync {
-            return _remoteControllerState
+        remoteControllerSerialQueue.sync { [weak self] in
+            return self?._remoteControllerState
         }
     }
     
@@ -767,7 +784,11 @@ extension DJIDroneSession: DJIBaseProductDelegate {
 
 extension DJIDroneSession: DJIFlightControllerDelegate {
     public func flightController(_ fc: DJIFlightController, didUpdate state: DJIFlightControllerState) {
-        flightControllerSerialQueue.async {
+        flightControllerSerialQueue.async { [weak self] in
+            guard let session = self else {
+                return
+            }
+            
             //automatically adjust the drone altitude offset if:
             //1) altitude continuity is enabled
             //2) the drone is going from flying to not flying
@@ -776,28 +797,28 @@ extension DJIDroneSession: DJIFlightControllerDelegate {
             //5) the last non-zero flying altitude is available
             //6) the absolute value of last non-zero flying altitude is more than 1m
             if Dronelink.shared.droneOffsets.droneAltitudeContinuity,
-                self._flightControllerState?.value.isFlying ?? false,
+               session._flightControllerState?.value.isFlying ?? false,
                 !state.isFlying,
                 (Dronelink.shared.droneOffsets.droneAltitudeReference ?? 0) == 0,
-                let lastNonZeroFlyingAltitude = self._lastNonZeroFlyingAltitude,
+                let lastNonZeroFlyingAltitude = session._lastNonZeroFlyingAltitude,
                 abs(lastNonZeroFlyingAltitude) > 1 {
                 //adjust by the last non-zero flying altitude
                 Dronelink.shared.droneOffsets.droneAltitude -= lastNonZeroFlyingAltitude
             }
             
-            let motorsOnPrevious = self._flightControllerState?.value.areMotorsOn ?? false
-            self._flightControllerState = DatedValue<DJIFlightControllerState>(value: state)
+            let motorsOnPrevious = session._flightControllerState?.value.areMotorsOn ?? false
+            session._flightControllerState = DatedValue<DJIFlightControllerState>(value: state)
             if (motorsOnPrevious != state.areMotorsOn) {
-                self.delegates.invoke { $0.onMotorsChanged(session: self, value: state.areMotorsOn) }
+                session.delegates.invoke { $0.onMotorsChanged(session: session, value: state.areMotorsOn) }
             }
             
             if state.isFlying {
                 if state.altitude != 0 {
-                    self._lastNonZeroFlyingAltitude = state.altitude
+                    session._lastNonZeroFlyingAltitude = state.altitude
                 }
             }
             else {
-                self._lastNonZeroFlyingAltitude = nil
+                session._lastNonZeroFlyingAltitude = nil
             }
         }
     }
@@ -806,8 +827,8 @@ extension DJIDroneSession: DJIFlightControllerDelegate {
 extension DJIDroneSession: DJIFlightAssistantDelegate {
     public func flightAssistant(_ assistant: DJIFlightAssistant, didUpdate state: DJIVisionDetectionState) {
         if state.position == .nose {
-            visionDetectionSerialQueue.async {
-                self._visionDetectionState = DatedValue<DJIVisionDetectionState>(value: state)
+            visionDetectionSerialQueue.async { [weak self] in
+                self?._visionDetectionState = DatedValue<DJIVisionDetectionState>(value: state)
             }
         }
     }
@@ -815,38 +836,44 @@ extension DJIDroneSession: DJIFlightAssistantDelegate {
 
 extension DJIDroneSession: DJIBatteryDelegate {
     public func battery(_ battery: DJIBattery, didUpdate state: DJIBatteryState) {
-        batterySerialQueue.async {
-            self._batteryState = DatedValue<DJIBatteryState>(value: state)
+        batterySerialQueue.async { [weak self] in
+            self?._batteryState = DatedValue<DJIBatteryState>(value: state)
         }
     }
 }
 
 extension DJIDroneSession: DJIRemoteControllerDelegate {
     public func remoteController(_ rc: DJIRemoteController, didUpdate state: DJIRCHardwareState) {
-        remoteControllerSerialQueue.async {
-            self._remoteControllerState = DatedValue<RemoteControllerStateAdapter>(value: DJIRemoteControllerStateAdapter(rcHardwareState: state))
+        remoteControllerSerialQueue.async { [weak self] in
+            self?._remoteControllerState = DatedValue<RemoteControllerStateAdapter>(value: DJIRemoteControllerStateAdapter(rcHardwareState: state))
         }
     }
 }
 
 extension DJIDroneSession: DJICameraDelegate {
     public func camera(_ camera: DJICamera, didUpdate systemState: DJICameraSystemState) {
-        cameraSerialQueue.async {
-            self._cameraStates[camera.index] = DatedValue<DJICameraSystemState>(value: systemState)
+        cameraSerialQueue.async { [weak self] in
+            self?._cameraStates[camera.index] = DatedValue<DJICameraSystemState>(value: systemState)
+        }
+    }
+    
+    public func camera(_ camera: DJICamera, didUpdate lensState: DJICameraFocusState) {
+        cameraSerialQueue.async { [weak self] in
+            self?._cameraFocusStates[camera.index] = DatedValue<DJICameraFocusState>(value: lensState)
         }
     }
     
     public func camera(_ camera: DJICamera, didUpdate storageState: DJICameraStorageState) {
         if storageState.location == .sdCard {
-            cameraSerialQueue.async {
-                self._cameraStorageStates[camera.index] = DatedValue<DJICameraStorageState>(value: storageState)
+            cameraSerialQueue.async { [weak self] in
+                self?._cameraStorageStates[camera.index] = DatedValue<DJICameraStorageState>(value: storageState)
             }
         }
     }
     
     public func camera(_ camera: DJICamera, didUpdate settings: DJICameraExposureSettings) {
-        cameraSerialQueue.async {
-            self._cameraExposureSettings[camera.index] = DatedValue<DJICameraExposureSettings>(value: settings)
+        cameraSerialQueue.async { [weak self] in
+            self?._cameraExposureSettings[camera.index] = DatedValue<DJICameraExposureSettings>(value: settings)
         }
     }
     
@@ -872,8 +899,8 @@ extension DJIDroneSession: DJICameraDelegate {
 
 extension DJIDroneSession: DJIGimbalDelegate {
     public func gimbal(_ gimbal: DJIGimbal, didUpdate state: DJIGimbalState) {
-        gimbalSerialQueue.async {
-            self._gimbalStates[gimbal.index] = DatedValue<GimbalStateAdapter>(value: DJIGimbalStateAdapter(gimbalState: state))
+        gimbalSerialQueue.async { [weak self] in
+            self?._gimbalStates[gimbal.index] = DatedValue<GimbalStateAdapter>(value: DJIGimbalStateAdapter(gimbalState: state))
         }
     }
 }

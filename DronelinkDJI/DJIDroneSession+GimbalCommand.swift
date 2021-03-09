@@ -7,6 +7,7 @@
 //
 import DronelinkCore
 import DJISDK
+import os
 
 extension DJIDroneSession {
     func execute(gimbalCommand: KernelGimbalCommand, finished: @escaping CommandFinished) -> Error? {
@@ -60,7 +61,14 @@ extension DJIDroneSession {
                     yawValue: yaw.angleDifferenceSigned(angle: state.orientation.yaw).convertRadiansToDegrees as NSNumber,
                     time: DJIGimbalRotation.minTime,
                     mode: .relativeAngle,
-                    ignore: false), completion: finished)
+                    ignore: false)) { [weak self] error in
+                    if error != nil {
+                        finished(error)
+                        return
+                    }
+                    
+                    self?.gimbalCommandFinishOrientationVerify(gimbalCommand: command, finished: finished)
+                }
                 return nil
             }
             
@@ -75,7 +83,14 @@ extension DJIDroneSession {
                 yawValue: nil,
                 time: DJIGimbalRotation.minTime,
                 mode: .absoluteAngle,
-                ignore: false), completion: finished)
+                ignore: false)) { [weak self] error in
+                if error != nil {
+                    finished(error)
+                    return
+                }
+                
+                self?.gimbalCommandFinishOrientationVerify(gimbalCommand: command, finished: finished)
+            }
             return nil
         }
         
@@ -89,5 +104,43 @@ extension DJIDroneSession {
         }
         
         return "MissionDisengageReason.command.type.unhandled".localized
+    }
+    
+    func gimbalCommandFinishOrientationVerify(gimbalCommand: Kernel.OrientationGimbalCommand, attempt: Int = 0, maxAttempts: Int = 20, threshold: Double =  2.0.convertDegreesToRadians, finished: @escaping CommandFinished) {
+        guard
+            let gimbal = adapter.drone.gimbal(channel: gimbalCommand.channel),
+            let state = gimbalState(channel: gimbalCommand.channel)?.value as? DJIGimbalStateAdapter
+        else {
+            finished("MissionDisengageReason.drone.gimbal.unavailable.title".localized)
+            return
+        }
+        
+        if attempt >= maxAttempts {
+            finished("DJIDroneSession+GimbalCommand.orientation.not.achieved".localized)
+            return
+        }
+        
+        var verified = true
+        if let pitch = gimbalCommand.orientation.pitch, gimbal.isAdjustPitchSupported {
+            verified = verified && abs(state.orientation.pitch.angleDifferenceSigned(angle: pitch)) <= threshold
+        }
+        
+        if let roll = gimbalCommand.orientation.roll, gimbal.isAdjustRollSupported {
+            verified = verified && abs(state.orientation.roll.angleDifferenceSigned(angle: roll)) <= threshold
+        }
+        
+        if let yaw = gimbalCommand.orientation.yaw, state.mode == .free {
+            verified = verified && abs(state.orientation.yaw.angleDifferenceSigned(angle: yaw)) <= threshold
+        }
+        
+        if verified {
+            finished(nil)
+            return
+        }
+        
+        os_log(.debug, log: DJIDroneSession.log, "Gimbal command finished and waiting for orientation (%{public}d)... (%{public}s)", attempt, gimbalCommand.id)
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.gimbalCommandFinishOrientationVerify(gimbalCommand: gimbalCommand, attempt: attempt + 1, maxAttempts: maxAttempts, threshold: threshold, finished: finished)
+        }
     }
 }

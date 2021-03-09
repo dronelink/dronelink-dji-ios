@@ -148,6 +148,7 @@ public struct DJICameraFile : CameraFile {
 
 public struct DJICameraStateAdapter: CameraStateAdapter {
     public let systemState: DJICameraSystemState
+    public let focusState: DJICameraFocusState?
     public let storageState: DJICameraStorageState?
     public let exposureSettings: DJICameraExposureSettings?
     public let lensInformation: String?
@@ -159,8 +160,9 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public let whiteBalanceValue: DJICameraWhiteBalance?
     public let isoValue: DJICameraISO?
     
-    public init(systemState: DJICameraSystemState, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensInformation: String?, storageLocation: DJICameraStorageLocation?, photoMode: DJICameraShootPhotoMode?, burstCount: DJICameraPhotoBurstCount?, aebCount: DJICameraPhotoAEBCount?, intervalSettings: DJICameraPhotoTimeIntervalSettings?, whiteBalance: DJICameraWhiteBalance?, iso: DJICameraISO?) {
+    public init(systemState: DJICameraSystemState, focusState: DJICameraFocusState?, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensInformation: String?, storageLocation: DJICameraStorageLocation?, photoMode: DJICameraShootPhotoMode?, burstCount: DJICameraPhotoBurstCount?, aebCount: DJICameraPhotoAEBCount?, intervalSettings: DJICameraPhotoTimeIntervalSettings?, whiteBalance: DJICameraWhiteBalance?, iso: DJICameraISO?) {
         self.systemState = systemState
+        self.focusState = focusState
         self.storageState = storageState
         self.exposureSettings = exposureSettings
         self.lensInformation = lensInformation
@@ -173,7 +175,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         self.isoValue = iso
     }
     
-    public var isBusy: Bool { systemState.isBusy || storageState?.isFormatting ?? false || storageState?.isInitializing ?? false }
+    public var isBusy: Bool { systemState.isBusy || focusState?.focusStatus.isBusy ?? false || storageState?.isFormatting ?? false || storageState?.isInitializing ?? false }
     public var isCapturing: Bool { systemState.isCapturing }
     public var isCapturingPhotoInterval: Bool { systemState.isCapturingPhotoInterval }
     public var isCapturingVideo: Bool { systemState.isCapturingVideo }
@@ -200,15 +202,6 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         return Int(colorTemperature) * 100
     }
     public var lensDetails: String? { lensInformation }
-}
-
-extension DJICameraSystemState {
-    public var isBusy: Bool { isStoringPhoto || isShootingSinglePhoto || isShootingSinglePhotoInRAWFormat || isShootingIntervalPhoto || isShootingBurstPhoto || isShootingRAWBurstPhoto || isShootingShallowFocusPhoto || isShootingPanoramaPhoto || isShootingHyperanalytic }
-    public var isCapturing: Bool { isRecording || isShootingSinglePhoto || isShootingSinglePhotoInRAWFormat || isShootingIntervalPhoto || isShootingBurstPhoto || isShootingRAWBurstPhoto || isShootingShallowFocusPhoto || isShootingPanoramaPhoto || isShootingHyperanalytic }
-    public var isCapturingPhotoInterval: Bool { isShootingIntervalPhoto }
-    public var isCapturingVideo: Bool { isRecording }
-    public var isCapturingContinuous: Bool { isCapturingPhotoInterval || isCapturingVideo }
-    public var currentVideoTime: Double? { isCapturingVideo ? Double(currentVideoRecordingTimeInSeconds) : nil }
 }
 
 public class DJIGimbalAdapter: GimbalAdapter {

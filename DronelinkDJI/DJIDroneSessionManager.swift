@@ -12,7 +12,7 @@ import DronelinkCore
 import DJISDK
 
 public class DJIDroneSessionManager: NSObject {
-    private let log = OSLog(subsystem: "DronelinkDJI", category: "DJIDroneSessionManager")
+    private static let log = OSLog(subsystem: "DronelinkDJI", category: "DJIDroneSessionManager")
     
     private let delegates = MulticastDelegate<DroneSessionManagerDelegate>()
     private var _flyZoneState: DatedValue<DJIFlyZoneState>?
@@ -69,10 +69,10 @@ extension DJIDroneSessionManager: DroneSessionManager {
 extension DJIDroneSessionManager: DJISDKManagerDelegate {
     public func appRegisteredWithError(_ error: Error?) {
         if let error = error {
-            os_log(.error, log: log, "DJI SDK Registered with error: %{public}s", error.localizedDescription)
+            os_log(.error, log: DJIDroneSessionManager.log, "DJI SDK Registered with error: %{public}s", error.localizedDescription)
         }
         else {
-            os_log(.info, log: log, "DJI SDK Registered successfully")
+            os_log(.info, log: DJIDroneSessionManager.log, "DJI SDK Registered successfully")
         }
         
         DJISDKManager.startConnectionToProduct()
