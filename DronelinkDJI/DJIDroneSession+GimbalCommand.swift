@@ -106,7 +106,7 @@ extension DJIDroneSession {
         return "MissionDisengageReason.command.type.unhandled".localized
     }
     
-    func gimbalCommandFinishOrientationVerify(gimbalCommand: Kernel.OrientationGimbalCommand, attempt: Int = 0, maxAttempts: Int = 20, threshold: Double =  2.0.convertDegreesToRadians, finished: @escaping CommandFinished) {
+    func gimbalCommandFinishOrientationVerify(gimbalCommand: Kernel.OrientationGimbalCommand, attempt: Int = 0, maxAttempts: Int = 20, threshold: Double = 2.0.convertDegreesToRadians, finished: @escaping CommandFinished) {
         guard
             let gimbal = adapter.drone.gimbal(channel: gimbalCommand.channel),
             let state = gimbalState(channel: gimbalCommand.channel)?.value as? DJIGimbalStateAdapter

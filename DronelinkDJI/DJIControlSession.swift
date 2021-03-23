@@ -187,11 +187,9 @@ public class DJIControlSession: DroneControlSession {
     }
     
     public func deactivate() {
-        DJISDKManager.closeConnection(whenEnteringBackground: true)
-        droneSession.sendResetVelocityCommand  { [weak self] error in
-            self?.droneSession.adapter.drone.flightController?.setVirtualStickModeEnabled(false, withCompletion: nil)
-        }
-        
+        droneSession.sendResetVelocityCommand()
+        droneSession.adapter.drone.flightController?.setVirtualStickModeEnabled(false, withCompletion: nil)
         state = .Deactivated
+        DJISDKManager.closeConnection(whenEnteringBackground: true)
     }
 }

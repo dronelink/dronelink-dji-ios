@@ -34,6 +34,7 @@ public class DJIDroneSession: NSObject {
     
     private let flightControllerSerialQueue = DispatchQueue(label: "DroneSession+flightControllerState")
     private var _flightControllerState: DatedValue<DJIFlightControllerState>?
+    private var _flightControllerAirSenseState: DatedValue<DJIAirSenseSystemInformation>?
     
     private let batterySerialQueue = DispatchQueue(label: "DroneSession+batteryState")
     private var _batteryState: DatedValue<DJIBatteryState>?
@@ -265,9 +266,9 @@ public class DJIDroneSession: NSObject {
         }
         
         startListeningForChanges(on: DJICameraKey(param: DJICameraParamPhotoTimeIntervalSettings)!) { [weak self] (oldValue, newValue) in
-              var value = DJICameraPhotoTimeIntervalSettings()
-              let valuePointer = UnsafeMutableRawPointer(&value)
-              (newValue?.value as? NSValue)?.getValue(valuePointer)
+            var value = DJICameraPhotoTimeIntervalSettings()
+            let valuePointer = UnsafeMutableRawPointer(&value)
+            (newValue?.value as? NSValue)?.getValue(valuePointer)
             self?._timeIntervalSettings = DatedValue(value: value)
         }
         
@@ -293,6 +294,8 @@ public class DJIDroneSession: NSObject {
     private func startListeningForChanges(on key: DJIKey, andUpdate updateBlock: @escaping DJIKeyedListenerUpdateBlock) {
         listeningDJIKeys.append(key)
         DJISDKManager.keyManager()?.startListeningForChanges(on: key, withListener: self, andUpdate: updateBlock)
+        //pump the value (the DJI SDK only fires updates to keys, not the initial value)
+        updateBlock(nil, DJISDKManager.keyManager()?.getValueFor(key))
     }
 
     public func componentConnected(withKey key: String?, andIndex index: Int) {
@@ -326,6 +329,7 @@ public class DJIDroneSession: NSObject {
             os_log(.info, log: DJIDroneSession.log, "Flight controller disconnected")
             flightControllerSerialQueue.async { [weak self] in
                 self?._flightControllerState = nil
+                self?._flightControllerAirSenseState = nil
             }
             
             batterySerialQueue.async { [weak self] in
@@ -573,51 +577,56 @@ extension DJIDroneSession: DroneSession {
     }
     
     public func add(command: KernelCommand) throws {
-        if let command = command as? KernelDroneCommand {
-            try droneCommands.add(command: Command(
+        let createCommand = { (execute: @escaping (@escaping CommandFinished) -> Error?) -> Command in
+            let c = Command(
                 id: command.id,
                 name: command.type.rawValue,
-                execute: { [weak self] finished in
-                    self?.commandExecuted(command: command)
-                    return self?.execute(droneCommand: command, finished: finished)
-                },
+                execute: execute,
                 finished: { [weak self] error in
                     self?.commandFinished(command: command, error: error)
                 },
                 config: command.config
-            ))
+            )
+            
+            if c.config.retriesEnabled == nil {
+                //disable retries when the DJI SDK reports that the product does not support the feature
+                c.config.retriesEnabled = { error in
+                    if (error as NSError?)?.code == DJISDKError.productNotSupport.rawValue {
+                        return false
+                    }
+                    return true
+                }
+            }
+            
+            //adding a 0.5 second delay after all camera commands (except start and stop capture)
+            if c.config.finishDelay == nil && command is KernelCameraCommand && !(command is Kernel.StartCaptureCameraCommand) && !(command is Kernel.StopCaptureCameraCommand) {
+                c.config.finishDelay = 0.5
+            }
+            
+            return c
+        }
+        
+        if let command = command as? KernelDroneCommand {
+            try droneCommands.add(command: createCommand({ [weak self] in
+                self?.commandExecuted(command: command)
+                return self?.execute(droneCommand: command, finished: $0)
+            }))
             return
         }
         
         if let command = command as? KernelCameraCommand {
-            try cameraCommands.add(channel: command.channel, command: Command(
-                id: command.id,
-                name: command.type.rawValue,
-                execute: { [weak self] in
-                    self?.commandExecuted(command: command)
-                    return self?.execute(cameraCommand: command, finished: $0)
-                },
-                finished: { error in
-                    self.commandFinished(command: command, error: error)
-                },
-                config: command.config
-            ))
+            try cameraCommands.add(channel: command.channel, command: createCommand({ [weak self] in
+                self?.commandExecuted(command: command)
+                return self?.execute(cameraCommand: command, finished: $0)
+            }))
             return
         }
 
         if let command = command as? KernelGimbalCommand {
-            try gimbalCommands.add(channel: command.channel, command: Command(
-                id: command.id,
-                name: command.type.rawValue,
-                execute: { [weak self] in
-                    self?.commandExecuted(command: command)
-                    return self?.execute(gimbalCommand: command, finished: $0)
-                },
-                finished: { [weak self] error in
-                    self?.commandFinished(command: command, error: error)
-                },
-                config: command.config
-            ))
+            try gimbalCommands.add(channel: command.channel, command: createCommand({ [weak self] in
+                self?.commandExecuted(command: command)
+                return self?.execute(gimbalCommand: command, finished: $0)
+            }))
             return
         }
         
@@ -629,12 +638,7 @@ extension DJIDroneSession: DroneSession {
     }
     
     private func commandFinished(command: KernelCommand, error: Error?) {
-        let errorResolved: Error? = error
-//        if (error as NSError?)?.code == DJISDKError.productNotSupport.rawValue {
-//            os_log(.info, log: DJIDroneSession.log, "Ignoring command failure: product not supported (%{public}s)", command.id)
-//            errorResolved = nil
-//        }
-        delegates.invoke { $0.onCommandFinished(session: self, command: command, error: errorResolved) }
+        delegates.invoke { $0.onCommandFinished(session: self, command: command, error: error) }
     }
     
     public func removeCommands() {
@@ -705,6 +709,10 @@ extension DJIDroneSession: DroneStateAdapter {
         }
         else {
             messages.append(Kernel.Message(title: "DJIDroneSession.telemetry.unavailable".localized, level: .danger))
+        }
+        
+        if let airSenseState = _flightControllerAirSenseState?.value {
+            messages.append(contentsOf: airSenseState.statusMessages)
         }
         
         if let diagnosticMessages = _diagnosticsInformationMessages?.value {
@@ -820,6 +828,16 @@ extension DJIDroneSession: DJIFlightControllerDelegate {
             else {
                 session._lastNonZeroFlyingAltitude = nil
             }
+        }
+    }
+    
+    public func flightController(_ fc: DJIFlightController, didUpdate information: DJIAirSenseSystemInformation) {
+        flightControllerSerialQueue.async { [weak self] in
+            guard let session = self else {
+                return
+            }
+            
+            session._flightControllerAirSenseState = DatedValue(value: information)
         }
     }
 }

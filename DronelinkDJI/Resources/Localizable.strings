@@ -58,6 +58,20 @@
 "DJIFlyZoneState.value.4" = "In Restricted Zone";
 "DJIFlyZoneState.value.255" = "Unknown";
 
+"DJIAirSenseAirplaneState.title" = "AirSense Alert";
+"DJIAirSenseAirplaneState.message" = "Aircraft %@ to the %@ heading %@ (%@)";
+
+"DJIAirSenseDirection.title" = "Bearing";
+"DJIAirSenseDirection.value.0" = "North";
+"DJIAirSenseDirection.value.1" = "North east";
+"DJIAirSenseDirection.value.2" = "East";
+"DJIAirSenseDirection.value.3" = "South east";
+"DJIAirSenseDirection.value.4" = "South";
+"DJIAirSenseDirection.value.5" = "South west";
+"DJIAirSenseDirection.value.6" = "West";
+"DJIAirSenseDirection.value.7" = "North west";
+"DJIAirSenseDirection.value.255" = "Unknown";
+
 "DJIAppActivationState.title" = "DJI Activation";
 "DJIAppActivationState.value.0" = "Not Supported";
 "DJIAppActivationState.value.1" = "Login Required";

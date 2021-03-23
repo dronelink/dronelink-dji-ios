@@ -488,7 +488,7 @@ extension DJIFlatCameraMode {
         case .photoHyperLight: return .hyperLight
         case .photoPanorama: return .panorama
         case .photoEHDR: return .ehdr
-        case .photoHighResolution: return nil
+        case .photoHighResolution: return .highResolution
         case .photoSmart: return .smart
         case .slowMotion: return nil
         case .internalAISpotChecking: return .internalAISpotChecking
@@ -1510,5 +1510,44 @@ extension DJIFlightControllerState {
         }
         
         return messages
+    }
+}
+
+extension DJIAirSenseSystemInformation {
+    var statusMessages: [Kernel.Message] { airplaneStates.map { $0.message } }
+}
+
+extension DJIAirSenseAirplaneState {
+    var message: Kernel.Message {
+        var level = Kernel.MessageLevel.danger
+        
+        switch warningLevel {
+        case .level0,
+             .level1,
+             .level2:
+            level = .info
+            break
+            
+        case .level3:
+            level = .warning
+            
+        case .level4,
+             .levelUnknown:
+            level = .danger
+            break
+            
+        @unknown default:
+            level = .danger
+        }
+        
+        return Kernel.Message(
+            title: "DJIAirSenseAirplaneState.title".localized,
+            details: String(
+                format: "DJIAirSenseAirplaneState.message".localized,
+                Dronelink.shared.format(formatter: "distance", value: distance),
+                "DJIAirSenseDirection.value.\(relativeDirection.rawValue)".localized,
+                Dronelink.shared.format(formatter: "angle", value: Double(heading).convertDegreesToRadians),
+                code),
+            level: level)
     }
 }
