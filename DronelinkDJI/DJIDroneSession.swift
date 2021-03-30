@@ -735,6 +735,7 @@ extension DJIDroneSession: DroneStateAdapter {
     public var course: Double { flightControllerState?.value.course ?? 0 }
     public var horizontalSpeed: Double { flightControllerState?.value.horizontalSpeed ?? 0 }
     public var verticalSpeed: Double { flightControllerState?.value.verticalSpeed ?? 0 }
+    public var absoluteSpeed: Double { 0 }
     public var altitude: Double { flightControllerState?.value.altitude ?? 0 }
     public var batteryPercent: Double? {
         if let chargeRemainingInPercent = batteryState?.value.chargeRemainingInPercent {
