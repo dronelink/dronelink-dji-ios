@@ -45,6 +45,14 @@ extension DJIDroneSessionManager: DroneSessionManager {
         delegates.remove(delegate)
     }
     
+    public func closeSession() {
+        if let session = _session {
+            session.close()
+            _session = nil
+            delegates.invoke { $0.onClosed(session: session) }
+        }
+    }
+    
     public var session: DroneSession? { _session }
     
     public var statusMessages: [Kernel.Message]? {
@@ -87,11 +95,7 @@ extension DJIDroneSessionManager: DJISDKManagerDelegate {
     }
     
     public func productDisconnected() {
-        if let session = _session {
-            session.close()
-            self._session = nil
-            delegates.invoke { $0.onClosed(session: session) }
-        }
+        closeSession()
     }
     
     public func componentConnected(withKey key: String?, andIndex index: Int) {

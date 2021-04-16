@@ -577,7 +577,8 @@ extension DJIDroneSession: DroneSession {
     }
     
     public func add(command: KernelCommand) throws {
-        let createCommand = { (execute: @escaping (@escaping CommandFinished) -> Error?) -> Command in
+        let model = (drone as? DJIDroneAdapter)?.drone.model ?? ""
+        let createCommand = { [weak self] (execute: @escaping (@escaping CommandFinished) -> Error?) -> Command in
             let c = Command(
                 id: command.id,
                 name: command.type.rawValue,
@@ -598,9 +599,30 @@ extension DJIDroneSession: DroneSession {
                 }
             }
             
-            //adding a 0.5 second delay after all camera commands (except start and stop capture)
-            if c.config.finishDelay == nil && command is KernelCameraCommand && !(command is Kernel.StartCaptureCameraCommand) && !(command is Kernel.StopCaptureCameraCommand) {
-                c.config.finishDelay = 0.5
+            //adding a 0.5 second delay after all camera commands for certain drone models (except start and stop capture)
+            if c.config.finishDelay == nil,
+               command is KernelCameraCommand,
+               !(command is Kernel.StartCaptureCameraCommand),
+               !(command is Kernel.StopCaptureCameraCommand) {
+                switch model {
+                case DJIAircraftModelNameInspire1,
+                     DJIAircraftModelNameInspire1Pro,
+                     DJIAircraftModelNameInspire1RAW,
+                     DJIAircraftModelNamePhantom4,
+                     DJIAircraftModelNamePhantom4Pro,
+                     DJIAircraftModelNamePhantom4ProV2,
+                     DJIAircraftModelNamePhantom4Advanced,
+                     DJIAircraftModelNamePhantom4RTK,
+                     DJIAircraftModelNamePhantom3Professional,
+                     DJIAircraftModelNamePhantom3Advanced,
+                     DJIAircraftModelNamePhantom3Standard,
+                     DJIAircraftModelNamePhantom34K:
+                    c.config.finishDelay = 0.5
+                    break
+                    
+                default:
+                    break
+                }
             }
             
             return c
