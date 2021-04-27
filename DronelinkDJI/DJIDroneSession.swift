@@ -690,8 +690,7 @@ extension DJIDroneSession: DroneSession {
                     aebCount: session._aebCount?.value,
                     intervalSettings: session._timeIntervalSettings?.value,
                     whiteBalance: session._whiteBalance?.value,
-                    iso: session._iso?.value),
-                    date: systemState.date)
+                    iso: session._iso?.value))
             }
             return nil
         }
@@ -797,6 +796,15 @@ extension DJIDroneSession: DroneStateAdapter {
         }
         return nil
     }
+    public var droneQuatX: Double? { return nil }
+    public var droneQuatY: Double? { return nil }
+    public var droneQuatZ: Double? { return nil }
+    public var frameQuatX: Double? { return nil }
+    public var frameQuatY: Double? { return nil }
+    public var frameQuatZ: Double? { return nil }
+    public var speedEast: Double? { return nil }
+    public var speedNorth: Double? { return nil }
+    public var speedDown: Double? { return nil }
 }
 
 extension DJIDroneSession: DJIBaseProductDelegate {
