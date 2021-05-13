@@ -68,6 +68,8 @@ public class DJIDroneSession: NSObject {
     private var _mostRecentCameraFile: DatedValue<CameraFile>?
     private var _whiteBalance: DatedValue<DJICameraWhiteBalance>?
     private var _iso: DatedValue<DJICameraISO>?
+    private var _focusRingValue: DatedValue<Double>?
+    private var _focusRingMax: DatedValue<Double>?
     public var mostRecentCameraFile: DatedValue<CameraFile>? { get { _mostRecentCameraFile } }
     private var listeningDJIKeys: [DJIKey] = []
     
@@ -287,6 +289,24 @@ public class DJIDroneSession: NSObject {
             }
             else {
                 self?._iso = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamFocusRingValue)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.doubleValue {
+                self?._focusRingValue = DatedValue(value: value)
+            }
+            else {
+                self?._focusRingValue = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamFocusRingValueUpperBound)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.doubleValue {
+                self?._focusRingMax = DatedValue(value: value)
+            }
+            else {
+                self?._focusRingMax = nil
             }
         }
     }
@@ -690,7 +710,9 @@ extension DJIDroneSession: DroneSession {
                     aebCount: session._aebCount?.value,
                     intervalSettings: session._timeIntervalSettings?.value,
                     whiteBalance: session._whiteBalance?.value,
-                    iso: session._iso?.value),
+                    iso: session._iso?.value,
+                    focusRingValue: _focusRingValue?.value,
+                    focusRingMax: _focusRingMax?.value),
                     date: systemState.date)
             }
             return nil

@@ -159,8 +159,10 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public let photoTimeIntervalSettings: DJICameraPhotoTimeIntervalSettings?
     public let whiteBalanceValue: DJICameraWhiteBalance?
     public let isoValue: DJICameraISO?
+    public let focusRingValue: Double?
+    public let focusRingMax: Double?
     
-    public init(systemState: DJICameraSystemState, focusState: DJICameraFocusState?, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensInformation: String?, storageLocation: DJICameraStorageLocation?, photoMode: DJICameraShootPhotoMode?, burstCount: DJICameraPhotoBurstCount?, aebCount: DJICameraPhotoAEBCount?, intervalSettings: DJICameraPhotoTimeIntervalSettings?, whiteBalance: DJICameraWhiteBalance?, iso: DJICameraISO?) {
+    public init(systemState: DJICameraSystemState, focusState: DJICameraFocusState?, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensInformation: String?, storageLocation: DJICameraStorageLocation?, photoMode: DJICameraShootPhotoMode?, burstCount: DJICameraPhotoBurstCount?, aebCount: DJICameraPhotoAEBCount?, intervalSettings: DJICameraPhotoTimeIntervalSettings?, whiteBalance: DJICameraWhiteBalance?, iso: DJICameraISO?, focusRingValue: Double?, focusRingMax: Double?) {
         self.systemState = systemState
         self.focusState = focusState
         self.storageState = storageState
@@ -173,6 +175,8 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         self.photoTimeIntervalSettings = intervalSettings
         self.whiteBalanceValue = whiteBalance
         self.isoValue = iso
+        self.focusRingValue = focusRingValue
+        self.focusRingMax = focusRingMax
     }
     
     public var isBusy: Bool { systemState.isBusy || focusState?.focusStatus.isBusy ?? false || storageState?.isFormatting ?? false || storageState?.isInitializing ?? false }

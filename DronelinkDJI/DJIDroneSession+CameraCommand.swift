@@ -105,7 +105,17 @@ extension DJIDroneSession {
         }
         
         if let command = cameraCommand as? Kernel.FocusCameraCommand {
-            camera.setFocusTarget(command.focusTarget.cgPoint, withCompletion: finished)
+            camera.setFocusTarget(command.focusTarget.cgPoint) { error in
+                if error != nil {
+                    finished(error)
+                    return
+                }
+                
+                DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                    self?.cameraCommandFinishFocusTargetVerifyRing(cameraCommand: command, finished: finished)
+                }
+            }
+            
             return nil
         }
         
@@ -119,14 +129,7 @@ extension DJIDroneSession {
         }
         
         if let command = cameraCommand as? Kernel.FocusRingCameraCommand {
-            camera.getFocusRingValueUpperBound { (value, error) in
-                if error != nil {
-                    finished(error)
-                    return
-                }
-                
-                camera.setFocusRingValue(UInt(command.focusRingPercent * Double(value)), withCompletion: finished)
-            }
+            camera.setFocusRingValue(UInt(command.focusRingPercent * Double(state.focusRingMax ?? 0)), withCompletion: finished)
             return nil
         }
         
@@ -505,6 +508,43 @@ extension DJIDroneSession {
         os_log(.debug, log: DJIDroneSession.log, "Camera command finished and waiting for camera to not be busy (%{public}d)... (%{public}s)", attempt, cameraCommand.id)
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) { [weak self] in
             self?.cameraCommandFinishNotBusy(cameraCommand: cameraCommand, attempt: attempt + 1, maxAttempts: maxAttempts, finished: finished)
+        }
+    }
+    
+    func cameraCommandFinishFocusTargetVerifyRing(cameraCommand: Kernel.FocusCameraCommand, attempt: Int = 0, maxAttempts: Int = 10, finished: @escaping CommandFinished) {
+        guard let focusRingPercentLimits = cameraCommand.focusRingPercentLimits else {
+            finished(nil)
+            return
+        }
+        
+        guard let state = cameraState(channel: cameraCommand.channel)?.value as? DJICameraStateAdapter else {
+            finished("MissionDisengageReason.drone.camera.unavailable.title".localized)
+            return
+        }
+        
+        if attempt >= maxAttempts {
+            finished("DJIDroneSession+CameraCommand.focus.target.error".localized)
+            return
+        }
+        
+        if !state.isBusy {
+            if let focusRingValue = state.focusRingValue, let focusRingMax = state.focusRingMax, focusRingMax > 0 {
+                let focusRingPercent = focusRingValue / focusRingMax
+                if focusRingPercent < focusRingPercentLimits.min || focusRingPercent > focusRingPercentLimits.max {
+                    finished(String(format: "DJIDroneSession+CameraCommand.focus.target.ring.invalid".localized,
+                                    Dronelink.shared.format(formatter: "percent", value: focusRingPercentLimits.min),
+                                    Dronelink.shared.format(formatter: "percent", value: focusRingPercent),
+                                    Dronelink.shared.format(formatter: "percent", value: focusRingPercentLimits.max)))
+                    return
+                }
+            }
+            
+            finished(nil)
+            return
+        }
+        
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.cameraCommandFinishFocusTargetVerifyRing(cameraCommand: cameraCommand, attempt: attempt + 1, maxAttempts: maxAttempts, finished: finished)
         }
     }
 }
