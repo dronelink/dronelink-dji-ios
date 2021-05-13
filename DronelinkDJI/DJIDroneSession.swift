@@ -44,7 +44,8 @@ public class DJIDroneSession: NSObject {
     
     private let remoteControllerSerialQueue = DispatchQueue(label: "DroneSession+remoteControllerState")
     private var remoteControllerInitialized: Date?
-    private var _remoteControllerState: DatedValue<RemoteControllerStateAdapter>?
+    private var _remoteControllerHardwareState: DatedValue<DJIRCHardwareState>?
+    private var _remoteControllerBatteryState: DatedValue<DJIRCBatteryState>?
     
     private let cameraSerialQueue = DispatchQueue(label: "DroneSession+cameraStates")
     private var _cameraStates: [UInt: DatedValue<DJICameraSystemState>] = [:]
@@ -730,7 +731,10 @@ extension DJIDroneSession: DroneSession {
 
     public func remoteControllerState(channel: UInt) -> DatedValue<RemoteControllerStateAdapter>? {
         remoteControllerSerialQueue.sync { [weak self] in
-            return self?._remoteControllerState
+            guard let session = self else {
+                return nil
+            }
+            return DatedValue<RemoteControllerStateAdapter>(value: DJIRemoteControllerStateAdapter(rcHardwareState: session._remoteControllerHardwareState?.value, rcBatteryState: session._remoteControllerBatteryState?.value))
         }
     }
     
@@ -907,7 +911,12 @@ extension DJIDroneSession: DJIBatteryDelegate {
 extension DJIDroneSession: DJIRemoteControllerDelegate {
     public func remoteController(_ rc: DJIRemoteController, didUpdate state: DJIRCHardwareState) {
         remoteControllerSerialQueue.async { [weak self] in
-            self?._remoteControllerState = DatedValue<RemoteControllerStateAdapter>(value: DJIRemoteControllerStateAdapter(rcHardwareState: state))
+            self?._remoteControllerHardwareState = DatedValue<DJIRCHardwareState>(value: state)
+        }
+    }
+    public func remoteController(_ rc: DJIRemoteController, didUpdate batteryState: DJIRCBatteryState) {
+        remoteControllerSerialQueue.async { [weak self] in
+            self?._remoteControllerBatteryState = DatedValue<DJIRCBatteryState>(value: batteryState)
         }
     }
 }

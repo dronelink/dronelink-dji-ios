@@ -264,44 +264,68 @@ public class DJIGimbalStateAdapter: GimbalStateAdapter {
 extension DJIRemoteController: RemoteControllerAdapter {
 }
 
-public class DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
-    public let rcHardwareState: DJIRCHardwareState
+public struct DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
+    public let rcHardwareState: DJIRCHardwareState?
+    public let rcBatteryState: DJIRCBatteryState?
     
-    public init(rcHardwareState: DJIRCHardwareState) {
+    init(rcHardwareState: DJIRCHardwareState?, rcBatteryState: DJIRCBatteryState?) {
         self.rcHardwareState = rcHardwareState
+        self.rcBatteryState = rcBatteryState
     }
     
     public var leftStick: Kernel.RemoteControllerStick {
-        Kernel.RemoteControllerStick(
-            x: Double(rcHardwareState.leftStick.horizontalPosition) / 660,
-            y: Double(rcHardwareState.leftStick.verticalPosition) / 660)
+        if let rcHardwareState = rcHardwareState {
+            return Kernel.RemoteControllerStick(
+                x: Double(rcHardwareState.leftStick.horizontalPosition) / 660,
+                y: Double(rcHardwareState.leftStick.verticalPosition) / 660)
+        }
+        return Kernel.RemoteControllerStick()
     }
     
     public var leftWheel: Kernel.RemoteControllerWheel {
-        Kernel.RemoteControllerWheel(present: true, pressed: false, value: Double(rcHardwareState.leftWheel) / 660)
+        if let rcHardwareState = rcHardwareState {
+            return Kernel.RemoteControllerWheel(present: true, pressed: false, value: Double(rcHardwareState.leftWheel) / 660)
+        }
+        return Kernel.RemoteControllerWheel()
     }
     
     public var rightStick: Kernel.RemoteControllerStick {
-        Kernel.RemoteControllerStick(
-            x: Double(rcHardwareState.rightStick.horizontalPosition) / 660,
-            y: Double(rcHardwareState.rightStick.verticalPosition) / 660)
+        if let rcHardwareState = rcHardwareState {
+            return Kernel.RemoteControllerStick(
+                x: Double(rcHardwareState.rightStick.horizontalPosition) / 660,
+                y: Double(rcHardwareState.rightStick.verticalPosition) / 660)
+        }
+        return Kernel.RemoteControllerStick()
     }
     
     public var pauseButton: Kernel.RemoteControllerButton {
-        Kernel.RemoteControllerButton(
-            present: rcHardwareState.pauseButton.isPresent.boolValue,
-            pressed: rcHardwareState.pauseButton.isClicked.boolValue)
+        if let rcHardwareState = rcHardwareState {
+            return Kernel.RemoteControllerButton(
+                present: rcHardwareState.pauseButton.isPresent.boolValue,
+                pressed: rcHardwareState.pauseButton.isClicked.boolValue)
+        }
+        return Kernel.RemoteControllerButton()
     }
     
     public var c1Button: Kernel.RemoteControllerButton {
-        Kernel.RemoteControllerButton(
-            present: rcHardwareState.c1Button.isPresent.boolValue,
-            pressed: rcHardwareState.c1Button.isClicked.boolValue)
+        if let rcHardwareState = rcHardwareState {
+            return Kernel.RemoteControllerButton(
+                present: rcHardwareState.c1Button.isPresent.boolValue,
+                pressed: rcHardwareState.c1Button.isClicked.boolValue)
+        }
+        return Kernel.RemoteControllerButton()
    }
     
     public var c2Button: Kernel.RemoteControllerButton {
-        Kernel.RemoteControllerButton(
+        if let rcHardwareState = rcHardwareState {
+            return Kernel.RemoteControllerButton(
             present: rcHardwareState.c2Button.isPresent.boolValue,
             pressed: rcHardwareState.c2Button.isClicked.boolValue)
+        }
+        return Kernel.RemoteControllerButton()
    }
+    
+    public var batteryPercent: Double {
+        Double(rcBatteryState?.remainingChargeInPercent ?? 0)
+    }
 }
