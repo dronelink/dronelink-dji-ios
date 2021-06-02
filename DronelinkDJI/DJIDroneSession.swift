@@ -619,29 +619,34 @@ extension DJIDroneSession: DroneSession {
                 }
             }
             
-            //adding a 0.5 second delay after all camera commands for certain drone models (except start and stop capture)
             if c.config.finishDelay == nil,
-               command is KernelCameraCommand,
-               !(command is Kernel.StartCaptureCameraCommand),
-               !(command is Kernel.StopCaptureCameraCommand) {
-                switch model {
-                case DJIAircraftModelNameInspire1,
-                     DJIAircraftModelNameInspire1Pro,
-                     DJIAircraftModelNameInspire1RAW,
-                     DJIAircraftModelNamePhantom4,
-                     DJIAircraftModelNamePhantom4Pro,
-                     DJIAircraftModelNamePhantom4ProV2,
-                     DJIAircraftModelNamePhantom4Advanced,
-                     DJIAircraftModelNamePhantom4RTK,
-                     DJIAircraftModelNamePhantom3Professional,
-                     DJIAircraftModelNamePhantom3Advanced,
-                     DJIAircraftModelNamePhantom3Standard,
-                     DJIAircraftModelNamePhantom34K:
-                    c.config.finishDelay = 0.5
-                    break
-                    
-                default:
-                    break
+               command is KernelCameraCommand {
+                //adding a 1.5 second delay after camera mode commands
+                if command is Kernel.ModeCameraCommand {
+                    c.config.finishDelay = 1.5
+                }
+                //adding a 1.5 second delay after all other camera commands for certain drone models (except start and stop capture)
+                else if !(command is Kernel.StartCaptureCameraCommand),
+                   !(command is Kernel.StopCaptureCameraCommand) {
+                    switch model {
+                    case DJIAircraftModelNameInspire1,
+                         DJIAircraftModelNameInspire1Pro,
+                         DJIAircraftModelNameInspire1RAW,
+                         DJIAircraftModelNamePhantom4,
+                         DJIAircraftModelNamePhantom4Pro,
+                         DJIAircraftModelNamePhantom4ProV2,
+                         DJIAircraftModelNamePhantom4Advanced,
+                         DJIAircraftModelNamePhantom4RTK,
+                         DJIAircraftModelNamePhantom3Professional,
+                         DJIAircraftModelNamePhantom3Advanced,
+                         DJIAircraftModelNamePhantom3Standard,
+                         DJIAircraftModelNamePhantom34K:
+                        c.config.finishDelay = 1.5
+                        break
+                        
+                    default:
+                        break
+                    }
                 }
             }
             
