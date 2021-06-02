@@ -265,6 +265,7 @@ extension DJIRemoteController: RemoteControllerAdapter {
 }
 
 public class DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
+    
     public let rcHardwareState: DJIRCHardwareState
     
     public init(rcHardwareState: DJIRCHardwareState) {
@@ -297,11 +298,13 @@ public class DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
         Kernel.RemoteControllerButton(
             present: rcHardwareState.c1Button.isPresent.boolValue,
             pressed: rcHardwareState.c1Button.isClicked.boolValue)
-   }
+    }
     
     public var c2Button: Kernel.RemoteControllerButton {
         Kernel.RemoteControllerButton(
             present: rcHardwareState.c2Button.isPresent.boolValue,
             pressed: rcHardwareState.c2Button.isClicked.boolValue)
-   }
+    }
+    
+    public var batteryPercent: Double { 0.0 }
 }
