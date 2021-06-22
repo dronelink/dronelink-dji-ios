@@ -28,6 +28,7 @@
 
 "DJIDroneSession+CameraCommand.stop.capture.error" = "Camera still capturing";
 "DJIDroneSession+CameraCommand.start.shoot.photo.no.file" = "Media File Not Created";
+"DJIDroneSession+CameraCommand.focus.distance.error" = "Uncalibrated Focus Distance";
 "DJIDroneSession+CameraCommand.focus.target.error" = "Camera Busy";
 "DJIDroneSession+CameraCommand.focus.target.ring.invalid" = "Focus Ring Outside Limits: %@ < %@ < %@";
 

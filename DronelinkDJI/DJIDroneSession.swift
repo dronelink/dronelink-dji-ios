@@ -567,12 +567,14 @@ extension DJIDroneSession: DroneSession {
             return Kernel.Message(title: "MissionDisengageReason.telemetry.delayed.title".localized)
         }
         
-        if flightControllerState?.value.hasReachedMaxFlightHeight ?? false {
-            return Kernel.Message(title: "MissionDisengageReason.drone.max.altitude.title".localized, details: "MissionDisengageReason.drone.max.altitude.details".localized)
-        }
-        
-        if flightControllerState?.value.hasReachedMaxFlightRadius ?? false {
-            return Kernel.Message(title: "MissionDisengageReason.drone.max.distance.title".localized, details: "MissionDisengageReason.drone.max.distance.details".localized)
+        if let state = flightControllerState?.value {
+            if state.hasReachedMaxFlightHeight {
+                return Kernel.Message(title: "MissionDisengageReason.drone.max.altitude.title".localized, details: "MissionDisengageReason.drone.max.altitude.details".localized)
+            }
+            
+            if state.hasReachedMaxFlightRadius {
+                return Kernel.Message(title: "MissionDisengageReason.drone.max.distance.title".localized, details: "MissionDisengageReason.drone.max.distance.details".localized)
+            }
         }
         
         return nil
@@ -624,29 +626,6 @@ extension DJIDroneSession: DroneSession {
                 //adding a 1.5 second delay after camera mode commands
                 if command is Kernel.ModeCameraCommand {
                     c.config.finishDelay = 1.5
-                }
-                //adding a 1.5 second delay after all other camera commands for certain drone models (except start and stop capture)
-                else if !(command is Kernel.StartCaptureCameraCommand),
-                   !(command is Kernel.StopCaptureCameraCommand) {
-                    switch model {
-                    case DJIAircraftModelNameInspire1,
-                         DJIAircraftModelNameInspire1Pro,
-                         DJIAircraftModelNameInspire1RAW,
-                         DJIAircraftModelNamePhantom4,
-                         DJIAircraftModelNamePhantom4Pro,
-                         DJIAircraftModelNamePhantom4ProV2,
-                         DJIAircraftModelNamePhantom4Advanced,
-                         DJIAircraftModelNamePhantom4RTK,
-                         DJIAircraftModelNamePhantom3Professional,
-                         DJIAircraftModelNamePhantom3Advanced,
-                         DJIAircraftModelNamePhantom3Standard,
-                         DJIAircraftModelNamePhantom34K:
-                        c.config.finishDelay = 1.5
-                        break
-                        
-                    default:
-                        break
-                    }
                 }
             }
             
@@ -785,6 +764,7 @@ extension DJIDroneSession: DroneStateAdapter {
     public var horizontalSpeed: Double { flightControllerState?.value.horizontalSpeed ?? 0 }
     public var verticalSpeed: Double { flightControllerState?.value.verticalSpeed ?? 0 }
     public var altitude: Double { flightControllerState?.value.altitude ?? 0 }
+    public var ultrasonicAltitude: Double? { flightControllerState?.value.isUltrasonicBeingUsed ?? false ? flightControllerState?.value.ultrasonicHeightInMeters : nil }
     public var batteryPercent: Double? {
         if let chargeRemainingInPercent = batteryState?.value.chargeRemainingInPercent {
             return Double(chargeRemainingInPercent) / 100

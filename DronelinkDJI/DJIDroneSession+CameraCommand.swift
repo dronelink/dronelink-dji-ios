@@ -119,6 +119,15 @@ extension DJIDroneSession {
             return nil
         }
         
+        if let command = cameraCommand as? Kernel.FocusDistanceCameraCommand {
+            if let ringValue = Dronelink.shared.get(cameraFocusCalibration: command.focusCalibration.with(droneSerialNumber: serialNumber))?.ringValue {
+                camera.setFocusRingValue(UInt(ringValue), withCompletion: finished)
+                return nil
+            }
+            
+            return "DJIDroneSession+CameraCommand.focus.distance.error".localized
+        }
+        
         if let command = cameraCommand as? Kernel.FocusModeCameraCommand {
             camera.getFocusMode { (current, error) in
                 Command.conditionallyExecute(current != command.focusMode.djiValue, error: error, finished: finished) {
