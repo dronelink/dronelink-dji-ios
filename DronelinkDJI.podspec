@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = "DronelinkDJI"
-  s.version = "2.4.0"
+  s.version = "2.5.0"
   s.summary = "Dronelink vendor implementation for DJI"
   s.homepage = "https://dronelink.com/"
   s.license = { :type => "MIT", :file => "LICENSE" }
@@ -12,6 +12,6 @@ Pod::Spec.new do |s|
   s.source_files  = "DronelinkDJI/**/*.swift"
   s.resources = "DronelinkDJI/**/*.{strings}"
   s.pod_target_xcconfig = { 'ONLY_ACTIVE_ARCH' => 'YES' }
-  s.dependency "DronelinkCore", "~> 2.4.0"
-  s.dependency "DJI-SDK-iOS", "~> 4.14"
+  s.dependency "DronelinkCore", "~> 2.5.0"
+  s.dependency "DJI-SDK-iOS", "~> 4.15"
 end

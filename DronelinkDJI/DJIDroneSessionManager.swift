@@ -99,10 +99,18 @@ extension DJIDroneSessionManager: DJISDKManagerDelegate {
     }
     
     public func componentConnected(withKey key: String?, andIndex index: Int) {
+        if key == DJIFlightControllerComponent, _session == nil {
+            productConnected(DJISDKManager.product())
+            return
+        }
         _session?.componentConnected(withKey: key, andIndex: index)
     }
     
     public func componentDisconnected(withKey key: String?, andIndex index: Int) {
+        if key == DJIFlightControllerComponent {
+            productDisconnected()
+            return
+        }
         _session?.componentDisconnected(withKey: key, andIndex: index)
     }
     

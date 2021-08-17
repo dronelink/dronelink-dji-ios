@@ -24,6 +24,7 @@ public class DJIDroneSession: NSObject {
     private var _firmwarePackageVersion: String?
     private var _initialized = false
     private var _located = false
+    private var _initVirtualStickDisabled = false
     private var _lastKnownGroundLocation: CLLocation?
     private var _lastNonZeroFlyingAltitude: Double?
     
@@ -123,22 +124,24 @@ public class DJIDroneSession: NSObject {
         
         initSerialNumber()
         
-        flightController.setMultipleFlightModeEnabled(true) { error in
-            if error == nil {
-                os_log(.debug, log: DJIDroneSession.log, "Flight controller multiple flight mode enabled")
+        flightController.getMultipleFlightModeEnabled { enabled, error in
+            if !enabled {
+                flightController.setMultipleFlightModeEnabled(true) { error in
+                    if error == nil {
+                        os_log(.debug, log: DJIDroneSession.log, "Flight controller multiple flight mode enabled")
+                    }
+                }
             }
         }
         
-        flightController.setNoviceModeEnabled(false)  { error in
-           if error == nil {
-               os_log(.debug, log: DJIDroneSession.log, "Flight controller novice mode disabled")
-           }
-        }
-        
-        flightController.setVirtualStickModeEnabled(false)  { error in
-           if error == nil {
-               os_log(.debug, log: DJIDroneSession.log, "Flight controller virtual stick mode deactivated")
-           }
+        flightController.getNoviceModeEnabled { enabled, error in
+            if enabled {
+                flightController.setNoviceModeEnabled(false)  { error in
+                   if error == nil {
+                       os_log(.debug, log: DJIDroneSession.log, "Flight controller novice mode disabled")
+                   }
+                }
+            }
         }
     }
     
@@ -188,9 +191,13 @@ public class DJIDroneSession: NSObject {
             os_log(.info, log: DJIDroneSession.log, "Gimbal[%{public}d] connected", index)
             gimbal.delegate = self
             
-            gimbal.setPitchRangeExtensionEnabled(true) { error in
-                if error == nil {
-                    os_log(.debug, log: DJIDroneSession.log, "Gimbal[%{public}d] pitch range extension enabled", index)
+            gimbal.getPitchRangeExtensionEnabled { enabled, error in
+                if !enabled {
+                    gimbal.setPitchRangeExtensionEnabled(true) { error in
+                        if error == nil {
+                            os_log(.debug, log: DJIDroneSession.log, "Gimbal[%{public}d] pitch range extension enabled", index)
+                        }
+                    }
                 }
             }
         }
@@ -434,6 +441,21 @@ public class DJIDroneSession: NSObject {
                 }
             }
             
+            if !_initVirtualStickDisabled, let flightMode = _flightControllerState?.value.flightMode {
+                _initVirtualStickDisabled = true
+                if flightMode != .gpsWaypoint {
+                    adapter.drone.flightController?.getVirtualStickModeEnabled { [weak self] enabled, error in
+                        if enabled {
+                            self?.adapter.drone.flightController?.setVirtualStickModeEnabled(false) { error in
+                               if error == nil {
+                                   os_log(.debug, log: DJIDroneSession.log, "Flight controller virtual stick mode deactivated")
+                               }
+                            }
+                        }
+                    }
+                }
+            }
+            
             if remoteControllerInitialized == nil {
                 initRemoteController()
             }
@@ -620,10 +642,9 @@ extension DJIDroneSession: DroneSession {
                 }
             }
             
-            if c.config.finishDelay == nil,
-               command is KernelCameraCommand {
-                //adding a 1.5 second delay after camera mode commands
-                if command is Kernel.ModeCameraCommand {
+            if c.config.finishDelay == nil {
+                //adding a 1.5 second delay after camera and gimbal mode commands
+                if command is Kernel.ModeCameraCommand || command is Kernel.ModeGimbalCommand {
                     c.config.finishDelay = 1.5
                 }
             }
@@ -825,21 +846,25 @@ extension DJIDroneSession: DJIFlightControllerDelegate {
                 return
             }
             
-            //automatically adjust the drone altitude offset if:
-            //1) altitude continuity is enabled
-            //2) the drone is going from flying to not flying
-            //3) the altitude reference is ground level
-            //4) the current drone altitude offset is not zero
-            //5) the last non-zero flying altitude is available
-            //6) the absolute value of last non-zero flying altitude is more than 1m
-            if Dronelink.shared.droneOffsets.droneAltitudeContinuity,
-               session._flightControllerState?.value.isFlying ?? false,
-                !state.isFlying,
-                (Dronelink.shared.droneOffsets.droneAltitudeReference ?? 0) == 0,
-                let lastNonZeroFlyingAltitude = session._lastNonZeroFlyingAltitude,
-                abs(lastNonZeroFlyingAltitude) > 1 {
-                //adjust by the last non-zero flying altitude
-                Dronelink.shared.droneOffsets.droneAltitude -= lastNonZeroFlyingAltitude
+            if session._flightControllerState?.value.isFlying ?? false, !state.isFlying {
+                if Dronelink.shared.droneOffsets.droneAltitudeContinuity {
+                    //automatically adjust the drone altitude offset if:
+                    //1) altitude continuity is enabled
+                    //2) the drone is going from flying to not flying
+                    //3) the altitude reference is ground level
+                    //4) the current drone altitude offset is not zero
+                    //5) the last non-zero flying altitude is available
+                    //6) the absolute value of last non-zero flying altitude is more than 1m
+                    if (Dronelink.shared.droneOffsets.droneAltitudeReference ?? 0) == 0,
+                        let lastNonZeroFlyingAltitude = session._lastNonZeroFlyingAltitude,
+                        abs(lastNonZeroFlyingAltitude) > 1 {
+                        //adjust by the last non-zero flying altitude
+                        Dronelink.shared.droneOffsets.droneAltitude -= lastNonZeroFlyingAltitude
+                    }
+                }
+                else {
+                    Dronelink.shared.droneOffsets.droneAltitude = 0
+                }
             }
             
             let motorsOnPrevious = session._flightControllerState?.value.areMotorsOn ?? false
