@@ -121,7 +121,7 @@ extension DJIDroneSession {
         
         if let command = cameraCommand as? Kernel.FocusDistanceCameraCommand {
             if let ringValue = Dronelink.shared.get(cameraFocusCalibration: command.focusCalibration.with(droneSerialNumber: serialNumber))?.ringValue {
-                camera.setFocusRingValue(UInt(ringValue), withCompletion: finished)
+                camera.setFocusRingValueCorrected(UInt(ringValue), maxValue: state.focusRingMax ?? 0, withCompletion: finished)
                 return nil
             }
             
@@ -138,7 +138,7 @@ extension DJIDroneSession {
         }
         
         if let command = cameraCommand as? Kernel.FocusRingCameraCommand {
-            camera.setFocusRingValue(UInt(command.focusRingPercent * Double(state.focusRingMax ?? 0)), withCompletion: finished)
+            camera.setFocusRingValueCorrected(UInt(command.focusRingPercent * Double(state.focusRingMax ?? 0)), maxValue: state.focusRingMax ?? 0, withCompletion: finished)
             return nil
         }
         
@@ -555,5 +555,28 @@ extension DJIDroneSession {
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) { [weak self] in
             self?.cameraCommandFinishFocusTargetVerifyRing(cameraCommand: cameraCommand, attempt: attempt + 1, maxAttempts: maxAttempts, finished: finished)
         }
+    }
+}
+
+extension DJICamera {
+    func setFocusRingValueCorrected(_ value: UInt, maxValue: Double, withCompletion: @escaping CommandFinished) {
+        var valueCorrected = value
+        
+        //KLUGE: the DJI SDK seems to have an iOS only error where phantoms with large max focus ring values at 19 to whatever value we try to set!
+        if maxValue >= 90 {
+            switch displayName {
+            case DJICameraDisplayNamePhantom4ProCamera,
+                 DJICameraDisplayNamePhantom4ProV2Camera,
+                 DJICameraDisplayNamePhantom4RTKCamera,
+                 DJICameraDisplayNamePhantom4AdvancedCamera:
+                valueCorrected = valueCorrected <= 19 ? 0 : valueCorrected - 19
+                break
+                
+            default:
+                break
+            }
+        }
+        
+        setFocusRingValue(valueCorrected, withCompletion: withCompletion)
     }
 }
