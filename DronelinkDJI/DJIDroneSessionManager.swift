@@ -89,6 +89,12 @@ extension DJIDroneSessionManager: DJISDKManagerDelegate {
     
     public func productConnected(_ product: DJIBaseProduct?) {
         if let drone = product as? DJIAircraft {
+            if let session = _session {
+                if (session.adapter.drone === drone) {
+                    return
+                }
+                closeSession()
+            }
             _session = DJIDroneSession(drone: drone)
             delegates.invoke { $0.onOpened(session: self._session!) }
         }

@@ -121,7 +121,19 @@ extension DJIDroneSession {
         
         if let command = cameraCommand as? Kernel.FocusDistanceCameraCommand {
             if let ringValue = Dronelink.shared.get(cameraFocusCalibration: command.focusCalibration.with(droneSerialNumber: serialNumber))?.ringValue {
-                camera.setFocusRingValueCorrected(UInt(ringValue), maxValue: state.focusRingMax ?? 0, withCompletion: finished)
+                let targetFocusRingValue = UInt(ringValue)
+                Command.conditionallyExecute(UInt(state.focusRingValue ?? 0) != targetFocusRingValue, finished: finished) {
+                    camera.setFocusRingValue(targetFocusRingValue) { error in
+                        if error != nil {
+                            finished(error)
+                            return
+                        }
+                        
+                        DispatchQueue.global().asyncAfter(deadline: .now() + 1.5) { [weak self] in
+                            self?.cameraCommandFinishFocusRingVerifyValue(cameraCommand: command, targetFocusRingValue: targetFocusRingValue, finished: finished)
+                        }
+                    }
+                }
                 return nil
             }
             
@@ -138,7 +150,19 @@ extension DJIDroneSession {
         }
         
         if let command = cameraCommand as? Kernel.FocusRingCameraCommand {
-            camera.setFocusRingValueCorrected(UInt(command.focusRingPercent * Double(state.focusRingMax ?? 0)), maxValue: state.focusRingMax ?? 0, withCompletion: finished)
+            let targetFocusRingValue = UInt(command.focusRingPercent * Double(state.focusRingMax ?? 0))
+            Command.conditionallyExecute(UInt(state.focusRingValue ?? 0) != targetFocusRingValue, finished: finished) {
+                camera.setFocusRingValue(targetFocusRingValue) { error in
+                    if error != nil {
+                        finished(error)
+                        return
+                    }
+                    
+                    DispatchQueue.global().asyncAfter(deadline: .now() + 1.5) { [weak self] in
+                        self?.cameraCommandFinishFocusRingVerifyValue(cameraCommand: command, targetFocusRingValue: targetFocusRingValue, finished: finished)
+                    }
+                }
+            }
             return nil
         }
         
@@ -556,27 +580,39 @@ extension DJIDroneSession {
             self?.cameraCommandFinishFocusTargetVerifyRing(cameraCommand: cameraCommand, attempt: attempt + 1, maxAttempts: maxAttempts, finished: finished)
         }
     }
-}
-
-extension DJICamera {
-    func setFocusRingValueCorrected(_ value: UInt, maxValue: Double, withCompletion: @escaping CommandFinished) {
-        var valueCorrected = value
-        
-        //KLUGE: the DJI SDK seems to have an iOS only error where phantoms with large max focus ring values at 19 to whatever value we try to set!
-        if maxValue >= 90 {
-            switch displayName {
-            case DJICameraDisplayNamePhantom4ProCamera,
-                 DJICameraDisplayNamePhantom4ProV2Camera,
-                 DJICameraDisplayNamePhantom4RTKCamera,
-                 DJICameraDisplayNamePhantom4AdvancedCamera:
-                valueCorrected = valueCorrected <= 19 ? 0 : valueCorrected - 19
-                break
-                
-            default:
-                break
-            }
+    
+    func cameraCommandFinishFocusRingVerifyValue(cameraCommand: KernelCameraCommand, attempt: Int = 0, maxAttempts: Int = 10, targetFocusRingValue: UInt, finished: @escaping CommandFinished) {
+        guard
+            let camera = adapter.drone.camera(channel: cameraCommand.channel),
+            let state = cameraState(channel: cameraCommand.channel)?.value as? DJICameraStateAdapter else {
+            finished("MissionDisengageReason.drone.camera.unavailable.title".localized)
+            return
         }
         
-        setFocusRingValue(valueCorrected, withCompletion: withCompletion)
+        if !state.isBusy {
+            if let focusRingValue = state.focusRingValue, let focusRingMax = state.focusRingMax, focusRingMax > 0 {
+                let diff = Int(targetFocusRingValue) - Int(focusRingValue)
+                if diff != 0 {
+                    let adjustedFocusRingValue = min(Int(targetFocusRingValue) + diff, Int(focusRingMax))
+                    os_log(.debug, log: DJIDroneSession.log, "Adjusting camera focus ring value by %{public}d... (%{public}s)", diff, cameraCommand.id)
+                    camera.setFocusRingValue(adjustedFocusRingValue < 0 ? 0 : UInt(adjustedFocusRingValue)) { [weak self] error in
+                        if error != nil {
+                            finished(error)
+                            return
+                        }
+                        
+                        self?.cameraCommandFinishNotBusy(cameraCommand: cameraCommand, finished: finished)
+                    }
+                    return
+                }
+            }
+            
+            finished(nil)
+            return
+        }
+        
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.cameraCommandFinishFocusRingVerifyValue(cameraCommand: cameraCommand, attempt: attempt + 1, maxAttempts: maxAttempts, targetFocusRingValue: targetFocusRingValue, finished: finished)
+        }
     }
 }
