@@ -3,6 +3,6 @@ inhibit_all_warnings!
 use_frameworks!
 
 target 'DronelinkDJI' do
-  pod 'DronelinkCore', '~> 2.5.0'
-  pod 'DJI-SDK-iOS', '~> 4.15'
+  pod 'DronelinkCore', '~> 2.6.0'
+  pod 'DJI-SDK-iOS', '~> 4.15.1'
 end
