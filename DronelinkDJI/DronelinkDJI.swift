@@ -961,6 +961,140 @@ extension Kernel.CameraWhiteBalancePreset {
     }
 }
 
+extension Kernel.DJIWaypointActionType {
+    var djiValue: DJIWaypointActionType {
+        switch self {
+        case .stay: return .stay
+        case .shootPhoto: return .shootPhoto
+        case .startRecord: return .startRecord
+        case .stopRecord: return .stopRecord
+        case .rotateAircraft: return .rotateAircraft
+        case .rotateGimbalPitch: return .rotateGimbalPitch
+        }
+    }
+}
+
+extension Kernel.DJIWaypointMissionComponentWaypointAction {
+    var djiValue: DJIWaypointAction {
+        var param = param
+        switch (type) {
+        case .stay, .shootPhoto, .startRecord, .stopRecord:
+            break
+            
+        case .rotateAircraft:
+            param = param.angleDifferenceSigned(angle: 0).convertRadiansToDegrees
+            break
+            
+        case .rotateGimbalPitch:
+            param = max(-90, param.convertRadiansToDegrees)
+            break
+            
+        default:
+            break
+        }
+        return DJIWaypointAction(actionType: type.djiValue, param: Int16(param))
+    }
+}
+
+extension Kernel.DJIWaypointMissionComponent {
+    var djiValue: DJIMutableWaypointMission {
+        let djiMission = DJIMutableWaypointMission()
+        djiMission.missionID = UInt16(truncatingIfNeeded: id.hashValue)
+        djiMission.autoFlightSpeed = Float(autoFlightSpeed)
+        djiMission.gotoFirstWaypointMode = gotoFirstWaypointMode.djiValue
+        djiMission.exitMissionOnRCSignalLost = exitMissionOnRCSignalLost
+        djiMission.repeatTimes = Int32(repeatTimes)
+        djiMission.maxFlightSpeed = Float(maxFlightSpeed)
+        if let pointOfInterest = pointOfInterest?.coordinate {
+            djiMission.pointOfInterest = pointOfInterest
+        }
+        djiMission.rotateGimbalPitch = rotateGimbalPitch
+        djiMission.headingMode = headingMode.djiValue
+        djiMission.flightPathMode = flightPathMode.djiValue
+        djiMission.finishedAction = finishedAction.djiValue
+        waypoints.enumerated().forEach({ index, waypoint in
+            let djiWaypoint = waypoint.djiValue
+            if (!(index > 0 && index < waypoints.count - 1)) {
+                djiWaypoint.cornerRadiusInMeters = 0.2
+            }
+            djiMission.add(djiWaypoint)
+        })
+        return djiMission
+    }
+}
+
+extension Kernel.DJIWaypointMissionComponentWaypoint {
+    var djiValue: DJIWaypoint {
+        let djiWaypoint = DJIWaypoint()
+        djiWaypoint.coordinate = coordinate.coordinate
+        djiWaypoint.altitude = Float(altitude)
+        djiWaypoint.heading = Int(heading.angleDifferenceSigned(angle: 0).convertRadiansToDegrees)
+        djiWaypoint.cornerRadiusInMeters = Float(cornerRadius)
+        djiWaypoint.turnMode = turnMode.djiValue
+        djiWaypoint.gimbalPitch = max(-90, Float(gimbalPitch.convertRadiansToDegrees))
+        djiWaypoint.speed = Float(speed)
+        djiWaypoint.shootPhotoTimeInterval = Float(shootPhotoTimeInterval)
+        djiWaypoint.shootPhotoDistanceInterval = Float(shootPhotoDistanceInterval)
+        djiWaypoint.actionRepeatTimes = UInt(actionRepeatTimes)
+        djiWaypoint.actionTimeoutInSeconds = Int32(actionTimeout)
+        actions.forEach { action in
+            djiWaypoint.add(action.djiValue)
+        }
+        return djiWaypoint
+    }
+}
+
+extension Kernel.DJIWaypointMissionFinishedAction {
+    var djiValue: DJIWaypointMissionFinishedAction {
+        switch self {
+        case .noAction: return .noAction
+        case .goHome: return .goHome
+        case .autoLand: return .autoLand
+        case .goFirstWaypoint: return .goFirstWaypoint
+        case .continueUntilStop: return .continueUntilStop
+        }
+    }
+}
+
+extension Kernel.DJIWaypointMissionFlightPathMode {
+    var djiValue: DJIWaypointMissionFlightPathMode {
+        switch self {
+        case .normal: return .normal
+        case .curved: return .curved
+        }
+    }
+}
+
+extension Kernel.DJIWaypointMissionGotoWaypointMode {
+    var djiValue: DJIWaypointMissionGotoWaypointMode {
+        switch self {
+        case .safely: return .safely
+        case .pointToPoint: return .pointToPoint
+        }
+    }
+}
+
+extension Kernel.DJIWaypointMissionHeadingMode {
+    var djiValue: DJIWaypointMissionHeadingMode {
+        switch self {
+        case .auto: return .auto
+        case .usingInitialDirection: return .usingInitialDirection
+        case .controlledByRemoteController: return .controlledByRemoteController
+        case .usingWaypointHeading: return .usingWaypointHeading
+        case .towardPointOfInterest: return .towardPointOfInterest
+        }
+    }
+}
+
+extension Kernel.DJIWaypointTurnMode {
+    var djiValue: DJIWaypointTurnMode {
+        switch self {
+        case .clockwise: return .clockwise
+        case .counterClockwise: return .counterClockwise
+        }
+    }
+}
+
 extension Kernel.DroneLightbridgeChannelSelectionMode {
     var djiValue: DJILightbridgeChannelSelectionMode {
         switch self {
@@ -1014,7 +1148,6 @@ extension DJIGimbalMode {
         }
     }
 }
-
 
 extension Kernel.GimbalMode {
     var djiValue: DJIGimbalMode {
@@ -1114,8 +1247,7 @@ extension DJIDiagnostics {
                      .noSDCard,
                      .noInternalStorage,
                      .noSSD:
-                    level = .info
-                    break
+                    return nil
                     
                 case .internalStorageError:
                     break
@@ -1183,8 +1315,7 @@ extension DJIDiagnostics {
                     break
                     
                 case .needStudy:
-                    level = .info
-                    break
+                    return nil
                     
                 @unknown default:
                     break
@@ -1212,8 +1343,7 @@ extension DJIDiagnostics {
                     break
                     
                 case .needCalibration:
-                    level = .info
-                    break
+                    return nil
                     
                 @unknown default:
                     break
@@ -1344,8 +1474,7 @@ extension DJIDiagnostics {
                      break
                     
                 case .imuNeedCalibration:
-                     level = .info
-                     break
+                    return nil
                     
                 @unknown default:
                     break
@@ -1371,8 +1500,7 @@ extension DJIDiagnostics {
                     break
                     
                 case .visionSystemNeedCalibration:
-                    level = .info
-                    break
+                    return nil
                     
                 @unknown default:
                     break
@@ -1433,6 +1561,35 @@ extension DJIGoHomeExecutionState {
     }
 }
 
+extension DJIWaypointMissionState {
+    var message: Kernel.Message? {
+        var level: Kernel.MessageLevel?
+        switch self {
+        case .unknown, .disconnected, .notSupported:
+            return nil
+            
+        case .recovering:
+            level = .warning
+            
+        case .readyToUpload:
+            level = .info
+            
+        case .uploading:
+            level = .warning
+            break
+            
+        case .readyToExecute, .executing, .executionPaused:
+            level = .info
+            break
+            
+        @unknown default:
+            return nil
+        }
+        
+        return Kernel.Message(title: "DJIWaypointMissionState.title".localized, details: "DJIWaypointMissionState.value.\(rawValue)".localized, level: level)
+    }
+}
+
 extension DJIFlightControllerState {
     var statusMessages: [Kernel.Message] {
         var messages: [Kernel.Message] = []
@@ -1461,6 +1618,19 @@ extension DJIFlightControllerState {
                 messages.append(Kernel.Message(title: "DJIDronelink:DJIFlightControllerState.statusMessages.hasReachedMaxFlightHeight.title".localized, level: .warning))
             }
             
+            if let currentState = DJISDKManager.missionControl()?.waypointMissionOperator().currentState {
+                switch currentState {
+                case .uploading:
+                    if let message = currentState.message {
+                        messages.append(message)
+                    }
+                    break
+                    
+                default:
+                    break
+                }
+            }
+            
             switch flightMode {
             case .assistedTakeoff,
                  .autoTakeoff,
@@ -1471,7 +1641,9 @@ extension DJIFlightControllerState {
                 break
                 
             case .gpsWaypoint:
-                messages.append(Kernel.Message(title: "DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.title".localized, level: .warning))
+                if let message = DJISDKManager.missionControl()?.waypointMissionOperator().currentState.message {
+                    messages.append(message)
+                }
                 break
                 
             case .manual,
@@ -1549,5 +1721,13 @@ extension DJIAirSenseAirplaneState {
                 Dronelink.shared.format(formatter: "angle", value: Double(heading).convertDegreesToRadians),
                 code),
             level: level)
+    }
+}
+
+extension DJIWaypoint {
+    func distance(to: DJIWaypoint) -> Double {
+        let x = coordinate.distance(to: to.coordinate)
+        let y = Double(abs(altitude - to.altitude))
+        return sqrt(pow(x, 2) + pow(y, 2))
     }
 }

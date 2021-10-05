@@ -5,13 +5,19 @@
 //  Created by Jim McAndrew on 1/21/19.
 //  Copyright © 2019 Dronelink. All rights reserved.
 //
+"MissionDisengageReason.user.disengaged" = "Mission Paused";
 "MissionDisengageReason.command.type.unhandled" = "Unhandled Command Type";
+"MissionDisengageReason.drone.disconnected.title" = "Drone Disconnected";
 "MissionDisengageReason.drone.control.unavailable.title" = "Drone Control Unavailable";
 "MissionDisengageReason.telemetry.unavailable.title" = "Telemetry Unavailable";
 "MissionDisengageReason.telemetry.delayed.title" = "Telemetry Delayed";
 "MissionDisengageReason.drone.control.override.title" = "Control Override";
 "MissionDisengageReason.take.off.failed.title" = "Unable to Take Off";
 "MissionDisengageReason.take.control.failed.title" = "Unable to Take Control";
+"MissionDisengageReason.execution.state.invalid.title" = "Execution State Invalid";
+"MissionDisengageReason.load.mission.failed.title" = "Unable to Load Mission";
+"MissionDisengageReason.upload.mission.failed.title" = "Unable to Upload Mission";
+"MissionDisengageReason.start.mission.failed.title" = "Unable to Start Mission";
 "MissionDisengageReason.drone.max.altitude.title" = "Max Altitude Reached";
 "MissionDisengageReason.drone.max.altitude.details" = "Increase the max altitude setting to continue.";
 "MissionDisengageReason.drone.max.distance.title" = "Max Distance Reached";
@@ -23,6 +29,12 @@
 "MissionDisengageReason.drone.camera.unavailable.title" = "Camera Unavailable";
 "MissionDisengageReason.drone.gimbal.unavailable.title" = "Gimbal Unavailable";
 "MissionDisengageReason.drone.camera.mode.invalid.title" = "Camera Mode Invalid";
+
+"DJIWaypointMissionSession.statusMessage.uploading" = "Uploading waypoints | %@ of %@";
+"DJIWaypointMissionSession.statusMessage.component" = "Component %@ of %@";
+"DJIWaypointMissionSession.statusMessage.waypoint.0" = "Approaching waypoint %@ of %@";
+"DJIWaypointMissionSession.statusMessage.waypoint.n" = "Flying to waypoint %@ of %@ | %@";
+"DJIWaypointMissionSession.statusMessage.reengaging" = "Resuming at %@ to waypoint %@...";
 
 "DJIDroneSession.telemetry.unavailable" = "Telemetry Unavailable";
 
@@ -40,7 +52,22 @@
 "DJIDronelink:DJIFlightControllerState.statusMessages.isLowerThanBatteryWarningThreshold.title" = "Low Battery";
 "DJIDronelink:DJIFlightControllerState.statusMessages.hasReachedMaxFlightRadius.title" = "Max Distance";
 "DJIDronelink:DJIFlightControllerState.statusMessages.hasReachedMaxFlightHeight.title" = "Max Altitude";
-"DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.title" = "Onboard Waypoint Flight";
+
+"DJIWaypointMissionState.title" = "Onboard Waypoints";
+"DJIWaypointMissionState.value.-1" = "Unknown";
+"DJIWaypointMissionState.value.0" = "Disconnected";
+"DJIWaypointMissionState.value.1" = "Recovering";
+"DJIWaypointMissionState.value.2" = "Not Supported";
+"DJIWaypointMissionState.value.3" = "Ready to Upload";
+"DJIWaypointMissionState.value.4" = "Uploading";
+"DJIWaypointMissionState.value.5" = "Ready to Execute";
+"DJIWaypointMissionState.value.6" = "Running";
+"DJIWaypointMissionState.value.7" = "Paused";
+
+"DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.default.title" = "Onboard Waypoints";
+"DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.uploading.title" = "Onboard Waypoints Uploading";
+"DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.executing.title" = "Onboard Waypoints Running";
+"DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.executionPaused.title" = "Onboard Waypoints Paused";
 
 "DJIGoHomeExecutionState.title" = "RTH";
 "DJIGoHomeExecutionState.value.0" = "Not Executing";

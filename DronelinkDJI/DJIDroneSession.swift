@@ -13,6 +13,7 @@ import DJISDK
 public class DJIDroneSession: NSObject {
     internal static let log = OSLog(subsystem: "DronelinkDJI", category: "DJIDroneSession")
     
+    public let manager: DroneSessionManager
     public let adapter: DJIDroneAdapter
     
     private let _opened = Date()
@@ -74,7 +75,8 @@ public class DJIDroneSession: NSObject {
     public var mostRecentCameraFile: DatedValue<CameraFile>? { get { _mostRecentCameraFile } }
     private var listeningDJIKeys: [DJIKey] = []
     
-    public init(drone: DJIAircraft) {
+    public init(manager: DJIDroneSessionManager, drone: DJIAircraft) {
+        self.manager = manager
         adapter = DJIDroneAdapter(drone: drone)
         super.init()
         initDrone()
@@ -567,6 +569,7 @@ extension DJIDroneSession: DroneSession {
     public var drone: DroneAdapter { adapter }
     public var state: DatedValue<DroneStateAdapter>? { DatedValue(value: self, date: flightControllerState?.date ?? Date()) }
     public var opened: Date { _opened }
+    public var closed: Bool { _closed }
     public var id: String { _id }
     public var manufacturer: String { "DJI" }
     public var serialNumber: String? { _serialNumber }
@@ -575,8 +578,12 @@ extension DJIDroneSession: DroneSession {
     public var firmwarePackageVersion: String? { _firmwarePackageVersion }
     public var initialized: Bool { _initialized }
     public var located: Bool { _located }
-    public var telemetryDelayed: Bool { -(flightControllerState?.date.timeIntervalSinceNow ?? 0) > 1.0 }
+    public var telemetryDelayed: Bool { -(flightControllerState?.date.timeIntervalSinceNow ?? 0) > 2.0 }
     public var disengageReason: Kernel.Message? {
+        if _closed {
+            return Kernel.Message(title: "MissionDisengageReason.drone.disconnected.title".localized)
+        }
+        
         if adapter.drone.flightController == nil {
             return Kernel.Message(title: "MissionDisengageReason.drone.control.unavailable.title".localized)
         }
@@ -693,7 +700,20 @@ extension DJIDroneSession: DroneSession {
         gimbalCommands.removeAll()
     }
     
-    public func createControlSession() -> DroneControlSession { DJIControlSession(droneSession: self) }
+    public func createControlSession(executionEngine: Kernel.ExecutionEngine, executor: Executor) -> DroneControlSession? {
+        switch executionEngine {
+        case .dronelinkKernel:
+            return DJIVirtualStickSession(droneSession: self)
+            
+        case .dji:
+            if let missionExecutor = executor as? MissionExecutor {
+                 return DJIWaypointMissionSession(droneSession: self, missionExecutor: missionExecutor)
+            }
+            break
+        }
+        
+        return nil
+    }
     
     public func cameraState(channel: UInt) -> DatedValue<CameraStateAdapter>? {
         cameraSerialQueue.sync { [weak self] in

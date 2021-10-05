@@ -95,7 +95,7 @@ extension DJIDroneSessionManager: DJISDKManagerDelegate {
                 }
                 closeSession()
             }
-            _session = DJIDroneSession(drone: drone)
+            _session = DJIDroneSession(manager: self, drone: drone)
             delegates.invoke { $0.onOpened(session: self._session!) }
         }
     }
