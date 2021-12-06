@@ -27,6 +27,24 @@ public class DJIDroneAdapter: DroneAdapter {
 
     public var cameras: [CameraAdapter]? { drone.cameras }
     
+    public func cameraChannel(videoFeedChannel: UInt?) -> UInt? {
+        guard drone.multipleVideoFeedsEnabled, let videoFeeder = drone.videoFeeder else {
+            return 0
+        }
+        
+        if let videoFeedChannel = videoFeedChannel {
+            return videoFeeder.feed(channel: videoFeedChannel)?.physicalSource.cameraChannel
+        }
+        
+        for videoFeedChannel in UInt(0)..<UInt(3) {
+            if let cameraChannel = videoFeeder.feed(channel: videoFeedChannel)?.physicalSource.cameraChannel {
+                return cameraChannel
+            }
+        }
+        
+        return nil
+    }
+    
     public func camera(channel: UInt) -> CameraAdapter? { drone.camera(channel: channel) }
     
     public var gimbals: [GimbalAdapter]? {

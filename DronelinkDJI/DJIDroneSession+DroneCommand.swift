@@ -7,6 +7,7 @@
 //
 import DronelinkCore
 import CoreLocation
+import DJISDK
 
 extension DJIDroneSession {
     func execute(droneCommand: KernelDroneCommand, finished: @escaping CommandFinished) -> Error? {
@@ -24,6 +25,10 @@ extension DJIDroneSession {
         
         if let command = droneCommand as? KernelDroneOcuSyncCommand {
             return execute(ocuSyncCommand: command, finished: finished)
+        }
+        
+        if let command = droneCommand as? KernelDroneAccessoryCommand {
+            return execute(accessoryCommand: command, finished: finished)
         }
         
         guard let flightController = adapter.drone.flightController else {
@@ -283,6 +288,61 @@ extension DJIDroneSession {
                     ocuSyncLink.setFrequencyBand(command.ocuSyncFrequencyBand.djiValue, withCompletion: finished)
                 }
             }
+            return nil
+        }
+        
+        if let command = ocuSyncCommand as? Kernel.OcuSyncVideoFeedSourcesDroneCommand {
+            ocuSyncLink.assignSource(toPrimaryChannel: command.djiValue(channel: 0), secondaryChannel: command.djiValue(channel: 1))
+            //KLUGE: the commandCompletion on the above all sometimes doesn't ever comeback!
+            DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
+                finished(nil)
+            }
+            return nil
+        }
+        
+        return "MissionDisengageReason.command.type.unhandled".localized
+    }
+    
+    func execute(accessoryCommand: KernelDroneAccessoryCommand, finished: @escaping CommandFinished) -> Error? {
+        guard let accessoryAggregation = adapter.drone.accessoryAggregation else {
+            return "MissionDisengageReason.drone.accessory.aggregation.unavailable.title".localized
+        }
+
+        if let command = accessoryCommand as? Kernel.BeaconDroneCommand {
+            let beacon = accessoryAggregation.beacon
+//            guard let beacon = accessoryAggregation.beacon else {
+//                return "MissionDisengageReason.drone.beacon.unavailable.title".localized
+//            }
+            
+            beacon.getEnabledWithCompletion { (current, error) in
+                Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
+                    beacon.setEnabled(command.enabled, withCompletion: finished)
+                }
+            }
+            return nil
+        }
+        
+        if let command = accessoryCommand as? Kernel.SpotlightDroneCommand {
+            let spotlight = accessoryAggregation.spotlight
+//            guard let spotlight = accessoryAggregation.spotlight else {
+//                return "MissionDisengageReason.drone.spotlight.unavailable.title".localized
+//            }
+            
+            spotlight.getEnabledWithCompletion { (current, error) in
+                Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
+                    spotlight.setEnabled(command.enabled, withCompletion: finished)
+                }
+            }
+            return nil
+        }
+        
+        if let command = accessoryCommand as? Kernel.SpotlightBrightnessDroneCommand {
+            let spotlight = accessoryAggregation.spotlight
+//            guard let spotlight = accessoryAggregation.spotlight else {
+//                return "MissionDisengageReason.drone.spotlight.unavailable.title".localized
+//            }
+            
+            spotlight.setBrightness(UInt(command.spotlightBrightness * 100), withCompletion: finished)
             return nil
         }
         

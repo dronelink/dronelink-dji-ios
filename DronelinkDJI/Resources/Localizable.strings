@@ -26,7 +26,12 @@
 "MissionDisengageReason.drone.landing.gear.unavailable.title" = "Landing Gear Unavailable";
 "MissionDisengageReason.drone.lightbridge.unavailable.title" = "Lightbridge Link Unavailable";
 "MissionDisengageReason.drone.ocusync.unavailable.title" = "OcuSync Link Unavailable";
+"MissionDisengageReason.drone.accessory.aggregation.unavailable.title" = "Accessories Unavailable";
+"MissionDisengageReason.drone.beacon.unavailable.title" = "Beacon Unavailable";
+"MissionDisengageReason.drone.spotlight.unavailable.title" = "Spotlight Unavailable";
+"MissionDisengageReason.drone.remote.controller.unavailable.title" = "Remote Controller Unavailable";
 "MissionDisengageReason.drone.camera.unavailable.title" = "Camera Unavailable";
+"MissionDisengageReason.drone.lens.unavailable.title" = "Lens Unavailable";
 "MissionDisengageReason.drone.gimbal.unavailable.title" = "Gimbal Unavailable";
 "MissionDisengageReason.drone.camera.mode.invalid.title" = "Camera Mode Invalid";
 
@@ -107,3 +112,15 @@
 "DJIAppActivationState.value.1" = "Login Required";
 "DJIAppActivationState.value.2" = "Activated";
 "DJIAppActivationState.value.255" = "Unknown";
+
+"DJIVideoFeedPhysicalSource.title" = "Video Feed Physical Source";
+"DJIVideoFeedPhysicalSource.value.0" = "Main";
+"DJIVideoFeedPhysicalSource.value.1" = "FPV";
+"DJIVideoFeedPhysicalSource.value.2" = "LB";
+"DJIVideoFeedPhysicalSource.value.3" = "EXT";
+"DJIVideoFeedPhysicalSource.value.4" = "HDMI";
+"DJIVideoFeedPhysicalSource.value.5" = "AV";
+"DJIVideoFeedPhysicalSource.value.6" = "Left";
+"DJIVideoFeedPhysicalSource.value.7" = "Right";
+"DJIVideoFeedPhysicalSource.value.8" = "Top";
+"DJIVideoFeedPhysicalSource.value.255" = "Unknown";

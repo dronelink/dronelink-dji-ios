@@ -15,25 +15,51 @@ extension DronelinkDJI {
 
 public class DronelinkDJI {}
 
-extension DJIBaseProduct {
-    public var targetVideoFeed: DJIVideoFeed? {
+extension DJIAircraft {
+    public static var maxVelocity: Double { 15.0 }
+    
+    public func remoteController(channel: UInt) -> DJIRemoteController? { remoteController }
+    public func camera(channel: UInt) -> DJICamera? { cameras?.first { $0.index == channel } }
+    public func gimbal(channel: UInt) -> DJIGimbal? { gimbals?.first { $0.index == channel } }
+    
+    public var multipleVideoFeedsEnabled: Bool {
+        //TODO is there a better way to do this?
         switch model {
-        case DJIAircraftModelNameA3,
-             DJIAircraftModelNameN3,
-             DJIAircraftModelNameMatrice600,
-             DJIAircraftModelNameMatrice600Pro:
-            return DJISDKManager.videoFeeder()?.secondaryVideoFeed
+        case DJIAircraftModelNameMatrice210,
+            DJIAircraftModelNameMatrice210V2,
+            DJIAircraftModelNameMatrice210RTK,
+            DJIAircraftModelNameMatrice210RTKV2,
+            DJIAircraftModelNameMatrice200,
+            DJIAircraftModelNameMatrice200V2,
+            DJIAircraftModelNameMatrice300RTK:
+            return true
+        
         default:
-            return DJISDKManager.videoFeeder()?.primaryVideoFeed
+            return false
         }
     }
 }
 
-extension DJIAircraft {
-    public static var maxVelocity: Double { 15.0 }
+extension DJIVideoFeeder {
+    public func feed(channel: UInt) -> DJIVideoFeed? {
+        switch channel {
+        case 0: return primaryVideoFeed
+        case 1: return secondaryVideoFeed
+        default: return nil
+        }
+    }
     
-    public func camera(channel: UInt) -> DJICamera? { cameras?.first { $0.index == channel } }
-    public func gimbal(channel: UInt) -> DJIGimbal? { gimbals?.first { $0.index == channel } }
+    public func channel(feed: DJIVideoFeed) -> UInt? {
+        if feed == primaryVideoFeed {
+            return 0
+        }
+        
+        if feed == secondaryVideoFeed {
+            return 1
+        }
+        
+        return nil
+    }
 }
 
 extension DJIFlightControllerState {
@@ -281,6 +307,18 @@ extension Kernel.CameraColor {
         case .filmI: return .colorFilmI
         case .hlg: return .colorHLG
         case .unknown: return .colorUnknown
+        }
+    }
+}
+
+extension Kernel.CameraDisplayMode {
+    var djiValue: DJICameraDisplayMode {
+        switch self {
+        case .visual: return .visualOnly
+        case .thermal: return .thermalOnly
+        case .pip: return .PIP
+        case .msx: return .MSX
+        case .unknown: return .unknown
         }
     }
 }
@@ -928,6 +966,17 @@ extension Kernel.CameraVideoStandard {
     }
 }
 
+extension Kernel.CameraVideoStreamSource {
+    var djiValue: DJICameraVideoStreamSource {
+        switch self {
+        case .zoom: return .zoom
+        case .wide: return .wide
+        case .thermal: return .infraredThermal
+        case .unknown: return .unknown
+        }
+    }
+}
+
 extension DJICameraWhiteBalancePreset {
     var kernelValue: Kernel.CameraWhiteBalancePreset {
         switch self {
@@ -1116,6 +1165,29 @@ extension Kernel.DroneLightbridgeFrequencyBand {
     }
 }
 
+extension Kernel.OcuSyncVideoFeedSourcesDroneCommand {
+    public func djiValue(channel: UInt = 0) -> DJIVideoFeedPhysicalSource {
+        return ocuSyncVideoFeedSources[channel]?.djiValue ?? .unknown
+    }
+}
+
+extension Kernel.VideoFeedSource {
+    var djiValue: DJIVideoFeedPhysicalSource {
+        switch self {
+        case .mainCamera: return .mainCamera
+        case .fpvCamera: return .fpvCamera
+        case .lb: return .LB
+        case .ext: return .EXT
+        case .hdmi: return .HDMI
+        case .av: return .AV
+        case .leftCamera: return .leftCamera
+        case .rightCamera: return .rightCamera
+        case .topCamera: return .topCamera
+        case .unknown: return .unknown
+        }
+    }
+}
+
 extension Kernel.DroneOcuSyncChannelSelectionMode {
     var djiValue: DJIOcuSyncChannelSelectionMode {
         switch self {
@@ -1156,6 +1228,28 @@ extension Kernel.GimbalMode {
         case .free: return .free
         case .fpv: return .FPV
         case .unknown: return .unknown
+        }
+    }
+}
+
+extension DJIVideoFeedPhysicalSource {
+    public var message: Kernel.Message {
+        return Kernel.Message(title: "DJIVideoFeedPhysicalSource.title".localized, details: "DJIVideoFeedPhysicalSource.value.\(rawValue)".localized)
+    }
+    
+    public var cameraChannel: UInt? {
+        switch self {
+        case .mainCamera: return 0
+        case .fpvCamera: return nil
+        case .LB: return nil
+        case .EXT: return nil
+        case .HDMI: return nil
+        case .AV: return nil
+        case .leftCamera: return 0
+        case .rightCamera: return 1
+        case .topCamera: return 2
+        case .unknown: return nil
+        @unknown default: return nil
         }
     }
 }
@@ -1523,8 +1617,9 @@ extension DJIDiagnostics {
             break
             
         case .deviceHealthInformation:
-            level =  healthInformation.warningLevel.kernelValue
-            break
+            //TODO not sure how to use healthInformation.informationId
+            //level =  healthInformation.warningLevel.kernelValue
+            return nil
             
         @unknown default:
             break

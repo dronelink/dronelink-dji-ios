@@ -31,6 +31,7 @@ public class DJIDroneSession: NSObject {
     
     private let delegates = MulticastDelegate<DroneSessionDelegate>()
     private let droneCommands = CommandQueue()
+    private let remoteControllerCommands = MultiChannelCommandQueue()
     private let cameraCommands = MultiChannelCommandQueue()
     private let gimbalCommands = MultiChannelCommandQueue()
     
@@ -50,9 +51,9 @@ public class DJIDroneSession: NSObject {
     
     private let cameraSerialQueue = DispatchQueue(label: "DroneSession+cameraStates")
     private var _cameraStates: [UInt: DatedValue<DJICameraSystemState>] = [:]
-    private var _cameraFocusStates: [UInt: DatedValue<DJICameraFocusState>] = [:]
+    private var _cameraFocusStates: [String: DatedValue<DJICameraFocusState>] = [:]
     private var _cameraStorageStates: [UInt: DatedValue<DJICameraStorageState>] = [:]
-    private var _cameraExposureSettings: [UInt: DatedValue<DJICameraExposureSettings>] = [:]
+    private var _cameraExposureSettings: [String: DatedValue<DJICameraExposureSettings>] = [:]
     private var _cameraLensInformation: [UInt: DatedValue<String>] = [:]
     
     private let gimbalSerialQueue = DispatchQueue(label: "DroneSession+gimbalStates")
@@ -72,10 +73,11 @@ public class DJIDroneSession: NSObject {
     private var _iso: DatedValue<DJICameraISO>?
     private var _focusRingValue: DatedValue<Double>?
     private var _focusRingMax: DatedValue<Double>?
+    private var _remoteControllerGimbalChannel: DatedValue<UInt>?
     public var mostRecentCameraFile: DatedValue<CameraFile>? { get { _mostRecentCameraFile } }
     private var listeningDJIKeys: [DJIKey] = []
     
-    public init(manager: DJIDroneSessionManager, drone: DJIAircraft) {
+    public init(manager: DroneSessionManager, drone: DJIAircraft) {
         self.manager = manager
         adapter = DJIDroneAdapter(drone: drone)
         super.init()
@@ -87,6 +89,7 @@ public class DJIDroneSession: NSObject {
         os_log(.info, log: DJIDroneSession.log, "Drone session opened")
         
         adapter.drone.delegate = self
+        adapter.drone.videoFeeder?.add(self)
         initFlightController()
         adapter.cameras?.forEach { initCamera(index: $0.index) }
         adapter.gimbals?.forEach { initGimbal(index: $0.index) }
@@ -165,7 +168,7 @@ public class DJIDroneSession: NSObject {
     
     private func initCamera(index: UInt) {
         if let camera = adapter.drone.camera(channel: index) {
-            os_log(.info, log: DJIDroneSession.log, "Camera[%{public}d] connected", index)
+            os_log(.info, log: DJIDroneSession.log, "Camera[%{public}d] connected: %{public}s", index, camera.model ?? "unknown")
             camera.delegate = self
             
             let xmp = "dronelink:\(Dronelink.shared.kernelVersion?.display ?? "")"
@@ -184,6 +187,10 @@ public class DJIDroneSession: NSObject {
                         self?._cameraLensInformation[camera.index] = DatedValue<String>(value: info)
                     }
                 }
+            }
+            
+            camera.lenses.forEach { lens in
+                lens.delegate = self
             }
         }
     }
@@ -318,6 +325,15 @@ public class DJIDroneSession: NSObject {
                 self?._focusRingMax = nil
             }
         }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJIRemoteControllerParamControllingGimbalIndex)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self?._remoteControllerGimbalChannel = DatedValue(value: value)
+            }
+            else {
+                self?._remoteControllerGimbalChannel = nil
+            }
+        }
     }
     
     private func startListeningForChanges(on key: DJIKey, andUpdate updateBlock: @escaping DJIKeyedListenerUpdateBlock) {
@@ -374,9 +390,13 @@ public class DJIDroneSession: NSObject {
             os_log(.info, log: DJIDroneSession.log, "Camera[%{public}d] disconnected", index)
             cameraSerialQueue.async { [weak self] in
                 self?._cameraStates[UInt(index)] = nil
-                self?._cameraFocusStates[UInt(index)] = nil
+                self?._cameraFocusStates = self?._cameraFocusStates.filter({ element in
+                    return !element.key.starts(with: "\(index).")
+                }) ?? [:]
                 self?._cameraStorageStates[UInt(index)] = nil
-                self?._cameraExposureSettings[UInt(index)] = nil
+                self?._cameraExposureSettings = self?._cameraExposureSettings.filter({ element in
+                    return !element.key.starts(with: "\(index).")
+                }) ?? [:]
                 self?._cameraLensInformation[UInt(index)] = nil
             }
             break
@@ -463,6 +483,7 @@ public class DJIDroneSession: NSObject {
             }
             
             self.droneCommands.process()
+            self.remoteControllerCommands.process()
             self.cameraCommands.process()
             self.gimbalCommands.process()
             
@@ -488,6 +509,20 @@ public class DJIDroneSession: NSObject {
                                     time: DJIGimbalRotation.minTime,
                                     mode: .speed,
                                     ignore: false)
+                            }
+                            
+                            if Dronelink.shared.missionExecutor?.engaged ?? false,
+                               gimbalAdapter.gimbal.isAdjustPitchSupported,
+                               (self?._remoteControllerGimbalChannel?.value ?? 0) == gimbalAdapter.index,
+                               let leftWheel = self?.remoteControllerState(channel: gimbalAdapter.index)?.value.leftWheel.value,
+                               leftWheel != 0 {
+                                rotation = DJIGimbalRotation(
+                                    pitchValue: (leftWheel * 30) as NSNumber,
+                                    rollValue: rotation?.roll,
+                                    yawValue: rotation?.yaw,
+                                    time: rotation?.time ?? DJIGimbalRotation.minTime,
+                                    mode: rotation?.mode ?? .speed,
+                                    ignore: rotation?.ignore ?? false)
                             }
                             
                             if let rotation = rotation {
@@ -667,6 +702,14 @@ extension DJIDroneSession: DroneSession {
             return
         }
         
+        if let command = command as? KernelRemoteControllerCommand {
+            try remoteControllerCommands.add(channel: command.channel, command: createCommand({ [weak self] in
+                self?.commandExecuted(command: command)
+                return self?.execute(remoteControllerCommand: command, finished: $0)
+            }))
+            return
+        }
+        
         if let command = command as? KernelCameraCommand {
             try cameraCommands.add(channel: command.channel, command: createCommand({ [weak self] in
                 self?.commandExecuted(command: command)
@@ -696,6 +739,7 @@ extension DJIDroneSession: DroneSession {
     
     public func removeCommands() {
         droneCommands.removeAll()
+        remoteControllerCommands.removeAll()
         cameraCommands.removeAll()
         gimbalCommands.removeAll()
     }
@@ -724,9 +768,9 @@ extension DJIDroneSession: DroneSession {
             if let systemState = session._cameraStates[channel] {
                 return DatedValue(value: DJICameraStateAdapter(
                     systemState: systemState.value,
-                    focusState: session._cameraFocusStates[channel]?.value,
+                    focusState: session._cameraFocusStates["\(channel).0"]?.value,
                     storageState: session._cameraStorageStates[channel]?.value,
-                    exposureSettings: session._cameraExposureSettings[channel]?.value,
+                    exposureSettings: session._cameraExposureSettings["\(channel).0"]?.value,
                     lensInformation: session._cameraLensInformation[channel]?.value,
                     storageLocation: session._storageLocation?.value,
                     photoMode: session._photoMode?.value,
@@ -948,9 +992,9 @@ extension DJIDroneSession: DJICameraDelegate {
         }
     }
     
-    public func camera(_ camera: DJICamera, didUpdate lensState: DJICameraFocusState) {
+    public func camera(_ camera: DJICamera, didUpdate focusState: DJICameraFocusState) {
         cameraSerialQueue.async { [weak self] in
-            self?._cameraFocusStates[camera.index] = DatedValue<DJICameraFocusState>(value: lensState)
+            self?._cameraFocusStates["\(camera.index).0"] = DatedValue<DJICameraFocusState>(value: focusState)
         }
     }
     
@@ -964,7 +1008,7 @@ extension DJIDroneSession: DJICameraDelegate {
     
     public func camera(_ camera: DJICamera, didUpdate settings: DJICameraExposureSettings) {
         cameraSerialQueue.async { [weak self] in
-            self?._cameraExposureSettings[camera.index] = DatedValue<DJICameraExposureSettings>(value: settings)
+            self?._cameraExposureSettings["\(camera.index).0"] = DatedValue<DJICameraExposureSettings>(value: settings)
         }
     }
     
@@ -981,10 +1025,24 @@ extension DJIDroneSession: DJICameraDelegate {
             orientation.x = 0
             orientation.y = 0
         }
-    
+
         let cameraFile = DJICameraFile(channel: camera.index, mediaFile: newMedia, coordinate: self.location?.coordinate, altitude: self.altitude, orientation: orientation)
         _mostRecentCameraFile = DatedValue(value: cameraFile)
         self.delegates.invoke { $0.onCameraFileGenerated(session: self, file: cameraFile) }
+    }
+}
+
+extension DJIDroneSession: DJILensDelegate {
+    public func lens(_ lens: DJILens, didUpdate focusState: DJICameraFocusState) {
+        cameraSerialQueue.async { [weak self] in
+            self?._cameraFocusStates["\(lens.cameraIndex).\(lens.index)"] = DatedValue<DJICameraFocusState>(value: focusState)
+        }
+    }
+    
+    public func lens(_ lens: DJILens, didUpdate settings: DJICameraExposureSettings) {
+        cameraSerialQueue.async { [weak self] in
+            self?._cameraExposureSettings["\(lens.cameraIndex).\(lens.index)"] = DatedValue<DJICameraExposureSettings>(value: settings)
+        }
     }
 }
 
@@ -992,6 +1050,17 @@ extension DJIDroneSession: DJIGimbalDelegate {
     public func gimbal(_ gimbal: DJIGimbal, didUpdate state: DJIGimbalState) {
         gimbalSerialQueue.async { [weak self] in
             self?._gimbalStates[gimbal.index] = DatedValue<GimbalStateAdapter>(value: DJIGimbalStateAdapter(gimbalState: state))
+        }
+    }
+}
+
+extension DJIDroneSession: DJIVideoFeedSourceListener {
+    public func videoFeed(_ videoFeed: DJIVideoFeed, didChange physicalSource: DJIVideoFeedPhysicalSource) {
+        DispatchQueue.global().async { [weak self] in
+            guard let session = self else {
+                return
+            }
+            session.delegates.invoke { $0.onVideoFeedSourceUpdated(session: session, channel: session.adapter.drone.videoFeeder?.channel(feed: videoFeed)) }
         }
     }
 }

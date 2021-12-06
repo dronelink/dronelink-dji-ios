@@ -158,6 +158,12 @@ public class DJIWaypointMissionSession: DroneControlSession {
                         "revertDisengagment": "true",
                     ]
                 )
+                
+                if loadedMission.waypointCount < currentDJIWaypointMission.waypointCount {
+                    resumeWaypointIndex = Int(currentDJIWaypointMission.waypointCount - loadedMission.waypointCount)
+                    resumeWaypointProgress = executionState.waypointProgress
+                }
+                
                 state = .Activated
                 startProgressListeners()
                 return

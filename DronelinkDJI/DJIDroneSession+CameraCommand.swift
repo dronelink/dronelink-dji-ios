@@ -70,9 +70,36 @@ extension DJIDroneSession {
             return nil
         }
         
+        if let command = cameraCommand as? Kernel.DisplayModeCameraCommand {
+            if adapter.drone.model == DJIAircraftModelNameMavic2EnterpriseDual || camera.model == DJICameraDisplayNameXT2Thermal {
+                camera.getDisplayMode { (current, error) in
+                    Command.conditionallyExecute(current != command.displayMode.djiValue, error: error, finished: finished) {
+                        camera.setDisplayMode(command.displayMode.djiValue, withCompletion: finished)
+                    }
+                }
+                return nil
+            }
+            
+            guard let lens = camera.lenses[safeIndex: command.lensIndex] else {
+                return "MissionDisengageReason.drone.lens.unavailable.title".localized
+            }
+            
+            lens.getDisplayMode { (current, error) in
+                Command.conditionallyExecute(current != command.displayMode.djiValue, error: error, finished: finished) {
+                    lens.setDisplayMode(command.displayMode.djiValue, withCompletion: finished)
+                }
+            }
+            return nil
+        }
+        
         if let command = cameraCommand as? Kernel.ExposureCompensationCameraCommand {
             Command.conditionallyExecute(state.exposureSettings?.exposureCompensation != command.exposureCompensation.djiValue, finished: finished) {
-                camera.setExposureCompensation(command.exposureCompensation.djiValue, withCompletion: finished)
+                if let lens = camera.lenses[safeIndex: 0] {
+                    lens.setExposureCompensation(command.exposureCompensation.djiValue, withCompletion: finished)
+                }
+                else {
+                    camera.setExposureCompensation(command.exposureCompensation.djiValue, withCompletion: finished)
+                }
             }
             return nil
         }
@@ -81,7 +108,12 @@ extension DJIDroneSession {
         if let command = cameraCommand as? Kernel.ExposureCompensationStepCameraCommand {
             let exposureCompensation = state.exposureCompensation.offset(steps: command.exposureCompensationSteps).djiValue
             Command.conditionallyExecute(state.exposureSettings?.exposureCompensation != exposureCompensation, finished: finished) {
-                camera.setExposureCompensation(exposureCompensation, withCompletion: finished)
+                if let lens = camera.lenses[safeIndex: 0] {
+                    lens.setExposureCompensation(exposureCompensation, withCompletion: finished)
+                }
+                else {
+                    camera.setExposureCompensation(exposureCompensation, withCompletion: finished)
+                }
             }
             return nil
         }
@@ -454,6 +486,15 @@ extension DJIDroneSession {
             camera.getVideoStandard { (current, error) in
                 Command.conditionallyExecute(current != command.videoStandard.djiValue, error: error, finished: finished) {
                     camera.setVideoStandard(command.videoStandard.djiValue, withCompletion: finished)
+                }
+            }
+            return nil
+        }
+        
+        if let command = cameraCommand as? Kernel.VideoStreamSourceCameraCommand {
+            camera.getVideoStreamSource { (current, error) in
+                Command.conditionallyExecute(current != command.videoStreamSource.djiValue, error: error, finished: finished) {
+                    camera.setCameraVideoStreamSource(command.videoStreamSource.djiValue, withCompletion: finished)
                 }
             }
             return nil
