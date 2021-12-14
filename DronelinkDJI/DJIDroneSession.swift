@@ -51,6 +51,7 @@ public class DJIDroneSession: NSObject {
     
     private let cameraSerialQueue = DispatchQueue(label: "DroneSession+cameraStates")
     private var _cameraStates: [UInt: DatedValue<DJICameraSystemState>] = [:]
+    private var _cameraVideoStreamSources: [UInt: DatedValue<DJICameraVideoStreamSource>] = [:]
     private var _cameraFocusStates: [String: DatedValue<DJICameraFocusState>] = [:]
     private var _cameraStorageStates: [UInt: DatedValue<DJICameraStorageState>] = [:]
     private var _cameraExposureSettings: [String: DatedValue<DJICameraExposureSettings>] = [:]
@@ -181,6 +182,15 @@ public class DJIDroneSession: NSObject {
                 }
             }
             
+            //pumping this one time because camera(_ camera: DJICamera, didUpdate source: DJICameraVideoStreamSource) only gets called on changes
+            camera.getVideoStreamSource { [weak self] (source, error) in
+                if error == nil {
+                    self?.cameraSerialQueue.async {
+                        self?._cameraVideoStreamSources[camera.index] = DatedValue<DJICameraVideoStreamSource>(value: source)
+                    }
+                }
+            }
+            
             camera.getLensInformation { [weak self] (info, error) in
                 if let info = info {
                     self?.cameraSerialQueue.async {
@@ -191,6 +201,39 @@ public class DJIDroneSession: NSObject {
             
             camera.lenses.forEach { lens in
                 lens.delegate = self
+                if lens.isHybridZoomSupported() {
+                    initLensHybridZoom(camera: camera, lens: lens)
+                }
+            }
+        }
+    }
+    
+    public func initLensHybridZoom(camera: DJICamera, lens: DJILens, attempt: Int = 0) {
+        guard attempt < 3 else {
+            os_log(.error, log: DJIDroneSession.log, "Unable to set lens hybrid zoom: no specification found!")
+            return
+        }
+        
+        lens.getHybridZoomSpec { [weak self] (spec, error) in
+            if let error = error {
+                DispatchQueue.global().asyncAfter(deadline: .now() + Double(attempt)) {
+                    self?.initLensHybridZoom(camera: camera, lens: lens, attempt: attempt + 1)
+                }
+                return
+            }
+            
+            var focalLength = spec.minHybridFocalLength
+            if camera.displayName.contains("H20") {
+                focalLength = 470
+            }
+            
+            lens.setHybridZoomFocalLength(focalLength) { error in
+                if let error = error {
+                    os_log(.error, log: DJIDroneSession.log, "Unable to set lens hybrid zoom: %{public}s", error.localizedDescription)
+                    return
+                }
+
+                os_log(.info, log: DJIDroneSession.log, "Set lens hybrid zoom: %{public}d", focalLength)
             }
         }
     }
@@ -326,7 +369,7 @@ public class DJIDroneSession: NSObject {
             }
         }
         
-        startListeningForChanges(on: DJICameraKey(param: DJIRemoteControllerParamControllingGimbalIndex)!) { [weak self] (oldValue, newValue) in
+        startListeningForChanges(on: DJIRemoteControllerKey(param: DJIRemoteControllerParamControllingGimbalIndex)!) { [weak self] (oldValue, newValue) in
             if let value = newValue?.unsignedIntegerValue {
                 self?._remoteControllerGimbalChannel = DatedValue(value: value)
             }
@@ -390,6 +433,7 @@ public class DJIDroneSession: NSObject {
             os_log(.info, log: DJIDroneSession.log, "Camera[%{public}d] disconnected", index)
             cameraSerialQueue.async { [weak self] in
                 self?._cameraStates[UInt(index)] = nil
+                self?._cameraVideoStreamSources[UInt(index)] = nil
                 self?._cameraFocusStates = self?._cameraFocusStates.filter({ element in
                     return !element.key.starts(with: "\(index).")
                 }) ?? [:]
@@ -517,7 +561,7 @@ public class DJIDroneSession: NSObject {
                                let leftWheel = self?.remoteControllerState(channel: gimbalAdapter.index)?.value.leftWheel.value,
                                leftWheel != 0 {
                                 rotation = DJIGimbalRotation(
-                                    pitchValue: (leftWheel * 30) as NSNumber,
+                                    pitchValue: (leftWheel * 10) as NSNumber,
                                     rollValue: rotation?.roll,
                                     yawValue: rotation?.yaw,
                                     time: rotation?.time ?? DJIGimbalRotation.minTime,
@@ -760,17 +804,31 @@ extension DJIDroneSession: DroneSession {
     }
     
     public func cameraState(channel: UInt) -> DatedValue<CameraStateAdapter>? {
+        cameraState(channel: channel, lensIndex: nil)
+    }
+    
+    public func cameraState(channel: UInt, lensIndex: UInt?) -> DatedValue<CameraStateAdapter>? {
         cameraSerialQueue.sync { [weak self] in
-            guard let session = self else {
+            guard let session = self, let camera = drone.camera(channel: channel) else {
                 return nil
             }
             
             if let systemState = session._cameraStates[channel] {
+                var lensIndexResolved: UInt = 0
+                if let lensIndexValid = lensIndex {
+                    lensIndexResolved = lensIndexValid
+                }
+                else if let videoStreamSource = session._cameraVideoStreamSources[channel]?.value {
+                    lensIndexResolved = camera.lensIndex(videoStreamSource: videoStreamSource.kernelValue)
+                }
+                    
                 return DatedValue(value: DJICameraStateAdapter(
                     systemState: systemState.value,
-                    focusState: session._cameraFocusStates["\(channel).0"]?.value,
+                    videoStreamSource: session._cameraVideoStreamSources[channel]?.value,
+                    focusState: session._cameraFocusStates["\(channel).\(lensIndexResolved)"]?.value,
                     storageState: session._cameraStorageStates[channel]?.value,
-                    exposureSettings: session._cameraExposureSettings["\(channel).0"]?.value,
+                    exposureSettings: session._cameraExposureSettings["\(channel).\(lensIndexResolved)"]?.value,
+                    lensIndex: lensIndexResolved,
                     lensInformation: session._cameraLensInformation[channel]?.value,
                     storageLocation: session._storageLocation?.value,
                     photoMode: session._photoMode?.value,
@@ -989,6 +1047,12 @@ extension DJIDroneSession: DJICameraDelegate {
     public func camera(_ camera: DJICamera, didUpdate systemState: DJICameraSystemState) {
         cameraSerialQueue.async { [weak self] in
             self?._cameraStates[camera.index] = DatedValue<DJICameraSystemState>(value: systemState)
+        }
+    }
+    
+    public func camera(_ camera: DJICamera, didUpdate source: DJICameraVideoStreamSource) {
+        cameraSerialQueue.async { [weak self] in
+            self?._cameraVideoStreamSources[camera.index] = DatedValue<DJICameraVideoStreamSource>(value: source)
         }
     }
     

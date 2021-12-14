@@ -966,6 +966,17 @@ extension Kernel.CameraVideoStandard {
     }
 }
 
+extension DJICameraVideoStreamSource {
+    var kernelValue: Kernel.CameraVideoStreamSource {
+        switch self {
+        case .zoom: return .zoom
+        case .wide: return .wide
+        case .infraredThermal: return .thermal
+        @unknown default: return .unknown
+        }
+    }
+}
+
 extension Kernel.CameraVideoStreamSource {
     var djiValue: DJICameraVideoStreamSource {
         switch self {
@@ -973,6 +984,15 @@ extension Kernel.CameraVideoStreamSource {
         case .wide: return .wide
         case .thermal: return .infraredThermal
         case .unknown: return .unknown
+        }
+    }
+    
+    var djiLensType: DJILensType {
+        switch self {
+        case .zoom: return .zoom
+        case .wide: return .wide
+        case .thermal: return .infraredThermal
+        case .unknown: return .wide
         }
     }
 }

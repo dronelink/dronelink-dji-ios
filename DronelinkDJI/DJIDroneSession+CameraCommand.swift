@@ -94,7 +94,7 @@ extension DJIDroneSession {
         
         if let command = cameraCommand as? Kernel.ExposureCompensationCameraCommand {
             Command.conditionallyExecute(state.exposureSettings?.exposureCompensation != command.exposureCompensation.djiValue, finished: finished) {
-                if let lens = camera.lenses[safeIndex: 0] {
+                if let lens = camera.lenses[safeIndex: Int(state.lensIndex)] {
                     lens.setExposureCompensation(command.exposureCompensation.djiValue, withCompletion: finished)
                 }
                 else {
@@ -108,7 +108,7 @@ extension DJIDroneSession {
         if let command = cameraCommand as? Kernel.ExposureCompensationStepCameraCommand {
             let exposureCompensation = state.exposureCompensation.offset(steps: command.exposureCompensationSteps).djiValue
             Command.conditionallyExecute(state.exposureSettings?.exposureCompensation != exposureCompensation, finished: finished) {
-                if let lens = camera.lenses[safeIndex: 0] {
+                if let lens = camera.lenses[safeIndex: Int(state.lensIndex)] {
                     lens.setExposureCompensation(exposureCompensation, withCompletion: finished)
                 }
                 else {

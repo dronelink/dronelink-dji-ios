@@ -1,5 +1,5 @@
 //
-//  DJIFlightControllerStateWrapper.swift
+//  DJIDroneAdapter.swift
 //  DronelinkDJI
 //
 //  Created by Jim McAndrew on 10/26/19.
@@ -142,6 +142,16 @@ public class DJIDroneAdapter: DroneAdapter {
 
 extension DJICamera : CameraAdapter {
     public var model: String? { displayName }
+    
+    public func lensIndex(videoStreamSource: Kernel.CameraVideoStreamSource) -> UInt {
+        for lens in lenses.enumerated() {
+            if lens.element.lensType == videoStreamSource.djiLensType {
+                return UInt(lens.offset)
+            }
+        }
+        
+        return 0
+    }
 }
 
 public struct DJICameraFile : CameraFile {
@@ -166,9 +176,11 @@ public struct DJICameraFile : CameraFile {
 
 public struct DJICameraStateAdapter: CameraStateAdapter {
     public let systemState: DJICameraSystemState
+    public let videoStreamSourceValue: DJICameraVideoStreamSource?
     public let focusState: DJICameraFocusState?
     public let storageState: DJICameraStorageState?
     public let exposureSettings: DJICameraExposureSettings?
+    public let lensIndex: UInt
     public let lensInformation: String?
     public let storageLocationValue: DJICameraStorageLocation?
     public let photoModeValue: DJICameraShootPhotoMode?
@@ -180,11 +192,13 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public let focusRingValue: Double?
     public let focusRingMax: Double?
     
-    public init(systemState: DJICameraSystemState, focusState: DJICameraFocusState?, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensInformation: String?, storageLocation: DJICameraStorageLocation?, photoMode: DJICameraShootPhotoMode?, burstCount: DJICameraPhotoBurstCount?, aebCount: DJICameraPhotoAEBCount?, intervalSettings: DJICameraPhotoTimeIntervalSettings?, whiteBalance: DJICameraWhiteBalance?, iso: DJICameraISO?, focusRingValue: Double?, focusRingMax: Double?) {
+    public init(systemState: DJICameraSystemState, videoStreamSource: DJICameraVideoStreamSource?, focusState: DJICameraFocusState?, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensIndex: UInt, lensInformation: String?, storageLocation: DJICameraStorageLocation?, photoMode: DJICameraShootPhotoMode?, burstCount: DJICameraPhotoBurstCount?, aebCount: DJICameraPhotoAEBCount?, intervalSettings: DJICameraPhotoTimeIntervalSettings?, whiteBalance: DJICameraWhiteBalance?, iso: DJICameraISO?, focusRingValue: Double?, focusRingMax: Double?) {
         self.systemState = systemState
+        self.videoStreamSourceValue = videoStreamSource
         self.focusState = focusState
         self.storageState = storageState
         self.exposureSettings = exposureSettings
+        self.lensIndex = lensIndex
         self.lensInformation = lensInformation
         self.storageLocationValue = storageLocation
         self.photoModeValue = photoMode
@@ -203,6 +217,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var isCapturingVideo: Bool { systemState.isCapturingVideo }
     public var isCapturingContinuous: Bool { systemState.isCapturingContinuous }
     public var isSDCardInserted: Bool { storageState?.isInserted ?? true }
+    public var videoStreamSource: Kernel.CameraVideoStreamSource { videoStreamSourceValue?.kernelValue ?? .unknown }
     public var storageLocation: Kernel.CameraStorageLocation { storageLocationValue?.kernelValue ?? .unknown }
     public var mode: Kernel.CameraMode { systemState.mode.kernelValue }
     public var photoMode: Kernel.CameraPhotoMode? { systemState.flatCameraMode.kernelValuePhoto ?? photoModeValue?.kernelValue }
