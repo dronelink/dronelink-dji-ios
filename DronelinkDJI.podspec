@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
   s.source = { :git => "https://github.com/dronelink/dronelink-dji-ios.git", :tag => "#{s.version}" }
   s.source_files  = "DronelinkDJI/**/*.swift"
   s.resources = "DronelinkDJI/**/*.{strings}"
-  s.pod_target_xcconfig = { 'ONLY_ACTIVE_ARCH' => 'YES' }
+  s.pod_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64'}
   s.dependency "DronelinkCore", "~> 3.1.0"
   s.dependency "DJI-SDK-iOS", "~> 4.15.2"
 end
