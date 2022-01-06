@@ -709,8 +709,7 @@ extension DJIDroneSession: DroneSession {
     public func add(command: KernelCommand) throws {
         let createCommand = { [weak self] (execute: @escaping (@escaping CommandFinished) -> Error?) -> Command in
             let c = Command(
-                id: command.id,
-                name: command.type.rawValue,
+                kernelCommand: command,
                 execute: execute,
                 finished: { [weak self] error in
                     self?.commandFinished(command: command, error: error)

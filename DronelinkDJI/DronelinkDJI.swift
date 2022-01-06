@@ -25,12 +25,13 @@ extension DJIAircraft {
     public var multipleVideoFeedsEnabled: Bool {
         //TODO is there a better way to do this?
         switch model {
-        case DJIAircraftModelNameMatrice210,
-            DJIAircraftModelNameMatrice210V2,
-            DJIAircraftModelNameMatrice210RTK,
-            DJIAircraftModelNameMatrice210RTKV2,
-            DJIAircraftModelNameMatrice200,
-            DJIAircraftModelNameMatrice200V2,
+        case
+//            DJIAircraftModelNameMatrice210,
+//            DJIAircraftModelNameMatrice210V2,
+//            DJIAircraftModelNameMatrice210RTK,
+//            DJIAircraftModelNameMatrice210RTKV2,
+//            DJIAircraftModelNameMatrice200,
+//            DJIAircraftModelNameMatrice200V2,
             DJIAircraftModelNameMatrice300RTK:
             return true
         
