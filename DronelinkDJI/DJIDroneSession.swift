@@ -35,21 +35,21 @@ public class DJIDroneSession: NSObject {
     private let cameraCommands = MultiChannelCommandQueue()
     private let gimbalCommands = MultiChannelCommandQueue()
     
-    private let flightControllerSerialQueue = DispatchQueue(label: "DroneSession+flightControllerState")
+    private let flightControllerSerialQueue = DispatchQueue(label: "DJIDroneSession+flightControllerState")
     private var _flightControllerState: DatedValue<DJIFlightControllerState>?
     private var _flightControllerAirSenseState: DatedValue<DJIAirSenseSystemInformation>?
     
-    private let batterySerialQueue = DispatchQueue(label: "DroneSession+batteryState")
+    private let batterySerialQueue = DispatchQueue(label: "DJIDroneSession+batteryState")
     private var _batteryState: DatedValue<DJIBatteryState>?
     
-    private let visionDetectionSerialQueue = DispatchQueue(label: "DroneSession+visionDetectionState")
+    private let visionDetectionSerialQueue = DispatchQueue(label: "DJIDroneSession+visionDetectionState")
     private var _visionDetectionState: DatedValue<DJIVisionDetectionState>?
     
-    private let remoteControllerSerialQueue = DispatchQueue(label: "DroneSession+remoteControllerState")
+    private let remoteControllerSerialQueue = DispatchQueue(label: "DJIDroneSession+remoteControllerState")
     private var remoteControllerInitialized: Date?
     private var _remoteControllerState: DatedValue<RemoteControllerStateAdapter>?
     
-    private let cameraSerialQueue = DispatchQueue(label: "DroneSession+cameraStates")
+    private let cameraSerialQueue = DispatchQueue(label: "DJIDroneSession+cameraStates")
     private var _cameraStates: [UInt: DatedValue<DJICameraSystemState>] = [:]
     private var _cameraVideoStreamSources: [UInt: DatedValue<DJICameraVideoStreamSource>] = [:]
     private var _cameraFocusStates: [String: DatedValue<DJICameraFocusState>] = [:]
@@ -57,7 +57,7 @@ public class DJIDroneSession: NSObject {
     private var _cameraExposureSettings: [String: DatedValue<DJICameraExposureSettings>] = [:]
     private var _cameraLensInformation: [UInt: DatedValue<String>] = [:]
     
-    private let gimbalSerialQueue = DispatchQueue(label: "DroneSession+gimbalStates")
+    private let gimbalSerialQueue = DispatchQueue(label: "DJIDroneSession+gimbalStates")
     private var _gimbalStates: [UInt: DatedValue<GimbalStateAdapter>] = [:]
     
     private var _diagnosticsInformationMessages: DatedValue<[Kernel.Message]>?

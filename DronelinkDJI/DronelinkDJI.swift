@@ -10,7 +10,7 @@ import DronelinkCore
 import DJISDK
 
 extension DronelinkDJI {
-    internal static let bundle = Bundle.init(for: DronelinkDJI.self)
+    internal static let bundle = Bundle(for: DronelinkDJI.self)
 }
 
 public class DronelinkDJI {}
