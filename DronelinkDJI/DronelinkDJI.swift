@@ -1350,7 +1350,6 @@ extension DJIDiagnostics {
                 case .upgradeError,
                      .sensorError,
                      .overHeat,
-                     .encryptionError,
                      .sdCardError,
                      .ssdError,
                      .chipOverHeat,
@@ -1358,7 +1357,8 @@ extension DJIDiagnostics {
                     level = .error
                     break
                     
-                case .usbConnected,
+                case .encryptionError, //DJI Mini 2 seems to give this error incorrectly!
+                     .usbConnected,
                      .noSDCard,
                      .noInternalStorage,
                      .noSSD:
