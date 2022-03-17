@@ -327,6 +327,12 @@ public class DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
             pressed: rcHardwareState.pauseButton.isClicked.boolValue)
     }
     
+    public var returnHomeButton: Kernel.RemoteControllerButton {
+        Kernel.RemoteControllerButton(
+            present: rcHardwareState.goHomeButton.isPresent.boolValue,
+            pressed: rcHardwareState.goHomeButton.isClicked.boolValue)
+    }
+    
     public var c1Button: Kernel.RemoteControllerButton {
         Kernel.RemoteControllerButton(
             present: rcHardwareState.c1Button.isPresent.boolValue,

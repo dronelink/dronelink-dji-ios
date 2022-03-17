@@ -11,11 +11,6 @@ import os
 
 extension DJIDroneSession {
     func execute(gimbalCommand: KernelGimbalCommand, finished: @escaping CommandFinished) -> Error? {
-        //FIXME: alternate path for the Air 2S since DJI has a bug with reporting gimbal state, remove this when they fix the bug!
-        if (model == DJIAircraftModelNameDJIAir2S) {
-            return executeAir2S(gimbalCommand: gimbalCommand, finished: finished);
-        }
-        
         guard
             let gimbal = adapter.drone.gimbal(channel: gimbalCommand.channel),
             let state = gimbalState(channel: gimbalCommand.channel)?.value
@@ -95,67 +90,6 @@ extension DJIDroneSession {
                 }
                 
                 self?.gimbalCommandFinishOrientationVerify(gimbalCommand: command, finished: finished)
-            }
-            return nil
-        }
-        
-        if let command = gimbalCommand as? Kernel.YawSimultaneousFollowGimbalCommand {
-            gimbal.getYawSimultaneousFollowEnabled { (current, error) in
-                Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
-                    gimbal.setYawSimultaneousFollowEnabled(command.enabled, withCompletion: finished)
-                }
-            }
-            return nil
-        }
-        
-        return "MissionDisengageReason.command.type.unhandled".localized
-    }
-    
-    func executeAir2S(gimbalCommand: KernelGimbalCommand, finished: @escaping CommandFinished) -> Error? {
-        guard
-            let gimbal = adapter.drone.gimbal(channel: gimbalCommand.channel)
-        else {
-            return "MissionDisengageReason.drone.gimbal.unavailable.title".localized
-        }
-        
-        if let command = gimbalCommand as? Kernel.ModeGimbalCommand {
-            gimbal.setMode(command.mode.djiValue) { error in
-                finished(nil)
-            }
-            return nil
-        }
-        
-        if let command = gimbalCommand as? Kernel.OrientationGimbalCommand {
-            if (command.orientation.pitch == nil && command.orientation.roll == nil && command.orientation.yaw == nil) {
-                finished(nil)
-                return nil
-            }
-            
-            var pitch = command.orientation.pitch?.convertRadiansToDegrees
-            if let pitchValid = pitch, abs(pitchValid + 90) < 0.1 {
-                pitch = -89.9
-            }
-            
-            let roll = command.orientation.roll?.convertRadiansToDegrees
-            
-            if pitch == nil && roll == nil {
-                finished(nil)
-                return nil
-            }
-            
-            gimbal.rotate(with: DJIGimbalRotation(
-                pitchValue: gimbal.isAdjustPitchSupported ? pitch as NSNumber? : nil,
-                rollValue: gimbal.isAdjustRollSupported ? roll as NSNumber? : nil,
-                yawValue: nil,
-                time: DJIGimbalRotation.minTime,
-                mode: .absoluteAngle,
-                ignore: false)) { [weak self] error in
-                if error != nil {
-                    finished(error)
-                    return
-                }
-                
-                finished(nil)
             }
             return nil
         }

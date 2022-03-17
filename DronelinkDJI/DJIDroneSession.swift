@@ -78,6 +78,8 @@ public class DJIDroneSession: NSObject {
     public var mostRecentCameraFile: DatedValue<CameraFile>? { get { _mostRecentCameraFile } }
     private var listeningDJIKeys: [DJIKey] = []
     
+    private var flightModeJoystickAir2S = false
+    
     public init(manager: DroneSessionManager, drone: DJIAircraft) {
         self.manager = manager
         adapter = DJIDroneAdapter(drone: drone)
@@ -522,6 +524,10 @@ public class DJIDroneSession: NSObject {
                 }
             }
             
+            if _flightControllerState?.value.flightMode == .joystick && model == DJIAircraftModelNameDJIAir2S {
+                flightModeJoystickAir2S = true
+            }
+            
             if remoteControllerInitialized == nil {
                 initRemoteController()
             }
@@ -531,49 +537,46 @@ public class DJIDroneSession: NSObject {
             self.cameraCommands.process()
             self.gimbalCommands.process()
             
-            //FIXME: ignoring on Mavic Air 2S due to gimbal attitude bug, ignore when they fix!
-            if (model != DJIAircraftModelNameDJIAir2S) {
-                if Dronelink.shared.missionExecutor?.engaged ?? false || Dronelink.shared.modeExecutor?.engaged ?? false {
-                    self.gimbalSerialQueue.async { [weak self] in
-                        guard let session = self else {
-                            return
-                        }
-                        
-                        //work-around for this issue: https://support.dronelink.com/hc/en-us/community/posts/360034749773-Seeming-to-have-a-Heading-error-
-                        session.adapter.gimbals?.forEach { gimbalAdapter in
-                            if let gimbalAdapter = gimbalAdapter as? DJIGimbalAdapter {
-                                var rotation = gimbalAdapter.pendingSpeedRotation
-                                gimbalAdapter.pendingSpeedRotation = nil
-                                if gimbalAdapter.gimbal.isAdjustYawSupported,
-                                   !gimbalAdapter.gimbal.isAdjustYaw360Supported,
-                                   let gimbalState = session._gimbalStates[gimbalAdapter.index]?.value,
-                                   gimbalState.mode == .yawFollow {
-                                    rotation = DJIGimbalRotation(
-                                        pitchValue: rotation?.pitch,
-                                        rollValue: rotation?.roll,
-                                        yawValue: min(max(-session.gimbalYawRelativeToAircraftHeadingCorrected(gimbalState: gimbalState).convertRadiansToDegrees * 0.25, -25), 25) as NSNumber,
-                                        time: DJIGimbalRotation.minTime,
-                                        mode: .speed,
-                                        ignore: false)
-                                }
-                                
-                                if Dronelink.shared.missionExecutor?.engaged ?? false,
-                                   gimbalAdapter.gimbal.isAdjustPitchSupported,
-                                   (self?._remoteControllerGimbalChannel?.value ?? 0) == gimbalAdapter.index,
-                                   let leftWheel = self?.remoteControllerState(channel: gimbalAdapter.index)?.value.leftWheel.value,
-                                   leftWheel != 0 {
-                                    rotation = DJIGimbalRotation(
-                                        pitchValue: (leftWheel * 10) as NSNumber,
-                                        rollValue: rotation?.roll,
-                                        yawValue: rotation?.yaw,
-                                        time: rotation?.time ?? DJIGimbalRotation.minTime,
-                                        mode: rotation?.mode ?? .speed,
-                                        ignore: rotation?.ignore ?? false)
-                                }
-                                
-                                if let rotation = rotation {
-                                    gimbalAdapter.gimbal.rotate(with: rotation, completion: nil)
-                                }
+            if Dronelink.shared.missionExecutor?.engaged ?? false || Dronelink.shared.modeExecutor?.engaged ?? false {
+                self.gimbalSerialQueue.async { [weak self] in
+                    guard let session = self else {
+                        return
+                    }
+                    
+                    //work-around for this issue: https://support.dronelink.com/hc/en-us/community/posts/360034749773-Seeming-to-have-a-Heading-error-
+                    session.adapter.gimbals?.forEach { gimbalAdapter in
+                        if let gimbalAdapter = gimbalAdapter as? DJIGimbalAdapter {
+                            var rotation = gimbalAdapter.pendingSpeedRotation
+                            gimbalAdapter.pendingSpeedRotation = nil
+                            if gimbalAdapter.gimbal.isAdjustYawSupported,
+                               !gimbalAdapter.gimbal.isAdjustYaw360Supported,
+                               let gimbalState = session._gimbalStates[gimbalAdapter.index]?.value,
+                               gimbalState.mode == .yawFollow {
+                                rotation = DJIGimbalRotation(
+                                    pitchValue: rotation?.pitch,
+                                    rollValue: rotation?.roll,
+                                    yawValue: min(max(-session.gimbalYawRelativeToAircraftHeadingCorrected(gimbalState: gimbalState).convertRadiansToDegrees * 0.25, -25), 25) as NSNumber,
+                                    time: DJIGimbalRotation.minTime,
+                                    mode: .speed,
+                                    ignore: false)
+                            }
+                            
+                            if Dronelink.shared.missionExecutor?.engaged ?? false,
+                               gimbalAdapter.gimbal.isAdjustPitchSupported,
+                               (self?._remoteControllerGimbalChannel?.value ?? 0) == gimbalAdapter.index,
+                               let leftWheel = self?.remoteControllerState(channel: gimbalAdapter.index)?.value.leftWheel.value,
+                               leftWheel != 0 {
+                                rotation = DJIGimbalRotation(
+                                    pitchValue: (leftWheel * 10) as NSNumber,
+                                    rollValue: rotation?.roll,
+                                    yawValue: rotation?.yaw,
+                                    time: rotation?.time ?? DJIGimbalRotation.minTime,
+                                    mode: rotation?.mode ?? .speed,
+                                    ignore: rotation?.ignore ?? false)
+                            }
+                            
+                            if let rotation = rotation {
+                                gimbalAdapter.gimbal.rotate(with: rotation, completion: nil)
                             }
                         }
                     }
@@ -789,19 +792,23 @@ extension DJIDroneSession: DroneSession {
         gimbalCommands.removeAll()
     }
     
-    public func createControlSession(executionEngine: Kernel.ExecutionEngine, executor: Executor) -> DroneControlSession? {
+    public func createControlSession(executionEngine: Kernel.ExecutionEngine, executor: Executor) throws -> DroneControlSession {
+        if flightModeJoystickAir2S && model == DJIAircraftModelNameDJIAir2S {
+            throw "DJIDroneSession.createControlSession.djiAir2s.reengagement".localized
+        }
+        
         switch executionEngine {
         case .dronelinkKernel:
             return DJIVirtualStickSession(droneSession: self)
             
         case .dji:
-            if let missionExecutor = executor as? MissionExecutor {
-                 return DJIWaypointMissionSession(droneSession: self, missionExecutor: missionExecutor)
+            if let missionExecutor = executor as? MissionExecutor, let djiWaypointMissionSession = DJIWaypointMissionSession(droneSession: self, missionExecutor: missionExecutor) {
+                 return djiWaypointMissionSession
             }
             break
         }
         
-        return nil
+        throw String(format: "DJIDroneSession.createControlSession.execution.engine.unsupported".localized, Dronelink.shared.formatEnum(name: "ExecutionEngine", value: executionEngine.rawValue, defaultValue: ""))
     }
     
     public func cameraState(channel: UInt) -> DatedValue<CameraStateAdapter>? {
