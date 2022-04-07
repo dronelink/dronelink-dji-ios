@@ -179,32 +179,66 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public let videoStreamSourceValue: DJICameraVideoStreamSource?
     public let focusState: DJICameraFocusState?
     public let storageState: DJICameraStorageState?
+    public let exposureModeValue: DJICameraExposureMode?
     public let exposureSettings: DJICameraExposureSettings?
     public let lensIndex: UInt
     public let lensInformation: String?
     public let storageLocationValue: DJICameraStorageLocation?
     public let photoModeValue: DJICameraShootPhotoMode?
+    public let photoTimeIntervalSettings: DJICameraPhotoTimeIntervalSettings?
+    public let photoFileFormatValue: DJICameraPhotoFileFormat?
+    public let photoAspectRatioValue: DJICameraPhotoAspectRatio?
     public let burstCountValue: DJICameraPhotoBurstCount?
     public let aebCountValue: DJICameraPhotoAEBCount?
-    public let photoTimeIntervalSettings: DJICameraPhotoTimeIntervalSettings?
+    public let videoFileFormatValue: DJICameraVideoFileFormat?
+    public let videoFrameRateValue: DJICameraVideoFrameRate?
+    public let videoResolutionValue: DJICameraVideoResolution?
     public let whiteBalanceValue: DJICameraWhiteBalance?
     public let isoValue: DJICameraISO?
     public let focusRingValue: Double?
     public let focusRingMax: Double?
     
-    public init(systemState: DJICameraSystemState, videoStreamSource: DJICameraVideoStreamSource?, focusState: DJICameraFocusState?, storageState: DJICameraStorageState?, exposureSettings: DJICameraExposureSettings?, lensIndex: UInt, lensInformation: String?, storageLocation: DJICameraStorageLocation?, photoMode: DJICameraShootPhotoMode?, burstCount: DJICameraPhotoBurstCount?, aebCount: DJICameraPhotoAEBCount?, intervalSettings: DJICameraPhotoTimeIntervalSettings?, whiteBalance: DJICameraWhiteBalance?, iso: DJICameraISO?, focusRingValue: Double?, focusRingMax: Double?) {
+    public init(
+        systemState: DJICameraSystemState,
+        videoStreamSource: DJICameraVideoStreamSource?,
+        focusState: DJICameraFocusState?,
+        storageState: DJICameraStorageState?,
+        exposureMode: DJICameraExposureMode?,
+        exposureSettings: DJICameraExposureSettings?,
+        lensIndex: UInt,
+        lensInformation: String?,
+        storageLocation: DJICameraStorageLocation?,
+        photoMode: DJICameraShootPhotoMode?,
+        photoFileFormat: DJICameraPhotoFileFormat?,
+        photoAspectRatio: DJICameraPhotoAspectRatio?,
+        burstCount: DJICameraPhotoBurstCount?,
+        aebCount: DJICameraPhotoAEBCount?,
+        intervalSettings: DJICameraPhotoTimeIntervalSettings?,
+        videoFileFormat: DJICameraVideoFileFormat?,
+        videoFrameRate: DJICameraVideoFrameRate?,
+        videoResolution: DJICameraVideoResolution?,
+        whiteBalance: DJICameraWhiteBalance?,
+        iso: DJICameraISO?,
+        focusRingValue: Double?,
+        focusRingMax: Double?) {
         self.systemState = systemState
         self.videoStreamSourceValue = videoStreamSource
         self.focusState = focusState
         self.storageState = storageState
+        self.exposureModeValue = exposureMode
         self.exposureSettings = exposureSettings
         self.lensIndex = lensIndex
         self.lensInformation = lensInformation
         self.storageLocationValue = storageLocation
         self.photoModeValue = photoMode
+        self.photoTimeIntervalSettings = intervalSettings
+        self.photoFileFormatValue = photoFileFormat
+        self.photoAspectRatioValue = photoAspectRatio
         self.burstCountValue = burstCount
         self.aebCountValue = aebCount
-        self.photoTimeIntervalSettings = intervalSettings
+        self.videoFileFormatValue = videoFileFormat
+        self.videoFrameRateValue = videoFrameRate
+        self.videoResolutionValue = videoResolution
         self.whiteBalanceValue = whiteBalance
         self.isoValue = iso
         self.focusRingValue = focusRingValue
@@ -221,10 +255,15 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var storageLocation: Kernel.CameraStorageLocation { storageLocationValue?.kernelValue ?? .unknown }
     public var mode: Kernel.CameraMode { systemState.mode.kernelValue }
     public var photoMode: Kernel.CameraPhotoMode? { systemState.flatCameraMode.kernelValuePhoto ?? photoModeValue?.kernelValue }
+    public var photoFileFormat: Kernel.CameraPhotoFileFormat { photoFileFormatValue?.kernelValue ?? .unknown }
     public var photoInterval: Int? { Int(photoTimeIntervalSettings?.timeIntervalInSeconds ?? UInt16()) }
     public var burstCount: Kernel.CameraBurstCount? { burstCountValue?.kernelValue }
     public var aebCount: Kernel.CameraAEBCount? {aebCountValue?.kernelValue}
+    public var videoFileFormat: Kernel.CameraVideoFileFormat { videoFileFormatValue?.kernelValue ?? .unknown }
+    public var videoFrameRate: Kernel.CameraVideoFrameRate { videoFrameRateValue?.kernelValue ?? .unknown }
+    public var videoResolution: Kernel.CameraVideoResolution { videoResolutionValue?.kernelValue ?? .unknown }
     public var currentVideoTime: Double? { systemState.currentVideoTime }
+    public var exposureMode: Kernel.CameraExposureMode { exposureModeValue?.kernelValue ?? .unknown }
     public var exposureCompensation: Kernel.CameraExposureCompensation { exposureSettings?.exposureCompensation.kernelValue ?? .unknown }
     public var iso: Kernel.CameraISO { isoValue?.kernelValue ?? .unknown }
     public var isoSensitivity: Int? {
@@ -239,6 +278,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         return Int(colorTemperature) * 100
     }
     public var lensDetails: String? { lensInformation }
+    public var aspectRatio: Kernel.CameraPhotoAspectRatio { (mode == .photo ? photoAspectRatioValue?.kernelValue : nil) ?? ._16x9 }
 }
 
 public class DJIGimbalAdapter: GimbalAdapter {

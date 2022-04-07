@@ -64,11 +64,18 @@ public class DJIDroneSession: NSObject {
     private var _lowBatteryWarningThreshold: DatedValue<UInt>?
     private var _downlinkSignalQuality: DatedValue<UInt>?
     private var _uplinkSignalQuality: DatedValue<UInt>?
+    private var _lightbridgefrequencyBand: DatedValue<DJILightbridgeFrequencyBand>?
+    private var _ocuSyncfrequencyBand: DatedValue<DJIOcuSyncFrequencyBand>?
+    private var _exposureMode: DatedValue<DJICameraExposureMode>?
     private var _storageLocation: DatedValue<DJICameraStorageLocation>?
     private var _photoMode: DatedValue<DJICameraShootPhotoMode>?
+    private var _photoAspectRatio: DatedValue<DJICameraPhotoAspectRatio>?
     private var _burstCount: DatedValue<DJICameraPhotoBurstCount>?
     private var _aebCount: DatedValue<DJICameraPhotoAEBCount>?
     private var _timeIntervalSettings: DatedValue<DJICameraPhotoTimeIntervalSettings>?
+    private var _photoFileFormat: DatedValue<DJICameraPhotoFileFormat>?
+    private var _videoFileFormat: DatedValue<DJICameraVideoFileFormat>?
+    private var _videoResolutionAndFrameRate: DatedValue<DJICameraVideoResolutionAndFrameRate>?
     private var _mostRecentCameraFile: DatedValue<CameraFile>?
     private var _whiteBalance: DatedValue<DJICameraWhiteBalance>?
     private var _iso: DatedValue<DJICameraISO>?
@@ -292,6 +299,33 @@ public class DJIDroneSession: NSObject {
             }
         }
         
+        startListeningForChanges(on: DJIAirLinkKey(index: 0, subComponent: DJIAirLinkLightbridgeLinkSubComponent, subComponentIndex: 0, andParam: DJILightbridgeLinkParamFrequencyBand)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self?._lightbridgefrequencyBand = DatedValue(value: DJILightbridgeFrequencyBand(rawValue: UInt8(value)) ?? .bandUnknown)
+            }
+            else {
+                self?._lightbridgefrequencyBand = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJIAirLinkKey(index: 0, subComponent: DJIAirLinkOcuSyncLinkSubComponent, subComponentIndex: 0, andParam: DJIOcuSyncLinkParamFrequencyBand)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self?._ocuSyncfrequencyBand = DatedValue(value: DJIOcuSyncFrequencyBand(rawValue: UInt8(value)) ?? .bandUnknown)
+            }
+            else {
+                self?._ocuSyncfrequencyBand = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamExposureMode)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self?._exposureMode = DatedValue(value: DJICameraExposureMode(rawValue: value) ?? .unknown)
+            }
+            else {
+                self?._exposureMode = nil
+            }
+        }
+        
         startListeningForChanges(on: DJICameraKey(param: DJICameraParamStorageLocation)!) { [weak self] (oldValue, newValue) in
             if let value = newValue?.unsignedIntegerValue {
                 self?._storageLocation = DatedValue(value: DJICameraStorageLocation(rawValue: value) ?? .unknown)
@@ -307,6 +341,15 @@ public class DJIDroneSession: NSObject {
             }
             else {
                 self?._photoMode = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamPhotoAspectRatio)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self?._photoAspectRatio = DatedValue(value: DJICameraPhotoAspectRatio(rawValue: value) ?? .ratioUnknown)
+            }
+            else {
+                self?._photoAspectRatio = nil
             }
         }
         
@@ -333,6 +376,33 @@ public class DJIDroneSession: NSObject {
             let valuePointer = UnsafeMutableRawPointer(&value)
             (newValue?.value as? NSValue)?.getValue(valuePointer)
             self?._timeIntervalSettings = DatedValue(value: value)
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamPhotoFileFormat)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self?._photoFileFormat = DatedValue(value: DJICameraPhotoFileFormat(rawValue: value) ?? .unknown)
+            }
+            else {
+                self?._photoFileFormat = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamVideoFileFormat)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self?._videoFileFormat = DatedValue(value: DJICameraVideoFileFormat(rawValue: value) ?? .unknown)
+            }
+            else {
+                self?._videoFileFormat = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamVideoResolutionAndFrameRate)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.value as? DJICameraVideoResolutionAndFrameRate {
+                self?._videoResolutionAndFrameRate = DatedValue(value: value)
+            }
+            else {
+                self?._videoResolutionAndFrameRate = nil
+            }
         }
         
         startListeningForChanges(on: DJICameraKey(param: DJICameraParamWhiteBalance)!) { [weak self] (oldValue, newValue) in
@@ -835,14 +905,20 @@ extension DJIDroneSession: DroneSession {
                     videoStreamSource: session._cameraVideoStreamSources[channel]?.value,
                     focusState: session._cameraFocusStates["\(channel).\(lensIndexResolved)"]?.value,
                     storageState: session._cameraStorageStates[channel]?.value,
+                    exposureMode: session._exposureMode?.value,
                     exposureSettings: session._cameraExposureSettings["\(channel).\(lensIndexResolved)"]?.value,
                     lensIndex: lensIndexResolved,
                     lensInformation: session._cameraLensInformation[channel]?.value,
                     storageLocation: session._storageLocation?.value,
                     photoMode: session._photoMode?.value,
+                    photoFileFormat: session._photoFileFormat?.value,
+                    photoAspectRatio: session._photoAspectRatio?.value,
                     burstCount: session._burstCount?.value,
                     aebCount: session._aebCount?.value,
                     intervalSettings: session._timeIntervalSettings?.value,
+                    videoFileFormat: session._videoFileFormat?.value,
+                    videoFrameRate: session._videoResolutionAndFrameRate?.value.frameRate,
+                    videoResolution: session._videoResolutionAndFrameRate?.value.resolution,
                     whiteBalance: session._whiteBalance?.value,
                     iso: session._iso?.value,
                     focusRingValue: _focusRingValue?.value,
@@ -879,7 +955,7 @@ extension DJIDroneSession: DroneSession {
 }
 
 extension DJIDroneSession: DroneStateAdapter {
-    public var statusMessages: [Kernel.Message]? {
+    public var statusMessages: [Kernel.Message] {
         var messages: [Kernel.Message] = []
         
         if let state = flightControllerState?.value {
@@ -927,6 +1003,12 @@ extension DJIDroneSession: DroneStateAdapter {
         }
         return nil
     }
+    public var flightTimeRemaining: Double? {
+        if let remainingFlightTime = _flightControllerState?.value.goHomeAssessment.remainingFlightTime {
+            return Double(remainingFlightTime)
+        }
+        return nil
+    }
     public var obstacleDistance: Double? {
         var minObstacleDistance = 0.0
         visionDetectionState?.value.detectionSectors?.forEach {
@@ -954,6 +1036,8 @@ extension DJIDroneSession: DroneStateAdapter {
         }
         return nil
     }
+    public var lightbridgeFrequencyBand: Kernel.DroneLightbridgeFrequencyBand? { _lightbridgefrequencyBand?.value.kernelValue }
+    public var ocuSyncFrequencyBand: Kernel.DroneOcuSyncFrequencyBand? { _ocuSyncfrequencyBand?.value.kernelValue }
 }
 
 extension DJIDroneSession: DJIBaseProductDelegate {

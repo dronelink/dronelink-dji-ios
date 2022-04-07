@@ -187,6 +187,22 @@ extension DJICameraPhotoAEBCount {
     }
 }
 
+extension DJICameraPhotoFileFormat {
+    var kernelValue: Kernel.CameraPhotoFileFormat {
+        switch self {
+        case .RAW: return .raw
+        case .JPEG: return .jpeg
+        case .rawAndJPEG: return .rawAndJpeg
+        case .tiff14Bit: return .tiff14bit
+        case .radiometricJPEG: return .radiometricJpeg
+        case .tiff14BitLinearLowTempResolution: return .tiff14bitLinearLowTempResolution
+        case .tiff14BitLinearHighTempResolution: return .tiff14bitLinearHighTempResolution
+        case .unknown: return .unknown
+        @unknown default: return .unknown
+        }
+    }
+}
+
 extension DJICameraAperture {
     var kernelValue: Kernel.CameraAperture {
         switch self {
@@ -319,6 +335,18 @@ extension Kernel.CameraDisplayMode {
         case .thermal: return .thermalOnly
         case .pip: return .PIP
         case .msx: return .MSX
+        case .unknown: return .unknown
+        }
+    }
+}
+
+extension DJICameraExposureMode {
+    var kernelValue: Kernel.CameraExposureMode {
+        switch self {
+        case .program: return .program
+        case .shutterPriority: return .shutterPriority
+        case .aperturePriority: return .aperturePriority
+        case .manual: return .manual
         case .unknown: return .unknown
         }
     }
@@ -548,6 +576,17 @@ extension Kernel.CameraMeteringMode {
     }
 }
 
+extension DJICameraPhotoAspectRatio {
+    var kernelValue: Kernel.CameraPhotoAspectRatio {
+        switch self {
+        case .ratio4_3: return ._4x3
+        case .ratio16_9: return ._16x9
+        case .ratio3_2: return ._3x2
+        case .ratioUnknown: return .unknown
+        }
+    }
+}
+
 extension Kernel.CameraPhotoAspectRatio {
     var djiValue: DJICameraPhotoAspectRatio {
         switch self {
@@ -663,6 +702,78 @@ extension DJICameraShootPhotoMode {
         case .EHDR: return .ehdr
         case .hyperLight: return .hyperLight
         case .unknown: return .unknown
+        @unknown default: return .unknown
+        }
+    }
+}
+
+extension DJICameraVideoFileFormat {
+    var kernelValue: Kernel.CameraVideoFileFormat {
+        switch self {
+        case .MOV: return .mov
+        case .MP4: return .mp4
+        case .tiffSequence: return .tiffSequence
+        case .SEQ: return .seq
+        case .unknown: return .unknown
+        @unknown default: return .unknown
+        }
+    }
+}
+
+extension DJICameraVideoFrameRate {
+    var kernelValue: Kernel.CameraVideoFrameRate {
+        switch self {
+        case .rate23dot976FPS: return ._23dot976
+        case .rate24FPS: return ._24
+        case .rate25FPS: return ._25
+        case .rate29dot970FPS: return ._29dot970
+        case .rate30FPS: return ._30
+        case .rate47dot950FPS: return ._47dot950
+        case .rate48FPS: return ._48
+        case .rate50FPS: return ._50
+        case .rate59dot940FPS: return ._59dot940
+        case .rate60FPS: return ._60
+        case .rate90FPS: return ._90
+        case .rate96FPS: return ._96
+        case .rate100FPS: return ._100
+        case .rate120FPS: return ._120
+        case .rate240FPS: return ._240
+        case .rate8dot7FPS: return ._8dot7
+        case .rateUnknown: return .unknown
+        @unknown default: return .unknown
+        }
+    }
+}
+
+extension DJICameraVideoResolution {
+    var kernelValue: Kernel.CameraVideoResolution {
+        switch self {
+        case .resolution336x256: return ._336x256
+        case .resolution640x360: return ._640x360
+        case .resolution640x480: return ._640x480
+        case .resolution640x512: return ._640x512
+        case .resolution1280x720: return ._1280x720
+        case .resolution1920x1080: return ._1920x1080
+        case .resolution2048x1080: return ._2048x1080
+        case .resolution2688x1512: return ._2688x1512
+        case .resolution2704x1520: return ._2704x1520
+        case .resolution2720x1530: return ._2720x1530
+        case .resolution3712x2088: return ._3712x2088
+        case .resolution3840x1572: return ._3840x1572
+        case .resolution3840x2160: return ._3840x2160
+        case .resolution3944x2088: return ._3944x2088
+        case .resolution4096x2160: return ._4096x2160
+        case .resolution4608x2160: return ._4608x2160
+        case .resolution4608x2592: return ._4608x2592
+        case .resolution5280x2160: return ._5280x2160
+        case .resolution5280x2972: return ._5280x2972
+        case .resolution5472x3078: return ._5472x3078
+        case .resolution5760x3240: return ._5760x3240
+        case .resolution6016x3200: return ._6016x3200
+        case .resolution7680x4320: return ._7680x4320
+        case .resolutionMax: return .max
+        case .resolutionNoSSDVideo: return .noSSDVideo
+        case .resolutionUnknown: return .unknown
         @unknown default: return .unknown
         }
     }
@@ -948,8 +1059,10 @@ extension Kernel.CameraVideoResolution {
         case ._4608x2592: return .resolution4608x2592
         case ._5280x2160: return .resolution5280x2160
         case ._5280x2972: return .resolution5280x2972
+        case ._5472x3078: return .resolution5472x3078
         case ._5760x3240: return .resolution5760x3240
         case ._6016x3200: return .resolution6016x3200
+        case ._7680x4320: return .resolution7680x4320
         case .max: return .resolutionMax
         case .noSSDVideo: return .resolutionNoSSDVideo
         case .unknown: return .resolutionUnknown
@@ -1186,6 +1299,17 @@ extension Kernel.DroneLightbridgeFrequencyBand {
     }
 }
 
+extension DJILightbridgeFrequencyBand {
+    var kernelValue: Kernel.DroneLightbridgeFrequencyBand {
+        switch self {
+        case .band2Dot4GHz: return ._2dot4ghz
+        case .band5Dot7GHz: return ._5dot7ghz
+        case .band5Dot8GHz: return ._5dot8ghz
+        case .bandUnknown: return .unknown
+        }
+    }
+}
+
 extension Kernel.OcuSyncVideoFeedSourcesDroneCommand {
     public func djiValue(channel: UInt = 0) -> DJIVideoFeedPhysicalSource {
         return ocuSyncVideoFeedSources[channel]?.djiValue ?? .unknown
@@ -1226,6 +1350,17 @@ extension Kernel.DroneOcuSyncFrequencyBand {
         case ._5dot8ghz: return .band5Dot8GHz
         case .dual: return .bandDual
         case .unknown: return .bandUnknown
+        }
+    }
+}
+
+extension DJIOcuSyncFrequencyBand {
+    var kernelValue: Kernel.DroneOcuSyncFrequencyBand {
+        switch self {
+        case .band2Dot4GHz: return ._2dot4ghz
+        case .band5Dot8GHz: return ._5dot8ghz
+        case .bandDual: return .dual
+        case .bandUnknown: return .unknown
         }
     }
 }
@@ -1712,7 +1847,7 @@ extension DJIFlightControllerState {
         
         if let goHomeExecutionStateMessage = goHomeExecutionState.message {
             if flightMode == .confirmLanding {
-                messages.append(Kernel.Message(title: flightModeString, level: .warning))
+                //messages.append(Kernel.Message(title: flightModeString, level: .warning))
             }
             else {
                 messages.append(goHomeExecutionStateMessage)
@@ -1753,7 +1888,7 @@ extension DJIFlightControllerState {
                  .autoLanding,
                  .motorsJustStarted,
                  .confirmLanding:
-                messages.append(Kernel.Message(title: flightModeString, level: .warning))
+                //messages.append(Kernel.Message(title: flightModeString, level: .warning))
                 break
                 
             case .gpsWaypoint:

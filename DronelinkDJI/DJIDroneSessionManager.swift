@@ -55,7 +55,7 @@ extension DJIDroneSessionManager: DroneSessionManager {
     
     public var session: DroneSession? { _session }
     
-    public var statusMessages: [Kernel.Message]? {
+    public var statusMessages: [Kernel.Message] {
         var messages: [Kernel.Message] = []
         
         if let message = _flyZoneState?.value.message {
@@ -64,10 +64,6 @@ extension DJIDroneSessionManager: DroneSessionManager {
         
         if let message = _appActivationState?.value.message {
             messages.append(message)
-        }
-        
-        if let sessionStatusMessages = session?.state?.value.statusMessages {
-            messages.append(contentsOf: sessionStatusMessages)
         }
         
         return messages
