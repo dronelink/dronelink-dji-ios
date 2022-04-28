@@ -545,17 +545,20 @@ public class DJIDroneSession: NSObject {
                     
                     //work-around for this issue: https://support.dronelink.com/hc/en-us/community/posts/360034749773-Seeming-to-have-a-Heading-error-
                     session.adapter.gimbals?.forEach { gimbalAdapter in
+                        //don't issue competing speed rotations, OrientationGimbalCommand always takes precedent
+                        if let _ = session.gimbalCommands.commands(channel: gimbalAdapter.index)?.currentCommand?.kernelCommand as? Kernel.OrientationGimbalCommand {
+                            return
+                        }
+                        
                         if let gimbalAdapter = gimbalAdapter as? DJIGimbalAdapter {
                             var rotation = gimbalAdapter.pendingSpeedRotation
                             gimbalAdapter.pendingSpeedRotation = nil
-                            if gimbalAdapter.gimbal.isAdjustYawSupported,
-                               !gimbalAdapter.gimbal.isAdjustYaw360Supported,
-                               let gimbalState = session._gimbalStates[gimbalAdapter.index]?.value,
-                               gimbalState.mode == .yawFollow {
+                            if let gimbalState = session._gimbalStates[gimbalAdapter.index]?.value,
+                               let gimbalYawRelativeToAircraftHeadingCorrected = session.gimbalYawRelativeToAircraftHeadingCorrected(gimbalState: gimbalState) {
                                 rotation = DJIGimbalRotation(
                                     pitchValue: rotation?.pitch,
                                     rollValue: rotation?.roll,
-                                    yawValue: min(max(-session.gimbalYawRelativeToAircraftHeadingCorrected(gimbalState: gimbalState).convertRadiansToDegrees * 0.25, -25), 25) as NSNumber,
+                                    yawValue: min(max(-gimbalYawRelativeToAircraftHeadingCorrected.convertRadiansToDegrees * 0.25, -25), 25) as NSNumber,
                                     time: DJIGimbalRotation.minTime,
                                     mode: .speed,
                                     ignore: false)
@@ -589,7 +592,7 @@ public class DJIDroneSession: NSObject {
         os_log(.info, log: DJIDroneSession.log, "Drone session closed")
     }
     
-    private func gimbalYawRelativeToAircraftHeadingCorrected(gimbalState: GimbalStateAdapter) -> Double {
+    private func gimbalYawRelativeToAircraftHeadingCorrected(gimbalState: GimbalStateAdapter) -> Double? {
         if let model = (drone as? DJIDroneAdapter)?.drone.model {
             switch (model) {
             case DJIAircraftModelNamePhantom4,
@@ -598,11 +601,13 @@ public class DJIDroneSession: NSObject {
                  DJIAircraftModelNamePhantom4Advanced,
                  DJIAircraftModelNamePhantom4RTK:
                 return gimbalState.orientation.yaw.angleDifferenceSigned(angle: orientation.yaw)
+                
             default:
                 break
             }
         }
-        return (gimbalState as? DJIGimbalState)?.yawRelativeToAircraftHeading.convertDegreesToRadians ?? 0
+        
+        return nil
     }
     
     internal func sendResetVelocityCommand(withCompletion: DJICompletionBlock? = nil) {
@@ -802,6 +807,19 @@ extension DJIDroneSession: DroneSession {
             return DJIVirtualStickSession(droneSession: self)
             
         case .dji:
+            switch model {
+            case DJIAircraftModelNameMavicMini,
+                DJIAircraftModelNameDJIMini2,
+                DJIAircraftModelNameDJIMiniSE,
+                DJIAircraftModelNameMavicAir2,
+                DJIAircraftModelNameDJIAir2S,
+                DJIAircraftModelNameMatrice300RTK:
+                throw String(format: "DJIDroneSession.createControlSession.dji.unsupported.drone".localized, model ?? "")
+                
+            default:
+                break
+            }
+            
             if let missionExecutor = executor as? MissionExecutor, let djiWaypointMissionSession = DJIWaypointMissionSession(droneSession: self, missionExecutor: missionExecutor) {
                  return djiWaypointMissionSession
             }
