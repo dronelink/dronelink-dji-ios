@@ -10,8 +10,10 @@
 "MissionDisengageReason.drone.disconnected.title" = "Drone Disconnected";
 "MissionDisengageReason.drone.control.unavailable.title" = "Drone Control Unavailable";
 "MissionDisengageReason.telemetry.unavailable.title" = "Telemetry Unavailable";
-"MissionDisengageReason.telemetry.delayed.title" = "Telemetry Delayed";
-"MissionDisengageReason.drone.control.override.title" = "Control Override";
+"MissionDisengageReason.telemetry.delayed.title" = "Weak Signal";
+"MissionDisengageReason.telemetry.delayed.details" = "• Please point the RC antennas towards the drone.\n• If the signal does not improve, try moving closer to the drone.\n• If the signal still does not improve, move to an area with fewer obstacles or RF interference.";
+"MissionDisengageReason.drone.control.override.title" = "Automatic Control Interrupted";
+"MissionDisengageReason.drone.control.override.details" = "The drone must remain in P-GPS flight mode for automatic control.";
 "MissionDisengageReason.take.off.failed.title" = "Unable to Take Off";
 "MissionDisengageReason.take.control.failed.title" = "Unable to Take Control";
 "MissionDisengageReason.execution.state.invalid.title" = "Execution State Invalid";
@@ -42,6 +44,7 @@
 "DJIWaypointMissionSession.statusMessage.reengaging" = "Resuming at %@ to waypoint %@...";
 
 "DJIDroneSession.telemetry.unavailable" = "Telemetry Unavailable";
+"DJIDroneSession.createControlSession.dji.unsupported.drone" = "The %@ does not support DJI onboard waypoints.";
 "DJIDroneSession.createControlSession.execution.engine.unsupported" = "Unsupported execution engine: %@";
 "DJIDroneSession.createControlSession.djiAir2s.reengagement" = "You must disconnect and then reconnect the DJI Air 2S remote controller in order to start another virtual stick session due to an issue in the DJI SDK.";
 
@@ -53,7 +56,8 @@
 
 "DJIDroneSession+GimbalCommand.orientation.not.achieved" = "Gimbal Not Rotated";
 
-"DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.title" = "Location Unavailable";
+"DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.title" = "GPS Signal Unavailable";
+"DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.details" = "Please wait for a strong GPS signal lock to continue.";
 "DJIDronelink:DJIFlightControllerState.statusMessages.homeLocationNotSet.title" = "Home Location Not Set";
 "DJIDronelink:DJIFlightControllerState.statusMessages.isLowerThanSeriousBatteryWarningThreshold.title" = "Critically Low Battery";
 "DJIDronelink:DJIFlightControllerState.statusMessages.isLowerThanBatteryWarningThreshold.title" = "Low Battery";

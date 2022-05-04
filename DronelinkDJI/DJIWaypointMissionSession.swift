@@ -44,18 +44,18 @@ public class DJIWaypointMissionSession: DroneControlSession {
                         
                     case .goHome, .autoLanding:
                         if !terminalFlightModeAllowed {
-                            return Kernel.Message(title: "MissionDisengageReason.drone.control.override.title".localized, details: flightControllerState.value.flightModeString)
+                            return Kernel.Message(title: "MissionDisengageReason.drone.control.override.title".localized, details: "MissionDisengageReason.drone.control.override.details".localized)
                         }
                         break
                         
                     default:
-                        return Kernel.Message(title: "MissionDisengageReason.drone.control.override.title".localized, details: flightControllerState.value.flightModeString)
+                        return Kernel.Message(title: "MissionDisengageReason.drone.control.override.title".localized, details: "MissionDisengageReason.drone.control.override.details".localized)
                     }
                 }
                 
                 switch djiWaypointMissionOperator.currentState {
                 case .unknown, .recovering, .notSupported, .executionPaused:
-                    return Kernel.Message(title: "MissionDisengageReason.drone.control.override.title".localized)
+                    return Kernel.Message(title: "MissionDisengageReason.drone.control.override.title".localized, details: "MissionDisengageReason.drone.control.override.details".localized)
                     
                 case .disconnected:
                     return Kernel.Message(title: "MissionDisengageReason.drone.disconnected.title".localized)

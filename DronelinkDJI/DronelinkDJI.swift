@@ -1925,7 +1925,7 @@ extension DJIFlightControllerState {
         }
         
         if location == nil {
-            messages.append(Kernel.Message(title: "DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.title".localized, level: .warning))
+            messages.append(Kernel.Message(title: "DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.title".localized, details: "DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.details".localized, level: .warning))
         }
         
         if !isHomeLocationSet {
