@@ -46,7 +46,6 @@
 "DJIDroneSession.telemetry.unavailable" = "Telemetry Unavailable";
 "DJIDroneSession.createControlSession.dji.unsupported.drone" = "The %@ does not support DJI onboard waypoints.";
 "DJIDroneSession.createControlSession.execution.engine.unsupported" = "Unsupported execution engine: %@";
-"DJIDroneSession.createControlSession.djiAir2s.reengagement" = "You must disconnect and then reconnect the DJI Air 2S remote controller in order to start another virtual stick session due to an issue in the DJI SDK.";
 
 "DJIDroneSession+CameraCommand.stop.capture.error" = "Camera still capturing";
 "DJIDroneSession+CameraCommand.start.shoot.photo.no.file" = "Media File Not Created";

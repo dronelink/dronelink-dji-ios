@@ -85,8 +85,6 @@ public class DJIDroneSession: NSObject {
     public var mostRecentCameraFile: DatedValue<CameraFile>? { get { _mostRecentCameraFile } }
     private var listeningDJIKeys: [DJIKey] = []
     
-    private var flightModeJoystickAir2S = false
-    
     public init(manager: DroneSessionManager, drone: DJIAircraft) {
         self.manager = manager
         adapter = DJIDroneAdapter(drone: drone)
@@ -594,10 +592,6 @@ public class DJIDroneSession: NSObject {
                 }
             }
             
-            if _flightControllerState?.value.flightMode == .joystick && model == DJIAircraftModelNameDJIAir2S {
-                flightModeJoystickAir2S = true
-            }
-            
             if remoteControllerInitialized == nil {
                 initRemoteController()
             }
@@ -671,7 +665,15 @@ public class DJIDroneSession: NSObject {
                  DJIAircraftModelNamePhantom4Advanced,
                  DJIAircraftModelNamePhantom4RTK:
                 return gimbalState.orientation.yaw.angleDifferenceSigned(angle: orientation.yaw)
-                
+            
+            case DJIAircraftModelNameMavicPro,
+                DJIAircraftModelNameMavic2,
+                DJIAircraftModelNameMavic2Pro,
+                DJIAircraftModelNameMavic2Zoom,
+                DJIAircraftModelNameMavic2Enterprise,
+                DJIAircraftModelNameMavic2EnterpriseDual:
+                return (gimbalState as? DJIGimbalState)?.yawRelativeToAircraftHeading.convertDegreesToRadians ?? 0
+
             default:
                 break
             }
@@ -868,10 +870,6 @@ extension DJIDroneSession: DroneSession {
     }
     
     public func createControlSession(executionEngine: Kernel.ExecutionEngine, executor: Executor) throws -> DroneControlSession {
-        if flightModeJoystickAir2S && model == DJIAircraftModelNameDJIAir2S {
-            throw "DJIDroneSession.createControlSession.djiAir2s.reengagement".localized
-        }
-        
         switch executionEngine {
         case .dronelinkKernel:
             return DJIVirtualStickSession(droneSession: self)
