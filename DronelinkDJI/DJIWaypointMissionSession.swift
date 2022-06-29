@@ -93,7 +93,7 @@ public class DJIWaypointMissionSession: DroneControlSession {
         self.kernelComponents = kernelComponents
         self.djiWaypointMissions = kernelComponents.map { $0.djiValue }
         for mission in djiWaypointMissions {
-            if let error = mission.checkValidity() {
+            if mission.checkValidity() != nil {
                 return nil
             }
         }
@@ -268,7 +268,7 @@ public class DJIWaypointMissionSession: DroneControlSession {
                 break
 
             case .readyToExecute:
-                session.djiWaypointMissionOperator.removeListener(ofUploadEvents: self)
+                session.djiWaypointMissionOperator.removeListener(ofUploadEvents: self as Any)
                 session.start(cameraCaptureConfigurations: currentKernelComponent.cameraCaptureConfigurations)
                 os_log(.info, log: DJIWaypointMissionSession.log, "Attempting start mission")
                 session.djiWaypointMissionOperator.startMission { [weak self] error in

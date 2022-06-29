@@ -53,7 +53,7 @@ public class DJIDroneSession: NSObject {
     private var _cameraStates: [UInt: DatedValue<DJICameraSystemState>] = [:]
     private var _cameraVideoStreamSources: [UInt: DatedValue<DJICameraVideoStreamSource>] = [:]
     private var _cameraFocusStates: [String: DatedValue<DJICameraFocusState>] = [:]
-    private var _cameraStorageStates: [UInt: DatedValue<DJICameraStorageState>] = [:]
+    private var _cameraStorageStates: [UInt: [Kernel.CameraStorageLocation: DatedValue<DJICameraStorageState>]] = [:]
     private var _cameraExposureSettings: [String: DatedValue<DJICameraExposureSettings>] = [:]
     private var _cameraLensInformation: [UInt: DatedValue<String>] = [:]
     
@@ -61,6 +61,7 @@ public class DJIDroneSession: NSObject {
     private var _gimbalStates: [UInt: DatedValue<GimbalStateAdapter>] = [:]
     
     private var _diagnosticsInformationMessages: DatedValue<[Kernel.Message]>?
+    private var _maxFlightHeight: DatedValue<UInt>?
     private var _lowBatteryWarningThreshold: DatedValue<UInt>?
     private var _downlinkSignalQuality: DatedValue<UInt>?
     private var _uplinkSignalQuality: DatedValue<UInt>?
@@ -222,7 +223,7 @@ public class DJIDroneSession: NSObject {
         }
         
         lens.getHybridZoomSpec { [weak self] (spec, error) in
-            if let error = error {
+            if error != nil {
                 DispatchQueue.global().asyncAfter(deadline: .now() + Double(attempt)) {
                     self?.initLensHybridZoom(camera: camera, lens: lens, attempt: attempt + 1)
                 }
@@ -270,6 +271,15 @@ public class DJIDroneSession: NSObject {
     }
     
     private func initListeners() {
+        startListeningForChanges(on: DJIFlightControllerKey(param: DJIFlightControllerParamMaxFlightHeight)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue ?? oldValue?.unsignedIntegerValue {
+                self?._maxFlightHeight = DatedValue(value: value)
+            }
+            else {
+                self?._maxFlightHeight = nil
+            }
+        }
+        
         startListeningForChanges(on: DJIFlightControllerKey(param: DJIFlightControllerParamLowBatteryWarningThreshold)!) { [weak self] (oldValue, newValue) in
             if let value = newValue?.unsignedIntegerValue ?? oldValue?.unsignedIntegerValue {
                 self?._lowBatteryWarningThreshold = DatedValue(value: value)
@@ -920,7 +930,7 @@ extension DJIDroneSession: DroneSession {
                     systemState: systemState.value,
                     videoStreamSource: session._cameraVideoStreamSources[channel]?.value,
                     focusState: session._cameraFocusStates["\(channel).\(lensIndexResolved)"]?.value,
-                    storageState: session._cameraStorageStates[channel]?.value,
+                    storageState: session._cameraStorageStates[channel]?[session._storageLocation?.value.kernelValue ?? .unknown]?.value,
                     exposureMode: session._exposureMode?.value,
                     exposureSettings: session._cameraExposureSettings["\(channel).\(lensIndexResolved)"]?.value,
                     lensIndex: lensIndexResolved,
@@ -1007,6 +1017,18 @@ extension DJIDroneSession: DroneStateAdapter {
     public var verticalSpeed: Double { flightControllerState?.value.verticalSpeed ?? 0 }
     public var altitude: Double { flightControllerState?.value.altitude ?? 0 }
     public var ultrasonicAltitude: Double? { flightControllerState?.value.isUltrasonicBeingUsed ?? false ? flightControllerState?.value.ultrasonicHeightInMeters : nil }
+    public var returnHomeAltitude: Double? {
+        if let goHomeHeight = flightControllerState?.value.goHomeHeight {
+            return Double(goHomeHeight)
+        }
+        return nil
+    }
+    public var maxAltitude: Double? {
+        if let maxFlightHeight = _maxFlightHeight?.value {
+            return Double(maxFlightHeight)
+        }
+        return nil
+    }
     public var batteryPercent: Double? {
         if let chargeRemainingInPercent = batteryState?.value.chargeRemainingInPercent {
             return Double(chargeRemainingInPercent) / 100
@@ -1171,10 +1193,11 @@ extension DJIDroneSession: DJICameraDelegate {
     }
     
     public func camera(_ camera: DJICamera, didUpdate storageState: DJICameraStorageState) {
-        if storageState.location == .sdCard {
-            cameraSerialQueue.async { [weak self] in
-                self?._cameraStorageStates[camera.index] = DatedValue<DJICameraStorageState>(value: storageState)
+        cameraSerialQueue.async { [weak self] in
+            if self?._cameraStorageStates[camera.index] == nil {
+                self?._cameraStorageStates[camera.index] = [:]
             }
+            self?._cameraStorageStates[camera.index]?[storageState.location.kernelValue] = DatedValue<DJICameraStorageState>(value: storageState)
         }
     }
     

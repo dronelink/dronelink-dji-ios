@@ -3,6 +3,6 @@ inhibit_all_warnings!
 use_frameworks!
 
 target 'DronelinkDJI' do
-  pod 'DronelinkCore', '~> 3.4.0'
+  pod 'DronelinkCore', :path => '../../private/dronelink-core-ios'
   pod 'DJI-SDK-iOS', '~> 4.16.1'
 end

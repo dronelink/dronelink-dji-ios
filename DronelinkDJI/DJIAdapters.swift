@@ -117,6 +117,17 @@ public class DJIDroneAdapter: DroneAdapter {
             verticalThrottle: Float(remoteControllerSticksCommand.leftStick.y * 4.0)), withCompletion: nil)
     }
     
+    public func startTakeoff(finished: CommandFinished?) {
+        drone.flightController?.startPrecisionTakeoff(completion: { [weak self] error in
+            if error == nil {
+                finished?(nil)
+                return
+            }
+            
+            self?.drone.flightController?.startTakeoff(completion: finished)
+        })
+    }
+    
     public func startGoHome(finished: CommandFinished?) {
         drone.flightController?.startGoHome(completion: finished)
     }
@@ -137,7 +148,28 @@ public class DJIDroneAdapter: DroneAdapter {
         flightController.yawControlMode = .angularVelocity
         flightController.send(DJIVirtualStickFlightControlData(pitch: 0, roll: 0, yaw: 0, verticalThrottle: 0), withCompletion: withCompletion)
     }
-
+    
+    public func enumElements(parameter: String) -> [EnumElement]? {
+        guard let enumDefinition = Dronelink.shared.enumDefinition(name: parameter) else {
+            return nil
+        }
+        
+        var range: [String?] = []
+        
+        switch parameter {
+        default:
+            return nil
+        }
+        
+        var enumElement: [EnumElement] = []
+        range.forEach { value in
+            if let value = value, let display = enumDefinition[value] {
+                enumElement.append(EnumElement(display: display, value: value))
+            }
+        }
+        
+        return enumElement.isEmpty ? nil : enumElement
+    }
 }
 
 extension DJICamera : CameraAdapter {
@@ -151,6 +183,70 @@ extension DJICamera : CameraAdapter {
         }
         
         return 0
+    }
+    
+    public func format(storageLocation: Kernel.CameraStorageLocation, finished: CommandFinished?) {
+        formatStorage(storageLocation.djiValue, withCompletion: finished)
+    }
+    
+    public func enumElements(parameter: String) -> [EnumElement]? {
+        switch parameter {
+        case "CameraPhotoInterval":
+            let min = capabilities.photoIntervalRange().first?.intValue ?? 2
+            let max = capabilities.photoIntervalRange().last?.intValue ?? 10
+            return (min...max).map {
+                EnumElement(display: "\($0) s", value: $0)
+            }
+        default:
+            break
+        }
+        
+        guard let enumDefinition = Dronelink.shared.enumDefinition(name: parameter) else {
+            return nil
+        }
+        
+        var range: [String?] = []
+        
+        switch parameter {
+        case "CameraAperture":
+            range = capabilities.apertureRange().map { DJICameraAperture(rawValue: $0.uintValue)?.kernelValue.rawValue }
+            break
+        case "CameraExposureCompensation":
+            range = capabilities.exposureCompensationRange().map { DJICameraExposureCompensation(rawValue: $0.uintValue)?.kernelValue.rawValue }
+            break
+        case "CameraExposureMode":
+            range = capabilities.exposureModeRange().map { DJICameraExposureMode(rawValue: $0.uintValue)?.kernelValue.rawValue }
+            break
+        case "CameraISO":
+            range = capabilities.isoRange().map { DJICameraISO(rawValue: $0.uintValue)?.kernelValue.rawValue }
+            break
+        case "CameraMode":
+            range = capabilities.modeRange().map { DJICameraMode(rawValue: $0.uintValue)?.kernelValue.rawValue }
+            break
+        case "CameraPhotoMode":
+            range = capabilities.photoShootModeRange().map { DJICameraShootPhotoMode(rawValue: $0.uintValue)?.kernelValue.rawValue }
+            break
+        case "CameraShutterSpeed":
+            range = capabilities.shutterSpeedRange().map { DJICameraShutterSpeed(rawValue: $0.uintValue)?.kernelValue.rawValue }
+            break
+        case "CameraStorageLocation":
+            range.append(Kernel.CameraStorageLocation.sdCard.rawValue)
+            if isInternalStorageSupported() {
+                range.append(Kernel.CameraStorageLocation._internal.rawValue)
+            }
+            break
+        default:
+            return nil
+        }
+        
+        var enumElements: [EnumElement] = []
+        range.forEach { value in
+            if let value = value, value != "unknown", let display = enumDefinition[value] {
+                enumElements.append(EnumElement(display: display, value: value))
+            }
+        }
+        
+        return enumElements.isEmpty ? nil : enumElements
     }
 }
 
@@ -253,6 +349,18 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var isSDCardInserted: Bool { storageState?.isInserted ?? true }
     public var videoStreamSource: Kernel.CameraVideoStreamSource { videoStreamSourceValue?.kernelValue ?? .unknown }
     public var storageLocation: Kernel.CameraStorageLocation { storageLocationValue?.kernelValue ?? .unknown }
+    public var storageRemainingSpace: Int? {
+        if let remainingSpaceInMegaBytes = storageState?.remainingSpaceInMB {
+            return Int(remainingSpaceInMegaBytes) * 1048576
+        }
+        return nil
+    }
+    public var storageRemainingPhotos: Int? {
+        if let availableCaptureCount = storageState?.availableCaptureCount {
+            return Int(availableCaptureCount)
+        }
+        return nil
+    }
     public var mode: Kernel.CameraMode { systemState.mode.kernelValue }
     public var photoMode: Kernel.CameraPhotoMode? { systemState.flatCameraMode.kernelValuePhoto ?? photoModeValue?.kernelValue }
     public var photoFileFormat: Kernel.CameraPhotoFileFormat { photoFileFormatValue?.kernelValue ?? .unknown }
@@ -313,6 +421,35 @@ public class DJIGimbalAdapter: GimbalAdapter {
     
     public func fineTune(roll: Double) {
         gimbal.fineTuneRoll(inDegrees: Float(roll.convertRadiansToDegrees), withCompletion: nil)
+    }
+    
+    public func enumElements(parameter: String) -> [EnumElement]? {
+        guard let enumDefinition = Dronelink.shared.enumDefinition(name: parameter) else {
+            return nil
+        }
+        
+        var range: [String?] = []
+        
+        switch parameter {
+        case "GimbalMode":
+            range.append(Kernel.GimbalMode.yawFollow.rawValue)
+            if gimbal.isAdjustYaw360Supported {
+                range.append(Kernel.GimbalMode.free.rawValue)
+            }
+            range.append(Kernel.GimbalMode.fpv.rawValue)
+            break
+        default:
+            return nil
+        }
+        
+        var enumElements: [EnumElement] = []
+        range.forEach { value in
+            if let value = value, value != "unknown", let display = enumDefinition[value] {
+                enumElements.append(EnumElement(display: display, value: value))
+            }
+        }
+        
+        return enumElements.isEmpty ? nil : enumElements
     }
 }
 

@@ -1171,9 +1171,6 @@ extension Kernel.DJIWaypointMissionComponentWaypointAction {
         case .rotateGimbalPitch:
             param = max(-90, param.convertRadiansToDegrees)
             break
-            
-        default:
-            break
         }
         return DJIWaypointAction(actionType: type.djiValue, param: Int16(param))
     }
