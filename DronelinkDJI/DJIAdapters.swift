@@ -128,12 +128,28 @@ public class DJIDroneAdapter: DroneAdapter {
         })
     }
     
-    public func startGoHome(finished: CommandFinished?) {
+    public func startReturnHome(finished: CommandFinished?) {
         drone.flightController?.startGoHome(completion: finished)
     }
     
-    public func startLanding(finished: CommandFinished?) {
+    public func stopReturnHome(finished: CommandFinished?) {
+        drone.flightController?.cancelGoHome(completion: finished)
+    }
+    
+    public func startLand(finished: CommandFinished?) {
         drone.flightController?.startLanding(completion: finished)
+    }
+    
+    public func stopLand(finished: CommandFinished?) {
+        drone.flightController?.cancelLanding(completion: finished)
+    }
+    
+    public func startCompassCalibration(finished: CommandFinished?) {
+        drone.flightController?.compass?.startCalibration(completion: finished)
+    }
+    
+    public func stopCompassCalibration(finished: CommandFinished?) {
+        drone.flightController?.compass?.stopCalibration(completion: finished)
     }
     
     public func sendResetVelocityCommand(withCompletion: DJICompletionBlock? = nil) {

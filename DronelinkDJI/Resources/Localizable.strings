@@ -129,3 +129,23 @@
 "DJIVideoFeedPhysicalSource.value.7" = "Right";
 "DJIVideoFeedPhysicalSource.value.8" = "Top";
 "DJIVideoFeedPhysicalSource.value.255" = "Unknown";
+
+"DJICompassSensorState.title" = "Compass";
+"DJICompassSensorState.value.0" = "Disconnected";
+"DJICompassSensorState.value.1" = "Calibrating";
+"DJICompassSensorState.value.2" = "Idle";
+"DJICompassSensorState.value.3" = "Data Exception";
+"DJICompassSensorState.value.4" = "Super Modulus Small";
+"DJICompassSensorState.value.5" = "Super Modulus Weak";
+"DJICompassSensorState.value.6" = "Super Modulus Deviate";
+"DJICompassSensorState.value.7" = "Calibration Failed";
+"DJICompassSensorState.value.8" = "Inconsistent Direction";
+"DJICompassSensorState.value.255" = "Unknown";
+
+"DJICompassCalibrationState.title" = "Compass Calibration";
+"DJICompassCalibrationState.value.0" = "None";
+"DJICompassCalibrationState.value.1" = "Rotate 360 Horizontally";
+"DJICompassCalibrationState.value.2" = "Rotate 360 Vertically";
+"DJICompassCalibrationState.value.3" = "Finished";
+"DJICompassCalibrationState.value.4" = "Failed";
+"DJICompassCalibrationState.value.255" = "Unknown";

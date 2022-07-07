@@ -1850,6 +1850,10 @@ extension DJIFlightControllerState {
                 messages.append(goHomeExecutionStateMessage)
             }
         }
+        //KLUGE: sometimes DJI doesn't have any goHomeExecutionState, even though the flightMode is .goHome!
+        else if flightMode == .goHome {
+            messages.append(Kernel.Message(title: "DJIGoHomeExecutionState.title".localized, details: "DJIGoHomeExecutionState.value.\(DJIGoHomeExecutionState.autoFlyToHomePoint.rawValue)".localized, level: .warning))
+        }
         else {
             if isLowerThanSeriousBatteryWarningThreshold {
                 messages.append(Kernel.Message(title: "DJIDronelink:DJIFlightControllerState.statusMessages.isLowerThanSeriousBatteryWarningThreshold.title".localized, level: .danger))
@@ -1969,6 +1973,84 @@ extension DJIAirSenseAirplaneState {
                 Dronelink.shared.format(formatter: "angle", value: Double(heading).convertDegreesToRadians),
                 code),
             level: level)
+    }
+}
+
+extension DJICompassState {
+    var statusMessages: [Kernel.Message] {
+        var messages: [Kernel.Message] = []
+        
+        if let message = state.message {
+            messages.append(message)
+        }
+        
+        return messages
+    }
+}
+
+extension DJICompassSensorState {
+    var message: Kernel.Message? {
+        var level: Kernel.MessageLevel?
+        switch self {
+        case .idle,
+             .superModulusSamll,
+             .superModulusWeak,
+             .superModulusDeviate:
+            return nil
+
+        case .calibrating,
+             .inconsistentDirection:
+            level = .warning
+            break
+            
+        case .disconnected,
+             .dataException,
+             .calibrationFailed:
+            level = .error
+            break
+            
+        case .unknown:
+            return nil
+            
+        @unknown default:
+            return nil
+        }
+        
+        return Kernel.Message(title: "DJICompassSensorState.title".localized, details: "DJICompassSensorState.value.\(rawValue)".localized, level: level)
+    }
+}
+
+extension DJICompassCalibrationState {
+    var message: Kernel.Message? {
+        var level: Kernel.MessageLevel?
+        switch self {
+        case .notCalibrating:
+            return nil
+            
+        case .horizontal:
+            level = .warning
+            break
+            
+        case .vertical:
+            level = .warning
+            break
+            
+        case .successful:
+            level = .info
+            break
+            
+        case .failed:
+            level = .error
+            break
+            
+        case .unknown:
+            return nil
+            
+        @unknown default:
+            return nil
+        }
+        
+        return Kernel.Message(title: "DJICompassCalibrationState.title".localized, details: "DJICompassCalibrationState.value.\(rawValue)".localized, level: level)
     }
 }
 

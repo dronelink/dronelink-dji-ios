@@ -39,6 +39,9 @@ public class DJIDroneSession: NSObject {
     private var _flightControllerState: DatedValue<DJIFlightControllerState>?
     private var _flightControllerAirSenseState: DatedValue<DJIAirSenseSystemInformation>?
     
+    private let compassSerialQueue = DispatchQueue(label: "DJIDroneSession+compassState")
+    private var _compassState: DatedValue<DJICompassState>?
+    
     private let batterySerialQueue = DispatchQueue(label: "DJIDroneSession+batteryState")
     private var _batteryState: DatedValue<DJIBatteryState>?
     
@@ -114,6 +117,7 @@ public class DJIDroneSession: NSObject {
         
         os_log(.info, log: DJIDroneSession.log, "Flight controller connected")
         flightController.delegate = self
+        adapter.drone.flightController?.compass?.delegate = self
         adapter.drone.battery?.delegate = self
         flightController.flightAssistant?.delegate = self
         
@@ -498,6 +502,10 @@ public class DJIDroneSession: NSObject {
             flightControllerSerialQueue.async { [weak self] in
                 self?._flightControllerState = nil
                 self?._flightControllerAirSenseState = nil
+            }
+            
+            compassSerialQueue.async { [weak self] in
+                self?._compassState = nil
             }
             
             batterySerialQueue.async { [weak self] in
@@ -991,6 +999,10 @@ extension DJIDroneSession: DroneStateAdapter {
             messages.append(Kernel.Message(title: "DJIDroneSession.telemetry.unavailable".localized, level: .danger))
         }
         
+        if let compassState = _compassState?.value {
+            messages.append(contentsOf: compassState.statusMessages)
+        }
+        
         if let airSenseState = _flightControllerAirSenseState?.value {
             messages.append(contentsOf: airSenseState.statusMessages)
         }
@@ -1003,6 +1015,10 @@ extension DJIDroneSession: DroneStateAdapter {
     }
     public var mode: String? { flightControllerState?.value.flightModeString }
     public var isFlying: Bool { flightControllerState?.value.isFlying ?? false }
+    public var isReturningHome: Bool { flightControllerState?.value.flightMode == .goHome }
+    public var isLanding: Bool { flightControllerState?.value.flightMode == .autoLanding }
+    public var isCompassCalibrating: Bool { adapter.drone.flightController?.compass?.isCalibrating ?? false }
+    public var compassCalibrationMessage: Kernel.Message? { adapter.drone.flightController?.compass?.calibrationState.message }
     public var location: CLLocation? { flightControllerState?.value.location }
     public var homeLocation: CLLocation? { flightControllerState?.value.isHomeLocationSet ?? false ? flightControllerState?.value.homeLocation : nil }
     public var lastKnownGroundLocation: CLLocation? { _lastKnownGroundLocation }
@@ -1153,6 +1169,14 @@ extension DJIDroneSession: DJIFlightAssistantDelegate {
             visionDetectionSerialQueue.async { [weak self] in
                 self?._visionDetectionState = DatedValue<DJIVisionDetectionState>(value: state)
             }
+        }
+    }
+}
+
+extension DJIDroneSession: DJICompassDelegate {
+    public func compass(_ compass: DJICompass, didUpdateSensorState state: DJICompassState) {
+        compassSerialQueue.async { [weak self] in
+            self?._compassState = DatedValue<DJICompassState>(value: state)
         }
     }
 }
