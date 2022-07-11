@@ -239,6 +239,9 @@ extension DJICamera : CameraAdapter {
         case "CameraMode":
             range = capabilities.modeRange().map { DJICameraMode(rawValue: $0.uintValue)?.kernelValue.rawValue }
             break
+        case "CameraPhotoFileFormat":
+            range = capabilities.photoFileFormatRange().map { DJICameraPhotoFileFormat(rawValue: $0.uintValue)?.kernelValue.rawValue }
+            break
         case "CameraPhotoMode":
             range = capabilities.photoShootModeRange().map { DJICameraShootPhotoMode(rawValue: $0.uintValue)?.kernelValue.rawValue }
             break
@@ -249,6 +252,19 @@ extension DJICamera : CameraAdapter {
             range.append(Kernel.CameraStorageLocation.sdCard.rawValue)
             if isInternalStorageSupported() {
                 range.append(Kernel.CameraStorageLocation._internal.rawValue)
+            }
+            break
+        case "CameraVideoFileFormat":
+            range = capabilities.videoFileFormatRange().map { DJICameraVideoFileFormat(rawValue: $0.uintValue)?.kernelValue.rawValue }
+            break
+        case "CameraWhiteBalancePreset":
+            //filtering out custom for now because we need to use WhiteBalanceCustomCameraCommand from the UI
+            range = capabilities.whiteBalancePresetRange().map {
+                let value = DJICameraWhiteBalancePreset(rawValue: $0.uintValue)?.kernelValue
+                if value == .custom {
+                    return nil
+                }
+                return value?.rawValue
             }
             break
         default:
@@ -307,6 +323,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public let videoResolutionValue: DJICameraVideoResolution?
     public let whiteBalanceValue: DJICameraWhiteBalance?
     public let isoValue: DJICameraISO?
+    public let shutterSpeedValue: DJICameraShutterSpeed?
     public let focusRingValue: Double?
     public let focusRingMax: Double?
     
@@ -331,6 +348,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         videoResolution: DJICameraVideoResolution?,
         whiteBalance: DJICameraWhiteBalance?,
         iso: DJICameraISO?,
+        shutterSpeed: DJICameraShutterSpeed?,
         focusRingValue: Double?,
         focusRingMax: Double?) {
         self.systemState = systemState
@@ -353,6 +371,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         self.videoResolutionValue = videoResolution
         self.whiteBalanceValue = whiteBalance
         self.isoValue = iso
+        self.shutterSpeedValue = shutterSpeed
         self.focusRingValue = focusRingValue
         self.focusRingMax = focusRingMax
     }
@@ -390,11 +409,12 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var exposureMode: Kernel.CameraExposureMode { exposureModeValue?.kernelValue ?? .unknown }
     public var exposureCompensation: Kernel.CameraExposureCompensation { exposureSettings?.exposureCompensation.kernelValue ?? .unknown }
     public var iso: Kernel.CameraISO { isoValue?.kernelValue ?? .unknown }
-    public var isoSensitivity: Int? {
+    public var isoActual: Int? {
         guard let exposureSettingsISO = exposureSettings?.ISO else { return nil }
         return Int(exposureSettingsISO)
     }
-    public var shutterSpeed: Kernel.CameraShutterSpeed { exposureSettings?.shutterSpeed.kernelValue ?? .unknown }
+    public var shutterSpeed: Kernel.CameraShutterSpeed { shutterSpeedValue?.kernelValue ?? .unknown }
+    public var shutterSpeedActual: Kernel.CameraShutterSpeed? { exposureSettings?.shutterSpeed.kernelValue ?? .unknown }
     public var aperture: Kernel.CameraAperture { exposureSettings?.aperture.kernelValue ?? .unknown }
     public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset { whiteBalanceValue?.preset.kernelValue ?? .unknown }
     public var whiteBalanceColorTemperature: Int? {

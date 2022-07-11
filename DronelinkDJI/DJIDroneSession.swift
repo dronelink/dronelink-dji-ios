@@ -83,6 +83,7 @@ public class DJIDroneSession: NSObject {
     private var _mostRecentCameraFile: DatedValue<CameraFile>?
     private var _whiteBalance: DatedValue<DJICameraWhiteBalance>?
     private var _iso: DatedValue<DJICameraISO>?
+    private var _shutterSpeed: DatedValue<DJICameraShutterSpeed>?
     private var _focusRingValue: DatedValue<Double>?
     private var _focusRingMax: DatedValue<Double>?
     private var _remoteControllerGimbalChannel: DatedValue<UInt>?
@@ -432,6 +433,15 @@ public class DJIDroneSession: NSObject {
             }
             else {
                 self?._iso = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamShutterSpeed)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self?._shutterSpeed = DatedValue(value: DJICameraShutterSpeed(rawValue: value) ?? .speedUnknown)
+            }
+            else {
+                self?._shutterSpeed = nil
             }
         }
         
@@ -955,6 +965,7 @@ extension DJIDroneSession: DroneSession {
                     videoResolution: session._videoResolutionAndFrameRate?.value.resolution,
                     whiteBalance: session._whiteBalance?.value,
                     iso: session._iso?.value,
+                    shutterSpeed: session._shutterSpeed?.value,
                     focusRingValue: _focusRingValue?.value,
                     focusRingMax: _focusRingMax?.value),
                     date: systemState.date)

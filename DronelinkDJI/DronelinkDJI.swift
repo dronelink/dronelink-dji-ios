@@ -869,6 +869,7 @@ extension DJICameraShutterSpeed {
         case .speed23 : return ._23
         case .speed25 : return ._25
         case .speed30 : return ._30
+        case .speedAuto : return .auto
         default: return .unknown
         }
     }
@@ -878,6 +879,7 @@ extension DJICameraShutterSpeed {
 extension Kernel.CameraShutterSpeed {
     var djiValue: DJICameraShutterSpeed {
         switch self {
+        case .auto: return .speedAuto
         case ._1_8000: return .speed1_8000
         case ._1_6400: return .speed1_6400
         case ._1_6000: return .speed1_6000
@@ -1992,7 +1994,8 @@ extension DJICompassSensorState {
     var message: Kernel.Message? {
         var level: Kernel.MessageLevel?
         switch self {
-        case .idle,
+        case .disconnected,
+             .idle,
              .superModulusSamll,
              .superModulusWeak,
              .superModulusDeviate:
@@ -2003,8 +2006,7 @@ extension DJICompassSensorState {
             level = .warning
             break
             
-        case .disconnected,
-             .dataException,
+        case .dataException,
              .calibrationFailed:
             level = .error
             break
