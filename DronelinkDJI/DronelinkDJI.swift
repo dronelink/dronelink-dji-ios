@@ -1416,7 +1416,7 @@ extension DJIDiagnosticsDeviceHealthInformationWarningLevel {
         case .notice: return .info
         case .caution: return .warning
         case .warning: return .warning
-        case .seriousWarning: return .danger
+        case .seriousWarning: return .warning
         case .unknown:  return .info
         default: return .info
         }
@@ -1433,12 +1433,9 @@ extension DJIFlyZoneState {
             
         case .nearRestrictedZone,
              .inWarningZoneWithHeightLimitation,
-             .inWarningZone:
+             .inWarningZone,
+             .inRestrictedZone:
             level = .warning
-            break
-            
-        case .inRestrictedZone:
-            level = .danger
             break
             
         @unknown default:
@@ -1486,9 +1483,10 @@ extension DJIDiagnostics {
                      .overHeat,
                      .sdCardError,
                      .ssdError,
+                     .internalStorageError,
                      .chipOverHeat,
                      .temperaturesTooHighToStopRecord:
-                    level = .error
+                    level = .warning
                     break
                     
                 case .encryptionError, //DJI Mini 2 seems to give this error incorrectly!
@@ -1497,9 +1495,6 @@ extension DJIDiagnostics {
                      .noInternalStorage,
                      .noSSD:
                     return nil
-                    
-                case .internalStorageError:
-                    break
                     
                 @unknown default:
                     break
@@ -1522,11 +1517,8 @@ extension DJIDiagnostics {
                      .runCrazy,
                      .rollMechLimitError,
                      .pitchMechLimitError,
-                     .sectorsJudgeError:
-                    level = .error
-                    break
-                    
-                case .waitRestart,
+                     .sectorsJudgeError,
+                     .waitRestart,
                      .motorProtected,
                      .vibrationAbnormal:
                     level = .warning
@@ -1547,24 +1539,16 @@ extension DJIDiagnostics {
                      .communicationFailed,
                      .notEnough,
                      .shortcut,
-                     .overload:
-                    level = .error
-                    break
-                    
-                case .dangerousWarningSerious:
-                    level = .danger
-                    break
-                    
-                case .lowVoltage,
+                     .overload,
+                     .dangerousWarningSerious,
+                     .lowVoltage,
                      .dischargeOverCurrent,
                      .dischargeOverHeat,
                      .lowTemperature,
-                     .lowTemperatureInAir:
+                     .lowTemperatureInAir,
+                     .needStudy:
                     level = .warning
                     break
-                    
-                case .needStudy:
-                    return nil
                     
                 @unknown default:
                     break
@@ -1583,16 +1567,11 @@ extension DJIDiagnostics {
                      .idleTooLong,
                      .reset,
                      .overHeat,
-                     .goHomeFail:
-                    level = .error
-                    break
-                    
-                case .batteryLow:
+                     .goHomeFail,
+                     .batteryLow,
+                     .needCalibration:
                     level = .warning
                     break
-                    
-                case .needCalibration:
-                    return nil
                     
                 @unknown default:
                     break
@@ -1609,7 +1588,7 @@ extension DJIDiagnostics {
                      .connectToRemoteControllerError,
                      .connectToCameraError,
                      .connectToGimbalError:
-                    level = .error
+                    level = .warning
                     break
                     
                 @unknown default:
@@ -1623,7 +1602,7 @@ extension DJIDiagnostics {
                 switch code {
                 case .decoderEncryptionError,
                      .decoderConnectToDeserializerError:
-                    level = .error
+                    level = .warning
                     break
                     
                 @unknown default:
@@ -1636,22 +1615,15 @@ extension DJIDiagnostics {
             if let code = DJIDiagnosticsErrorAirlink(rawValue: code) {
                 switch code {
                 case .airlinkEncoderUpgrade,
-                     .airLinkNoSignal:
-                    level = .error
-                    break
-                    
-                case .airLinkLowRCSignal,
+                     .airLinkNoSignal,
+                     .airLinkLowRCSignal,
                      .airLinkStrongRCRadioSignalNoise,
                      .airLinkLowRadioSignal,
                      .airLinkStrongRadioSignalNoise,
-                     .airLinkWiFiMagneticInterferenceHigh:
+                     .airLinkWiFiMagneticInterferenceHigh,
+                     .airlinkEncoderError:
                      level = .warning
                      break
-                    
-                //ignoring this because DJI reports too many false positives at the moment
-                //we should remove this when we enable the user to dismiss the status messages eventually
-                case .airlinkEncoderError:
-                    break
                     
                 @unknown default:
                     break
@@ -1662,10 +1634,7 @@ extension DJIDiagnostics {
         case .flightController:
             if let code = DJIDiagnosticsErrorFlightController(rawValue: code) {
                 switch code {
-                case .imuDataError,
-                     .imuError,
-                     .imuInitFailed,
-                     .barometerInitFailed,
+                case .barometerInitFailed,
                      .barometerError,
                      .accelerometerInitFailed,
                      .gyroscopeError,
@@ -1681,19 +1650,20 @@ extension DJIDiagnostics {
                      .gpsError,
                      .compassInstallError,
                      .motorStopForEscShortCircuit,
-                     .aircraftPropulsionSystemError:
+                     .aircraftPropulsionSystemError,
+                     .outOfControl,
+                     .barometerStuckInAir,
+                     .compassAbnormal,
+                     .gpsSignalBlockedByGimbal:
                     level = .error
                     break
                     
-                case .outOfControl,
-                     .barometerStuckInAir,
-                     .compassAbnormal,
-                     .strongGaleWarning,
-                     .gpsSignalBlockedByGimbal:
-                    level = .danger
-                    break
-                    
-                case .imuCalibrationIncomplete,
+                case .strongGaleWarning,
+                     .imuDataError,
+                     .imuError,
+                     .imuInitFailed,
+                     .imuNeedCalibration,
+                     .imuCalibrationIncomplete,
                      .warmingUp,
                      .mcReadingData,
                      .onlySupportAttiMode,
@@ -1722,9 +1692,6 @@ extension DJIDiagnostics {
                      level = .warning
                      break
                     
-                case .imuNeedCalibration:
-                    return nil
-                    
                 @unknown default:
                     break
                 }
@@ -1740,16 +1707,11 @@ extension DJIDiagnostics {
                      .visionSensorCommunicationError,
                      .visionSystemError,
                      .visionTofSenserError,
-                     .vision3DTofSenserError:
-                    level = .error
-                    break
-                    
-                case .visionWeakAmbientLight:
+                     .vision3DTofSenserError,
+                     .visionWeakAmbientLight,
+                     .visionSystemNeedCalibration:
                     level = .warning
                     break
-                    
-                case .visionSystemNeedCalibration:
-                    return nil
                     
                 @unknown default:
                     break
@@ -1762,7 +1724,7 @@ extension DJIDiagnostics {
                 switch code {
                 case .positioningError,
                      .orienteeringError:
-                    level = .error
+                    level = .warning
                     break
                     
                 @unknown default:
@@ -1928,11 +1890,11 @@ extension DJIFlightControllerState {
         }
         
         if location == nil {
-            messages.append(Kernel.Message(title: "DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.title".localized, details: "DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.details".localized, level: .warning))
+            messages.append(Kernel.Message(title: "DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.title".localized, details: "DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.details".localized, level: .danger))
         }
         
         if !isHomeLocationSet {
-            messages.append(Kernel.Message(title: "DJIDronelink:DJIFlightControllerState.statusMessages.homeLocationNotSet.title".localized, level: .warning))
+            messages.append(Kernel.Message(title: "DJIDronelink:DJIFlightControllerState.statusMessages.homeLocationNotSet.title".localized, level: .danger))
         }
         
         return messages
@@ -1964,6 +1926,7 @@ extension DJIAirSenseAirplaneState {
             
         @unknown default:
             level = .danger
+            break
         }
         
         return Kernel.Message(
@@ -2002,13 +1965,10 @@ extension DJICompassSensorState {
             return nil
 
         case .calibrating,
-             .inconsistentDirection:
-            level = .warning
-            break
-            
-        case .dataException,
+             .inconsistentDirection,
+             .dataException,
              .calibrationFailed:
-            level = .error
+            level = .warning
             break
             
         case .unknown:
@@ -2042,7 +2002,7 @@ extension DJICompassCalibrationState {
             break
             
         case .failed:
-            level = .error
+            level = .warning
             break
             
         case .unknown:
