@@ -84,6 +84,7 @@ public class DJIDroneSession: NSObject {
     private var _whiteBalance: DatedValue<DJICameraWhiteBalance>?
     private var _iso: DatedValue<DJICameraISO>?
     private var _shutterSpeed: DatedValue<DJICameraShutterSpeed>?
+    private var _remoteControllerPairingState: DatedValue<DJIRCPairingState>?
     private var _focusRingValue: DatedValue<Double>?
     private var _focusRingMax: DatedValue<Double>?
     private var _remoteControllerGimbalChannel: DatedValue<UInt>?
@@ -471,6 +472,16 @@ public class DJIDroneSession: NSObject {
                 self?._remoteControllerGimbalChannel = nil
             }
         }
+        
+        startListeningForChanges(on: DJIRemoteControllerKey(param: DJIRemoteControllerParamPairingState)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self?._remoteControllerPairingState = DatedValue(value: DJIRCPairingState(rawValue: UInt8(value)) ?? .stateUnknown)
+            }
+            else {
+                self?._remoteControllerPairingState = nil
+            }
+        }
+
     }
     
     private func startListeningForChanges(on key: DJIKey, andUpdate updateBlock: @escaping DJIKeyedListenerUpdateBlock) {
@@ -1203,7 +1214,7 @@ extension DJIDroneSession: DJIBatteryDelegate {
 extension DJIDroneSession: DJIRemoteControllerDelegate {
     public func remoteController(_ rc: DJIRemoteController, didUpdate state: DJIRCHardwareState) {
         remoteControllerSerialQueue.async { [weak self] in
-            self?._remoteControllerState = DatedValue<RemoteControllerStateAdapter>(value: DJIRemoteControllerStateAdapter(rcHardwareState: state))
+            self?._remoteControllerState = DatedValue<RemoteControllerStateAdapter>(value: DJIRemoteControllerStateAdapter(rcHardwareState: state, pairingState: self?._remoteControllerPairingState?.value))
         }
     }
 }
