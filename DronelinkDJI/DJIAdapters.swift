@@ -166,25 +166,26 @@ public class DJIDroneAdapter: DroneAdapter {
     }
     
     public func enumElements(parameter: String) -> [EnumElement]? {
-        guard let enumDefinition = Dronelink.shared.enumDefinition(name: parameter) else {
-            return nil
-        }
-        
-        var range: [String?] = []
-        
-        switch parameter {
-        default:
-            return nil
-        }
-        
-        var enumElement: [EnumElement] = []
-        range.forEach { value in
-            if let value = value, let display = enumDefinition[value] {
-                enumElement.append(EnumElement(display: display, value: value))
-            }
-        }
-        
-        return enumElement.isEmpty ? nil : enumElement
+        return nil
+//        guard let enumDefinition = Dronelink.shared.enumDefinition(name: parameter) else {
+//            return nil
+//        }
+//
+//        var range: [String?] = []
+//
+//        switch parameter {
+//        default:
+//            return nil
+//        }
+//
+//        var enumElement: [EnumElement] = []
+//        range.forEach { value in
+//            if let value = value, let display = enumDefinition[value] {
+//                enumElement.append(EnumElement(display: display, value: value))
+//            }
+//        }
+//
+//        return enumElement.isEmpty ? nil : enumElement
     }
 }
 

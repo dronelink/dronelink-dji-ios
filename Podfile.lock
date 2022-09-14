@@ -4,20 +4,17 @@ PODS:
 
 DEPENDENCIES:
   - DJI-SDK-iOS (~> 4.16.1)
-  - DronelinkCore (from `../../private/dronelink-core-ios`)
+  - DronelinkCore (~> 4.0.0)
 
 SPEC REPOS:
   trunk:
     - DJI-SDK-iOS
-
-EXTERNAL SOURCES:
-  DronelinkCore:
-    :path: "../../private/dronelink-core-ios"
+    - DronelinkCore
 
 SPEC CHECKSUMS:
   DJI-SDK-iOS: 0da4b3c60b12070ca18cda7bccc29fbb99977d27
-  DronelinkCore: cee4bbf2523fea3ef9c1cfdde92b55b50655f027
+  DronelinkCore: dc4add0f41b9b025910e2e1e1ac6ac6c26e7d222
 
-PODFILE CHECKSUM: 4a174527168a3e307932cfe40d7fa6d74e5700a9
+PODFILE CHECKSUM: 62b6ef3c06936b29d3399d4aa2f3ff85648be9c2
 
 COCOAPODS: 1.11.2
