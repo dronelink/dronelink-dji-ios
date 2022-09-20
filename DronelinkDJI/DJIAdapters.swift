@@ -513,11 +513,9 @@ extension DJIRemoteController: RemoteControllerAdapter {
 public class DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
     
     public let rcHardwareState: DJIRCHardwareState
-    public let pairingState: DJIRCPairingState
 
-    public init(rcHardwareState: DJIRCHardwareState, pairingState: DJIRCPairingState?) {
+    public init(rcHardwareState: DJIRCHardwareState) {
         self.rcHardwareState = rcHardwareState
-        self.pairingState = pairingState ?? .stateUnknown
     }
     
     public var leftStick: Kernel.RemoteControllerStick {
@@ -561,6 +559,4 @@ public class DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
     }
     
     public var batteryPercent: Double { 0.0 }
-    
-    public var pairing: Kernel.RemoteControllerPairingState { pairingState.kernelValue }
 }

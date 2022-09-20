@@ -1342,20 +1342,6 @@ extension Kernel.DroneOcuSyncChannelSelectionMode {
     }
 }
 
-extension DJIRCPairingState {
-    var kernelValue: Kernel.RemoteControllerPairingState {
-        switch self {
-        case .stateUnpaired: return .unpaired
-        case .statePairing: return .pairing
-        case .statePaired: return .paired
-        case .stateSwitching: return .switching
-        case .stateSwitchingEnd: return .switchingEnd
-        case .stateUnknown: return .pairingUnknown
-        @unknown default: return .pairingUnknown
-        }
-    }
-}
-
 extension Kernel.DroneOcuSyncFrequencyBand {
     var djiValue: DJIOcuSyncFrequencyBand {
         switch self {

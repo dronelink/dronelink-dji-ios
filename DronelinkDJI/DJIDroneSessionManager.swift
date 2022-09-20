@@ -70,7 +70,6 @@ extension DJIDroneSessionManager: DroneSessionManager {
         
     }
     
-    
     public var session: DroneSession? { _session }
     
     public var statusMessages: [Kernel.Message] {
