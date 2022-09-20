@@ -152,14 +152,6 @@ public class DJIDroneAdapter: DroneAdapter {
         drone.flightController?.compass?.stopCalibration(completion: finished)
     }
     
-    public func startRemoteControlLinking(finished: CommandFinished?) {
-        drone.remoteController?.startPairing(completion: finished)
-    }
-    
-    public func stopRemoteControlLinking(finished: CommandFinished?) {
-        drone.remoteController?.stopPairing(completion: finished)
-    }
-    
     public func sendResetVelocityCommand(withCompletion: DJICompletionBlock? = nil) {
         guard let flightController = drone.flightController else {
             return

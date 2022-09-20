@@ -1345,12 +1345,13 @@ extension Kernel.DroneOcuSyncChannelSelectionMode {
 extension DJIRCPairingState {
     var kernelValue: Kernel.RemoteControllerPairingState {
         switch self {
-        case .stateUnpaired: return .DJIRCPairingStateStateUnpaired
-        case .statePairing: return .DJIRCPairingStateStatePairing
-        case .statePaired: return .DJIRCPairingStateStatePaired
-        case .stateSwitching: return .DJIRCPairingStateStateSwitching
-        case .stateSwitchingEnd: return .DJIRCPairingStateStateSwitchingEnd
-        case .stateUnknown: return .DJIRCPairingStateStateUnknown
+        case .stateUnpaired: return .unpaired
+        case .statePairing: return .pairing
+        case .statePaired: return .paired
+        case .stateSwitching: return .switching
+        case .stateSwitchingEnd: return .switchingEnd
+        case .stateUnknown: return .pairingUnknown
+        @unknown default: return .pairingUnknown
         }
     }
 }
