@@ -466,6 +466,17 @@ extension Kernel.CameraFocusMode {
     }
 }
 
+extension DJICameraFocusMode {
+    var kernelValue: Kernel.CameraFocusMode {
+        switch self {
+        case .manual: return .manual
+        case .auto: return .auto
+        case .AFC: return .autoContinuous
+        case .unknown: return .unknown
+        }
+    }
+}
+
 extension DJICameraISO {
     var kernelValue: Kernel.CameraISO {
         switch self {
@@ -567,6 +578,17 @@ extension DJIFlatCameraMode {
 
 extension Kernel.CameraMeteringMode {
     var djiValue: DJICameraMeteringMode {
+        switch self {
+        case .center: return .center
+        case .average: return .average
+        case .spot: return .spot
+        case .unknown: return .unknown
+        }
+    }
+}
+
+extension DJICameraMeteringMode {
+    var kernelValue: Kernel.CameraMeteringMode {
         switch self {
         case .center: return .center
         case .average: return .average

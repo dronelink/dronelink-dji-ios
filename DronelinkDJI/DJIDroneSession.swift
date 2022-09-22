@@ -58,6 +58,7 @@ public class DJIDroneSession: NSObject {
     private var _cameraFocusStates: [String: DatedValue<DJICameraFocusState>] = [:]
     private var _cameraStorageStates: [UInt: [Kernel.CameraStorageLocation: DatedValue<DJICameraStorageState>]] = [:]
     private var _cameraExposureSettings: [String: DatedValue<DJICameraExposureSettings>] = [:]
+    private var _cameraHistograms: [String: DatedValue<[UInt]>] = [:]
     private var _cameraLensInformation: [UInt: DatedValue<String>] = [:]
     
     private let gimbalSerialQueue = DispatchQueue(label: "DJIDroneSession+gimbalStates")
@@ -84,8 +85,11 @@ public class DJIDroneSession: NSObject {
     private var _whiteBalance: DatedValue<DJICameraWhiteBalance>?
     private var _iso: DatedValue<DJICameraISO>?
     private var _shutterSpeed: DatedValue<DJICameraShutterSpeed>?
+    private var _focusMode: DatedValue<DJICameraFocusMode>?
     private var _focusRingValue: DatedValue<Double>?
     private var _focusRingMax: DatedValue<Double>?
+    private var _meteringMode: DatedValue<DJICameraMeteringMode>?
+    private var autoExposureLockEnabled: DatedValue<Bool>?
     private var _remoteControllerGimbalChannel: DatedValue<UInt>?
     public var mostRecentCameraFile: DatedValue<CameraFile>? { get { _mostRecentCameraFile } }
     private var listeningDJIKeys: [DJIKey] = []
@@ -445,6 +449,15 @@ public class DJIDroneSession: NSObject {
             }
         }
         
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamFocusMode)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self?._focusMode = DatedValue(value: DJICameraFocusMode(rawValue: value) ?? .unknown)
+            }
+            else {
+                self?._focusMode = nil
+            }
+        }
+        
         startListeningForChanges(on: DJICameraKey(param: DJICameraParamFocusRingValue)!) { [weak self] (oldValue, newValue) in
             if let value = newValue?.doubleValue {
                 self?._focusRingValue = DatedValue(value: value)
@@ -460,6 +473,24 @@ public class DJIDroneSession: NSObject {
             }
             else {
                 self?._focusRingMax = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamMeteringMode)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self?._meteringMode = DatedValue(value: DJICameraMeteringMode(rawValue: value) ?? .unknown)
+            }
+            else {
+                self?._meteringMode = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamAELock)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.boolValue as? Bool {
+                self?.autoExposureLockEnabled = DatedValue(value: value)
+            }
+            else {
+                self?.autoExposureLockEnabled = nil
             }
         }
         
@@ -537,6 +568,9 @@ public class DJIDroneSession: NSObject {
                 }) ?? [:]
                 self?._cameraStorageStates[UInt(index)] = nil
                 self?._cameraExposureSettings = self?._cameraExposureSettings.filter({ element in
+                    return !element.key.starts(with: "\(index).")
+                }) ?? [:]
+                self?._cameraHistograms = self?._cameraHistograms.filter({ element in
                     return !element.key.starts(with: "\(index).")
                 }) ?? [:]
                 self?._cameraLensInformation[UInt(index)] = nil
@@ -945,29 +979,33 @@ extension DJIDroneSession: DroneSession {
                 }
                     
                 return DatedValue(value: DJICameraStateAdapter(
-                    systemState: systemState.value,
-                    videoStreamSource: session._cameraVideoStreamSources[channel]?.value,
-                    focusState: session._cameraFocusStates["\(channel).\(lensIndexResolved)"]?.value,
-                    storageState: session._cameraStorageStates[channel]?[session._storageLocation?.value.kernelValue ?? .unknown]?.value,
-                    exposureMode: session._exposureMode?.value,
-                    exposureSettings: session._cameraExposureSettings["\(channel).\(lensIndexResolved)"]?.value,
-                    lensIndex: lensIndexResolved,
-                    lensInformation: session._cameraLensInformation[channel]?.value,
-                    storageLocation: session._storageLocation?.value,
-                    photoMode: session._photoMode?.value,
-                    photoFileFormat: session._photoFileFormat?.value,
-                    photoAspectRatio: session._photoAspectRatio?.value,
-                    burstCount: session._burstCount?.value,
-                    aebCount: session._aebCount?.value,
-                    intervalSettings: session._timeIntervalSettings?.value,
-                    videoFileFormat: session._videoFileFormat?.value,
-                    videoFrameRate: session._videoResolutionAndFrameRate?.value.frameRate,
-                    videoResolution: session._videoResolutionAndFrameRate?.value.resolution,
-                    whiteBalance: session._whiteBalance?.value,
-                    iso: session._iso?.value,
-                    shutterSpeed: session._shutterSpeed?.value,
-                    focusRingValue: _focusRingValue?.value,
-                    focusRingMax: _focusRingMax?.value),
+                        systemState: systemState.value,
+                        videoStreamSource: session._cameraVideoStreamSources[channel]?.value,
+                        focusState: session._cameraFocusStates["\(channel).\(lensIndexResolved)"]?.value,
+                        storageState: session._cameraStorageStates[channel]?[session._storageLocation?.value.kernelValue ?? .unknown]?.value,
+                        exposureMode: session._exposureMode?.value,
+                        exposureSettings: session._cameraExposureSettings["\(channel).\(lensIndexResolved)"]?.value,
+                        histogram: session._cameraHistograms["\(channel).\(lensIndexResolved)"]?.value,
+                        lensIndex: lensIndexResolved,
+                        lensInformation: session._cameraLensInformation[channel]?.value,
+                        storageLocation: session._storageLocation?.value,
+                        photoMode: session._photoMode?.value,
+                        photoFileFormat: session._photoFileFormat?.value,
+                        photoAspectRatio: session._photoAspectRatio?.value,
+                        burstCount: session._burstCount?.value,
+                        aebCount: session._aebCount?.value,
+                        intervalSettings: session._timeIntervalSettings?.value,
+                        videoFileFormat: session._videoFileFormat?.value,
+                        videoFrameRate: session._videoResolutionAndFrameRate?.value.frameRate,
+                        videoResolution: session._videoResolutionAndFrameRate?.value.resolution,
+                        whiteBalance: session._whiteBalance?.value,
+                        iso: session._iso?.value,
+                        shutterSpeed: session._shutterSpeed?.value,
+                        focusMode: _focusMode?.value,
+                        focusRingValue: _focusRingValue?.value,
+                        focusRingMax: _focusRingMax?.value,
+                        meteringMode: _meteringMode?.value,
+                        isAutoExposureLockEnabled: autoExposureLockEnabled?.value ?? false),
                     date: systemState.date)
             }
             return nil
@@ -1239,6 +1277,14 @@ extension DJIDroneSession: DJICameraDelegate {
     public func camera(_ camera: DJICamera, didUpdate settings: DJICameraExposureSettings) {
         cameraSerialQueue.async { [weak self] in
             self?._cameraExposureSettings["\(camera.index).0"] = DatedValue<DJICameraExposureSettings>(value: settings)
+        }
+    }
+    
+    public func camera(_ camera: DJICamera, didUpdateHistogram histogram: [Any]) {
+        cameraSerialQueue.async { [weak self] in
+            self?._cameraHistograms["\(camera.index).0"] = DatedValue<[UInt]>(value: histogram.map({
+                ($0 as? NSNumber)?.uintValue ?? 0
+            }))
         }
     }
     
