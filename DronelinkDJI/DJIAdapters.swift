@@ -166,25 +166,26 @@ public class DJIDroneAdapter: DroneAdapter {
     }
     
     public func enumElements(parameter: String) -> [EnumElement]? {
-        guard let enumDefinition = Dronelink.shared.enumDefinition(name: parameter) else {
-            return nil
-        }
-        
-        var range: [String?] = []
-        
-        switch parameter {
-        default:
-            return nil
-        }
-        
-        var enumElement: [EnumElement] = []
-        range.forEach { value in
-            if let value = value, let display = enumDefinition[value] {
-                enumElement.append(EnumElement(display: display, value: value))
-            }
-        }
-        
-        return enumElement.isEmpty ? nil : enumElement
+        return nil
+//        guard let enumDefinition = Dronelink.shared.enumDefinition(name: parameter) else {
+//            return nil
+//        }
+//
+//        var range: [String?] = []
+//
+//        switch parameter {
+//        default:
+//            return nil
+//        }
+//
+//        var enumElement: [EnumElement] = []
+//        range.forEach { value in
+//            if let value = value, let display = enumDefinition[value] {
+//                enumElement.append(EnumElement(display: display, value: value))
+//            }
+//        }
+//
+//        return enumElement.isEmpty ? nil : enumElement
     }
 }
 
@@ -203,6 +204,10 @@ extension DJICamera : CameraAdapter {
     
     public func format(storageLocation: Kernel.CameraStorageLocation, finished: CommandFinished?) {
         formatStorage(storageLocation.djiValue, withCompletion: finished)
+    }
+    
+    public func histogram(enabled: Bool, finished: DronelinkCore.CommandFinished?) {
+        setHistogramEnabled(enabled, withCompletion: finished)
     }
     
     public func enumElements(parameter: String) -> [EnumElement]? {
@@ -243,6 +248,7 @@ extension DJICamera : CameraAdapter {
             range = capabilities.photoFileFormatRange().map { DJICameraPhotoFileFormat(rawValue: $0.uintValue)?.kernelValue.rawValue }
             break
         case "CameraPhotoMode":
+            //TODO capabilities.flatModeRange()
             range = capabilities.photoShootModeRange().map { DJICameraShootPhotoMode(rawValue: $0.uintValue)?.kernelValue.rawValue }
             break
         case "CameraShutterSpeed":
@@ -309,6 +315,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public let storageState: DJICameraStorageState?
     public let exposureModeValue: DJICameraExposureMode?
     public let exposureSettings: DJICameraExposureSettings?
+    public let histogram: [UInt]?
     public let lensIndex: UInt
     public let lensInformation: String?
     public let storageLocationValue: DJICameraStorageLocation?
@@ -324,8 +331,11 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public let whiteBalanceValue: DJICameraWhiteBalance?
     public let isoValue: DJICameraISO?
     public let shutterSpeedValue: DJICameraShutterSpeed?
+    public let focusModeValue: DJICameraFocusMode?
     public let focusRingValue: Double?
     public let focusRingMax: Double?
+    public let meteringModeValue: DJICameraMeteringMode?
+    public let isAutoExposureLockEnabled: Bool
     
     public init(
         systemState: DJICameraSystemState,
@@ -334,6 +344,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         storageState: DJICameraStorageState?,
         exposureMode: DJICameraExposureMode?,
         exposureSettings: DJICameraExposureSettings?,
+        histogram: [UInt]?,
         lensIndex: UInt,
         lensInformation: String?,
         storageLocation: DJICameraStorageLocation?,
@@ -349,14 +360,18 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         whiteBalance: DJICameraWhiteBalance?,
         iso: DJICameraISO?,
         shutterSpeed: DJICameraShutterSpeed?,
+        focusMode: DJICameraFocusMode?,
         focusRingValue: Double?,
-        focusRingMax: Double?) {
+        focusRingMax: Double?,
+        meteringMode: DJICameraMeteringMode?,
+        isAutoExposureLockEnabled: Bool) {
         self.systemState = systemState
         self.videoStreamSourceValue = videoStreamSource
         self.focusState = focusState
         self.storageState = storageState
         self.exposureModeValue = exposureMode
         self.exposureSettings = exposureSettings
+        self.histogram = histogram
         self.lensIndex = lensIndex
         self.lensInformation = lensInformation
         self.storageLocationValue = storageLocation
@@ -372,8 +387,11 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         self.whiteBalanceValue = whiteBalance
         self.isoValue = iso
         self.shutterSpeedValue = shutterSpeed
+        self.focusModeValue = focusMode
         self.focusRingValue = focusRingValue
         self.focusRingMax = focusRingMax
+        self.meteringModeValue = meteringMode
+        self.isAutoExposureLockEnabled = isAutoExposureLockEnabled
     }
     
     public var isBusy: Bool { systemState.isBusy || focusState?.focusStatus.isBusy ?? false || storageState?.isFormatting ?? false || storageState?.isInitializing ?? false }
@@ -422,6 +440,8 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         return Int(colorTemperature) * 100
     }
     public var lensDetails: String? { lensInformation }
+    public var focusMode: DronelinkCore.Kernel.CameraFocusMode { return focusModeValue?.kernelValue ?? .unknown }
+    public var meteringMode: DronelinkCore.Kernel.CameraMeteringMode { return meteringModeValue?.kernelValue ?? .unknown }
     public var aspectRatio: Kernel.CameraPhotoAspectRatio { (mode == .photo ? photoAspectRatioValue?.kernelValue : nil) ?? ._16x9 }
 }
 
