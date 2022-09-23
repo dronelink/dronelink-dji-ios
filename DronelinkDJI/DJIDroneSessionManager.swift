@@ -53,6 +53,22 @@ extension DJIDroneSessionManager: DroneSessionManager {
         }
     }
     
+    public func startRemoteControllerLinking(finished: CommandFinished?) {
+        if let remoteController = (DJISDKManager.product() as? DJIAircraft)?.remoteController(channel: 0) {
+            remoteController.startPairing(completion: finished)
+            return
+        }
+        finished?("DJIDroneSessionManager.remoteControllerLinking.unavailable".localized)
+    }
+
+    public func stopRemoteControllerLinking(finished: CommandFinished?) {
+        if let remoteController = (DJISDKManager.product() as? DJIAircraft)?.remoteController(channel: 0) {
+            remoteController.stopPairing(completion: finished)
+            return
+        }
+        finished?("DJIDroneSessionManager.remoteControllerLinking.unavailable".localized)
+    }
+
     public var session: DroneSession? { _session }
     
     public var statusMessages: [Kernel.Message] {

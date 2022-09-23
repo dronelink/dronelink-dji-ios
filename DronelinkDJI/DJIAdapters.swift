@@ -533,7 +533,7 @@ extension DJIRemoteController: RemoteControllerAdapter {
 public class DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
     
     public let rcHardwareState: DJIRCHardwareState
-    
+
     public init(rcHardwareState: DJIRCHardwareState) {
         self.rcHardwareState = rcHardwareState
     }
