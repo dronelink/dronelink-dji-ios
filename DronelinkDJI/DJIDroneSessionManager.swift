@@ -34,6 +34,7 @@ public class DJIDroneSessionManager: NSObject {
 }
 
 extension DJIDroneSessionManager: DroneSessionManager {
+    
     public func add(delegate: DroneSessionManagerDelegate) {
         delegates.add(delegate)
         if let session = _session {
@@ -55,20 +56,20 @@ extension DJIDroneSessionManager: DroneSessionManager {
     
     public func startRemoteControllerLinking(finished: CommandFinished?) {
         if let remoteController = (DJISDKManager.product() as? DJIAircraft)?.remoteController(channel: 0) {
-            remoteController.startPairing()
+            remoteController.startPairing(completion: finished)
             return
         }
-        finished?("DJIDroneSessionManager.startRemoteControllerLinking.unavailable".localized)
+        finished?("DJIDroneSessionManager.remoteControllerLinking.unavailable".localized)
     }
     
     public func stopRemoteControllerLinking(finished: CommandFinished?) {
         if let remoteController = (DJISDKManager.product() as? DJIAircraft)?.remoteController(channel: 0) {
-            remoteController.stopPairing()
+            remoteController.stopPairing(completion: finished)
             return
         }
-        finished?("DJIDroneSessionManager.stopRemoteControllerLinking.unavailable".localized)
-        
+        finished?("DJIDroneSessionManager.remoteControllerLinking.unavailable".localized)
     }
+    
     
     public var session: DroneSession? { _session }
     

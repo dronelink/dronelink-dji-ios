@@ -55,8 +55,7 @@
 
 "DJIDroneSession+GimbalCommand.orientation.not.achieved" = "Gimbal Not Rotated";
 
-"DJIDroneSessionManager.startRemoteControllerLinking.unavailable" = "Unable to start remote control linking because remote controller is unavailable.";
-"DJIDroneSessionManager.stopRemoteControllerLinking.unavailable" = "Unable to stop remote control linking because remote controller is unavailable.";
+"DJIDroneSessionManager.remoteControllerLinking.unavailable" = "Remote controller is unavailable.";
 
 "DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.title" = "GPS Signal Unavailable";
 "DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.details" = "Please wait for a strong GPS signal lock to continue.";
