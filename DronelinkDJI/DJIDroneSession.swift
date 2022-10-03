@@ -931,7 +931,7 @@ extension DJIDroneSession: DroneSession {
         gimbalCommands.removeAll()
     }
     
-    public func createControlSession(executionEngine: Kernel.ExecutionEngine, executor: Executor) throws -> DroneControlSession {
+    public func createControlSession(executionEngine: Kernel.ExecutionEngine, executor: Executor?) throws -> DroneControlSession {
         switch executionEngine {
         case .dronelinkKernel:
             return DJIVirtualStickSession(droneSession: self)
