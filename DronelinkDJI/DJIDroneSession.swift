@@ -51,6 +51,7 @@ public class DJIDroneSession: NSObject {
     private let remoteControllerSerialQueue = DispatchQueue(label: "DJIDroneSession+remoteControllerState")
     private var remoteControllerInitialized: Date?
     private var _remoteControllerState: DatedValue<RemoteControllerStateAdapter>?
+    private  var _remoteControllerChargingDeviceState: DatedValue<DJIRCChargeMobileMode>?
     
     private let cameraSerialQueue = DispatchQueue(label: "DJIDroneSession+cameraStates")
     private var _cameraStates: [UInt: DatedValue<DJICameraSystemState>] = [:]
@@ -501,6 +502,16 @@ public class DJIDroneSession: NSObject {
             else {
                 self?._remoteControllerGimbalChannel = nil
             }
+        }
+        
+        startListeningForChanges(on: DJIRemoteControllerKey(param: DJIRemoteControllerParamChargeMobileMode)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.unsignedIntegerValue {
+                self?._remoteControllerChargingDeviceState = DatedValue(value: DJIRCChargeMobileMode(rawValue: UInt8(value)) ?? .unknown)
+            }
+            else {
+                self?._remoteControllerChargingDeviceState = nil
+            }
+            
         }
     }
     
@@ -1241,7 +1252,7 @@ extension DJIDroneSession: DJIBatteryDelegate {
 extension DJIDroneSession: DJIRemoteControllerDelegate {
     public func remoteController(_ rc: DJIRemoteController, didUpdate state: DJIRCHardwareState) {
         remoteControllerSerialQueue.async { [weak self] in
-            self?._remoteControllerState = DatedValue<RemoteControllerStateAdapter>(value: DJIRemoteControllerStateAdapter(rcHardwareState: state))
+            self?._remoteControllerState = DatedValue<RemoteControllerStateAdapter>(value: DJIRemoteControllerStateAdapter(rcHardwareState: state, chargingDeviceState: self?._remoteControllerChargingDeviceState?.value))
         }
     }
 }
