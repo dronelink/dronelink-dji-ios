@@ -545,7 +545,6 @@ public class DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
 
     public init(rcHardwareState: DJIRCHardwareState, chargingDeviceState: DJIRCChargeMobileMode?) {
         self.rcHardwareState = rcHardwareState
-        NSLog("FIXME Constructor charging device state: \(chargingDeviceState)")
         self.chargingDeviceState = chargingDeviceState ?? .unknown
     }
     
@@ -589,9 +588,7 @@ public class DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
             pressed: rcHardwareState.c2Button.isClicked.boolValue)
     }
     
-    public var chargingDevice: Bool? {
-        NSLog("FIXME \(chargingDeviceState)")
-        
+    public var isChargingDevice: Bool? {
         return chargingDeviceState == .always
     }
     
