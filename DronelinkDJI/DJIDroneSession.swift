@@ -277,6 +277,7 @@ public class DJIDroneSession: NSObject {
         if let remoteController = adapter.drone.remoteController {
             remoteControllerInitialized = Date()
             remoteController.delegate = self
+            remoteController.setChargeMobileMode(DJIRCChargeMobileMode.always)
         }
     }
     
