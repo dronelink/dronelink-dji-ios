@@ -434,6 +434,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var shutterSpeed: Kernel.CameraShutterSpeed { shutterSpeedValue?.kernelValue ?? .unknown }
     public var shutterSpeedActual: Kernel.CameraShutterSpeed? { exposureSettings?.shutterSpeed.kernelValue ?? .unknown }
     public var aperture: Kernel.CameraAperture { exposureSettings?.aperture.kernelValue ?? .unknown }
+    public var apertureActual: DronelinkCore.Kernel.CameraAperture { aperture }
     public var whiteBalancePreset: Kernel.CameraWhiteBalancePreset { whiteBalanceValue?.preset.kernelValue ?? .unknown }
     public var whiteBalanceColorTemperature: Int? {
         guard let colorTemperature = whiteBalanceValue?.colorTemperature else { return nil }
