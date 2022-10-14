@@ -194,9 +194,9 @@ extension DJICameraPhotoFileFormat {
         case .JPEG: return .jpeg
         case .rawAndJPEG: return .rawAndJpeg
         case .tiff14Bit: return .tiff14bit
-        case .radiometricJPEG: return .radiometricJpeg
         case .tiff14BitLinearLowTempResolution: return .tiff14bitLinearLowTempResolution
         case .tiff14BitLinearHighTempResolution: return .tiff14bitLinearHighTempResolution
+        case .radiometricJPEG: return .radiometricJpeg
         case .unknown: return .unknown
         @unknown default: return .unknown
         }
@@ -206,6 +206,10 @@ extension DJICameraPhotoFileFormat {
 extension DJICameraAperture {
     var kernelValue: Kernel.CameraAperture {
         switch self {
+        case .F1: return .unknown
+        case .f1Dot2: return .f1dot2
+        case .f1Dot3: return .f1dot3
+        case .f1Dot4: return .f1dot4
         case .f1Dot6: return .f1dot6
         case .f1Dot7: return .f1dot7
         case .f1Dot8: return .f1dot8
@@ -239,6 +243,15 @@ extension DJICameraAperture {
         case .F19: return .f19
         case .F20: return .f20
         case .F22: return .f22
+        case .F25: return .f25
+        case .F28: return .f28
+        case .F32: return .f32
+        case .F37: return .f37
+        case .F41: return .f41
+        case .F45: return .f45
+        case .F52: return .f52
+        case .F58: return .f58
+        case .F64: return .f64
         case .unknown: return .unknown
         @unknown default: return .unknown
         }
@@ -248,6 +261,12 @@ extension DJICameraAperture {
 extension Kernel.CameraAperture {
     var djiValue: DJICameraAperture {
         switch self {
+        case .auto: return .unknown
+        case .f0dot95: return .unknown
+        case .f1dot0: return .F1
+        case .f1dot2: return .f1Dot2
+        case .f1dot3: return .f1Dot3
+        case .f1dot4: return .f1Dot4
         case .f1dot6: return .f1Dot6
         case .f1dot7: return .f1Dot7
         case .f1dot8: return .f1Dot8
@@ -261,9 +280,11 @@ extension Kernel.CameraAperture {
         case .f3dot4: return .f3Dot4
         case .f3dot5: return .f3Dot5
         case .f4: return .F4
+        case .f4dot4: return .unknown
         case .f4dot5: return .f4Dot5
         case .f4dot8: return .f4Dot8
         case .f5: return .F5
+        case .f6: return .unknown
         case .f5dot6: return .f5Dot6
         case .f6dot3: return .f6Dot3
         case .f6dot8: return .f6Dot8
@@ -281,6 +302,16 @@ extension Kernel.CameraAperture {
         case .f19: return .F19
         case .f20: return .F20
         case .f22: return .F22
+        case .f25: return .F25
+        case .f27: return .unknown
+        case .f28: return .F28
+        case .f32: return .F32
+        case .f37: return .F37
+        case .f41: return .F41
+        case .f45: return .F45
+        case .f52: return .F52
+        case .f58: return .F58
+        case .f64: return .F64
         case .unknown: return .unknown
         }
     }
@@ -481,6 +512,7 @@ extension DJICameraISO {
     var kernelValue: Kernel.CameraISO {
         switch self {
         case .isoAuto: return .auto
+        case .ISO50: return ._50
         case .ISO100: return ._100
         case .ISO200: return ._200
         case .ISO400: return ._400
@@ -500,6 +532,7 @@ extension Kernel.CameraISO {
     var djiValue: DJICameraISO {
         switch self {
         case .auto: return .isoAuto
+        case ._50: return .ISO50
         case ._100: return .ISO100
         case ._200: return .ISO200
         case ._400: return .ISO400
@@ -509,6 +542,8 @@ extension Kernel.CameraISO {
         case ._6400: return .ISO6400
         case ._12800: return .ISO12800
         case ._25600: return .ISO25600
+        case ._51200: return .isoUnknown
+        case ._102400: return .isoUnknown
         case .unknown: return .isoUnknown
         }
     }
@@ -626,10 +661,13 @@ extension Kernel.CameraPhotoFileFormat {
         case .raw: return .RAW  
         case .jpeg: return .JPEG
         case .rawAndJpeg: return .rawAndJPEG
+        case .tiff8bit: return .unknown
         case .tiff14bit: return .tiff14Bit
-        case .radiometricJpeg: return .radiometricJPEG
         case .tiff14bitLinearLowTempResolution: return .tiff14BitLinearLowTempResolution
         case .tiff14bitLinearHighTempResolution: return .tiff14BitLinearHighTempResolution
+        case .radiometricJpeg: return .radiometricJPEG
+        case .radiometricJpegLow: return .unknown
+        case .radiometricJpegHigh: return  .unknown
         case .unknown: return .unknown
         }
     }
@@ -683,6 +721,10 @@ extension Kernel.CameraPhotoMode {
         case .highResolution: return .unknown
         case .smart: return .unknown
         case .internalAISpotChecking: return .unknown
+        case .hyperLapse: return .unknown
+        case .superResolution: return .unknown
+        case .regionalSR: return .unknown
+        case .vr: return .unknown
         case .unknown: return .unknown
         }
     }
@@ -703,6 +745,10 @@ extension Kernel.CameraPhotoMode {
         case .highResolution: return .photoHighResolution
         case .smart: return .photoSmart
         case .internalAISpotChecking: return .internalAISpotChecking
+        case .hyperLapse: return .unknown
+        case .superResolution: return .unknown
+        case .regionalSR: return .unknown
+        case .vr: return .unknown
         case .unknown: return .unknown
         }
     }
@@ -723,6 +769,7 @@ extension DJICameraShootPhotoMode {
         case .cameraPanorama: return .panorama
         case .EHDR: return .ehdr
         case .hyperLight: return .hyperLight
+        case .highResolution: return .highResolution
         case .unknown: return .unknown
         @unknown default: return .unknown
         }
@@ -902,6 +949,10 @@ extension Kernel.CameraShutterSpeed {
     var djiValue: DJICameraShutterSpeed {
         switch self {
         case .auto: return .speedAuto
+        case ._1_20000: return .speedUnknown
+        case ._1_16000: return .speedUnknown
+        case ._1_12800: return .speedUnknown
+        case ._1_10000: return .speedUnknown
         case ._1_8000: return .speed1_8000
         case ._1_6400: return .speed1_6400
         case ._1_6000: return .speed1_6000
@@ -978,7 +1029,13 @@ extension Kernel.CameraShutterSpeed {
         case ._23: return .speed23
         case ._25: return .speed25
         case ._30: return .speed30
-        case .unknown: return .speed1Dot3
+        case ._40: return .speedUnknown
+        case ._50: return .speedUnknown
+        case ._60: return .speedUnknown
+        case ._80: return .speedUnknown
+        case ._100: return .speedUnknown
+        case ._120: return .speedUnknown
+        case .unknown: return .speedUnknown
         }
     }
 }
@@ -988,6 +1045,7 @@ extension Kernel.CameraStorageLocation {
         switch self {
         case .sdCard: return .sdCard
         case ._internal: return .internalStorage
+        case .internalSSD: return .unknown
         case .unknown: return .unknown
         }
     }
@@ -1021,6 +1079,8 @@ extension Kernel.CameraVideoFileFormat {
         case .mp4: return .MP4
         case .tiffSequence: return .tiffSequence
         case .seq: return .SEQ
+        case .cdng: return .unknown
+        case .mxf: return .unknown
         case .unknown: return .unknown
         }
     }
@@ -1110,6 +1170,7 @@ extension DJICameraVideoStreamSource {
         case .zoom: return .zoom
         case .wide: return .wide
         case .infraredThermal: return .thermal
+        case .unknown: return .unknown
         @unknown default: return .unknown
         }
     }
@@ -1163,6 +1224,7 @@ extension Kernel.CameraWhiteBalancePreset {
         case .indoorFluorescent: return .indoorFluorescent
         case .custom: return .custom
         case .neutral: return .neutral
+        case .underwater: return .unknown
         case .unknown: return .unknown
         }
     }
@@ -1369,6 +1431,8 @@ extension Kernel.DroneOcuSyncFrequencyBand {
         switch self {
         case ._2dot4ghz: return .band2Dot4GHz
         case ._5dot8ghz: return .band5Dot8GHz
+        case ._5dot7ghz: return .bandUnknown
+        case ._1dot4ghz: return .bandUnknown
         case .dual: return .bandDual
         case .unknown: return .bandUnknown
         }
