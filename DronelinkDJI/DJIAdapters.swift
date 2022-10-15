@@ -529,14 +529,24 @@ public class DJIGimbalStateAdapter: GimbalStateAdapter {
 }
 
 extension DJIRemoteController: RemoteControllerAdapter {
+    
+    public func startDeviceCharging(finished: CommandFinished?) {
+        setChargeMobileMode(DJIRCChargeMobileMode.always, withCompletion: finished)
+    }
+    
+    public func stopDeviceCharging(finished: CommandFinished?) {
+        setChargeMobileMode(DJIRCChargeMobileMode.never, withCompletion: finished)
+    }
 }
 
 public class DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
     
     public let rcHardwareState: DJIRCHardwareState
+    public let chargingDeviceState: DJIRCChargeMobileMode
 
-    public init(rcHardwareState: DJIRCHardwareState) {
+    public init(rcHardwareState: DJIRCHardwareState, chargingDeviceState: DJIRCChargeMobileMode?) {
         self.rcHardwareState = rcHardwareState
+        self.chargingDeviceState = chargingDeviceState ?? .unknown
     }
     
     public var leftStick: Kernel.RemoteControllerStick {
@@ -577,6 +587,10 @@ public class DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
         Kernel.RemoteControllerButton(
             present: rcHardwareState.c2Button.isPresent.boolValue,
             pressed: rcHardwareState.c2Button.isClicked.boolValue)
+    }
+    
+    public var isChargingDevice: Bool? {
+        return chargingDeviceState == .always
     }
     
     public var batteryPercent: Double { 0.0 }
