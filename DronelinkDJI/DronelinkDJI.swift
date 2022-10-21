@@ -492,6 +492,7 @@ extension Kernel.CameraFocusMode {
         case .manual: return .manual
         case .auto: return .auto
         case .autoContinuous: return .AFC
+        case .fineTune: return .unknown
         case .unknown: return .unknown
         }
     }
@@ -650,6 +651,9 @@ extension Kernel.CameraPhotoAspectRatio {
         case ._4x3: return .ratio4_3
         case ._16x9: return .ratio16_9
         case ._3x2: return .ratio3_2
+        case ._18x9: return .ratioUnknown
+        case ._5x4: return .ratioUnknown
+        case ._1x1: return .ratioUnknown
         case .unknown: return .ratioUnknown
         }
     }
@@ -1147,6 +1151,23 @@ extension Kernel.CameraVideoResolution {
         case ._5760x3240: return .resolution5760x3240
         case ._6016x3200: return .resolution6016x3200
         case ._7680x4320: return .resolution7680x4320
+        case ._640x340: return .resolutionUnknown
+        case ._720x576: return .resolutionUnknown
+        case ._864x480: return .resolutionUnknown
+        case ._1080x1920: return .resolutionUnknown
+        case ._1280x1024: return .resolutionUnknown
+        case ._1512x2688: return .resolutionUnknown
+        case ._1920x960: return .resolutionUnknown
+        case ._2688x2016: return .resolutionUnknown
+        case ._2720x2040: return .resolutionUnknown
+        case ._2880x1620: return .resolutionUnknown
+        case ._5120x2700: return .resolutionUnknown
+        case ._5120x2880: return .resolutionUnknown
+        case ._5248x2952: return .resolutionUnknown
+        case ._5472x3648: return .resolutionUnknown
+        case ._5576x2952: return .resolutionUnknown
+        case ._8192x3424: return .resolutionUnknown
+        case ._8192x4320: return .resolutionUnknown
         case .max: return .resolutionMax
         case .noSSDVideo: return .resolutionNoSSDVideo
         case .unknown: return .resolutionUnknown
@@ -1179,18 +1200,32 @@ extension DJICameraVideoStreamSource {
 extension Kernel.CameraVideoStreamSource {
     var djiValue: DJICameraVideoStreamSource {
         switch self {
-        case .zoom: return .zoom
+        case ._default: return .wide
         case .wide: return .wide
+        case .zoom: return .zoom
         case .thermal: return .infraredThermal
+        case .ndvi: return .unknown
+        case .visible: return .unknown
+        case .msG: return .unknown
+        case .msR: return .unknown
+        case .msRE: return .unknown
+        case .msNIR: return .unknown
         case .unknown: return .unknown
         }
     }
     
     var djiLensType: DJILensType {
         switch self {
-        case .zoom: return .zoom
+        case ._default: return .wide
         case .wide: return .wide
+        case .zoom: return .zoom
         case .thermal: return .infraredThermal
+        case .ndvi: return .wide
+        case .visible: return .wide
+        case .msG: return .wide
+        case .msR: return .wide
+        case .msRE: return .wide
+        case .msNIR: return .wide
         case .unknown: return .wide
         }
     }
