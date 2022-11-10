@@ -101,7 +101,7 @@
 "DJIFlyZoneState.value.255" = "Unknown";
 
 "DJIAirSenseAirplaneState.title" = "AirSense Alert";
-"DJIAirSenseAirplaneState.message" = "Aircraft %@ to the %@ heading %@ (%@)";
+"DJIAirSenseAirplaneState.message" = "Aircraft %@ to the %@ at %@ (%@)";
 
 "DJIAirSenseDirection.title" = "Bearing";
 "DJIAirSenseDirection.value.0" = "North";

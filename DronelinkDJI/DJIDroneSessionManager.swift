@@ -27,9 +27,11 @@ public class DJIDroneSessionManager: NSObject {
             fatalError("Please enter your DJI SDK app key in the info.plist")
         }
         
-        DJISDKManager.registerApp(with: self)
         DJISDKManager.flyZoneManager()?.delegate = self
         DJISDKManager.appActivationManager().delegate = self
+        DispatchQueue.global().async {
+            DJISDKManager.registerApp(with: self)
+        }
     }
 }
 

@@ -344,6 +344,7 @@ extension Kernel.CameraColor {
         case .vision4: return .colorVision4
         case .vision6: return .colorVision6
         case .trueColorExt: return .colorTrueColorExt
+        case .film: return .colorUnknown
         case .filmA: return .colorFilmA
         case .filmB: return .colorFilmB
         case .filmC: return .colorFilmC
@@ -354,6 +355,8 @@ extension Kernel.CameraColor {
         case .filmH: return .colorFilmH
         case .filmI: return .colorFilmI
         case .hlg: return .colorHLG
+        case .rec709: return .colorUnknown
+        case .cinelike: return .colorUnknown
         case .unknown: return .colorUnknown
         }
     }
@@ -1071,6 +1074,7 @@ extension Kernel.CameraVideoFileCompressionStandard {
         switch self {
         case .h264: return .H264
         case .h265: return .H265
+        case .proRes: return .unknown
         case .unknown: return .unknown
         }
     }
@@ -1120,6 +1124,10 @@ extension Kernel.CameraVideoMode {
         case .normal: return .videoNormal
         case .hdr: return .videoHDR
         case .slowMotion: return .slowMotion
+        case .fastMotion: return .unknown
+        case .timeLapse: return .unknown
+        case .hyperLapse: return .unknown
+        case .quickShot: return .unknown
         case .unknown: return .unknown
         }
     }

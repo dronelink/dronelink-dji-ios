@@ -11,6 +11,7 @@ import DJISDK
 public class DJIDroneAdapter: DroneAdapter {
     public let drone: DJIAircraft
     private var gimbalAdapters: [UInt: DJIGimbalAdapter] = [:]
+    public let batteries: [DronelinkCore.BatteryAdapter]? = nil
 
     public init(drone: DJIAircraft) {
         self.drone = drone
@@ -73,7 +74,9 @@ public class DJIDroneAdapter: DroneAdapter {
         
         return nil
     }
-
+    
+    public func battery(channel: UInt) -> DronelinkCore.BatteryAdapter? { nil }
+    
     public func send(velocityCommand: Kernel.VelocityDroneCommand?) {
         guard let velocityCommand = velocityCommand else {
             sendResetVelocityCommand()
