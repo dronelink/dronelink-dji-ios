@@ -27,11 +27,11 @@ public class DJIDroneSessionManager: NSObject {
             fatalError("Please enter your DJI SDK app key in the info.plist")
         }
         
+        //the compiler says we shouldn't call this on the main thread,
+        //but if we put it on a background thread it results in an erroneous max altitude error
+        DJISDKManager.registerApp(with: self)
         DJISDKManager.flyZoneManager()?.delegate = self
         DJISDKManager.appActivationManager().delegate = self
-        DispatchQueue.global().async {
-            DJISDKManager.registerApp(with: self)
-        }
     }
 }
 

@@ -97,7 +97,7 @@ public class DJIDroneAdapter: DroneAdapter {
             pitch: Float(horizontal.y),
             roll: Float(horizontal.x),
             yaw: velocityCommand.heading == nil ? Float(velocityCommand.velocity.rotational.convertRadiansToDegrees) : Float(velocityCommand.heading!.angleDifferenceSigned(angle: 0).convertRadiansToDegrees),
-            verticalThrottle: Float(velocityCommand.velocity.vertical)), withCompletion: nil)
+            verticalThrottle: min(4.0, max(-4.0, Float(velocityCommand.velocity.vertical)))), withCompletion: nil)
     }
     
     public func send(remoteControllerSticksCommand: Kernel.RemoteControllerSticksDroneCommand?) {
