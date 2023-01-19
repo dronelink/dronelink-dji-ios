@@ -1042,8 +1042,17 @@ extension DJIDroneSession: DroneSession {
     }
     
     public func resetPayloads() {
-        sendResetGimbalCommands()
-        sendResetCameraCommands()
+        resetPayloads(gimbal: true, camera: true)
+    }
+    
+    public func resetPayloads(gimbal: Bool, camera: Bool) {
+        if gimbal {
+            sendResetGimbalCommands()
+        }
+        
+        if camera {
+            sendResetCameraCommands()
+        }
     }
     
     public func close() {
