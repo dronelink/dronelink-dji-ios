@@ -622,6 +622,7 @@ extension Kernel.CameraMeteringMode {
         case .average: return .average
         case .spot: return .spot
         case .unknown: return .unknown
+        @unknown default: return .unknown
         }
     }
 }
@@ -633,6 +634,7 @@ extension DJICameraMeteringMode {
         case .average: return .average
         case .spot: return .spot
         case .unknown: return .unknown
+        @unknown default: return .unknown
         }
     }
 }
