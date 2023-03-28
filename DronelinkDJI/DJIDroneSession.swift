@@ -1035,6 +1035,8 @@ extension DJIDroneSession: DroneSession {
 
     public func batteryState(index: UInt) -> DronelinkCore.DatedValue<DronelinkCore.BatteryStateAdapter>? { nil }
     
+    public var rtkState: DronelinkCore.DatedValue<DronelinkCore.RTKStateAdapter>? { nil }
+    
     public func remoteControllerState(channel: UInt) -> DatedValue<RemoteControllerStateAdapter>? {
         remoteControllerSerialQueue.sync { [weak self] in
             return self?._remoteControllerState

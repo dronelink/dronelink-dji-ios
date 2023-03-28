@@ -77,6 +77,8 @@ public class DJIDroneAdapter: DroneAdapter {
     
     public func battery(channel: UInt) -> DronelinkCore.BatteryAdapter? { nil }
     
+    public var rtk: DronelinkCore.RTKAdapter? { nil }
+    
     public func send(velocityCommand: Kernel.VelocityDroneCommand?) {
         guard let velocityCommand = velocityCommand else {
             sendResetVelocityCommand()
