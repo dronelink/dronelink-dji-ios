@@ -1474,10 +1474,11 @@ extension Kernel.DroneOcuSyncChannelSelectionMode {
 extension Kernel.DroneOcuSyncFrequencyBand {
     var djiValue: DJIOcuSyncFrequencyBand {
         switch self {
-        case ._2dot4ghz: return .band2Dot4GHz
-        case ._5dot8ghz: return .band5Dot8GHz
-        case ._5dot7ghz: return .bandUnknown
         case ._1dot4ghz: return .bandUnknown
+        case ._2dot4ghz: return .band2Dot4GHz
+        case ._5dot2ghz: return .bandUnknown
+        case ._5dot7ghz: return .bandUnknown
+        case ._5dot8ghz: return .band5Dot8GHz
         case .dual: return .bandDual
         case .unknown: return .bandUnknown
         }

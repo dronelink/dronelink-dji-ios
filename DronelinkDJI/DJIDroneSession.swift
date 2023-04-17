@@ -806,6 +806,7 @@ extension DJIDroneSession: DroneSession {
     public var opened: Date { _opened }
     public var closed: Bool { _closed }
     public var id: String { _id }
+    public var adapterName: String { "dji" }
     public var manufacturer: String { "DJI" }
     public var serialNumber: String? { _serialNumber }
     public var name: String? { _name }
