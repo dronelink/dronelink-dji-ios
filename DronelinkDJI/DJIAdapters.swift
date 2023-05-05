@@ -7,9 +7,11 @@
 //
 import DronelinkCore
 import DJISDK
+import DJIWidget
 
 public class DJIDroneAdapter: DroneAdapter {
     public let drone: DJIAircraft
+    public var liveStreaming: DronelinkCore.LiveStreamingAdapter?
     private var gimbalAdapters: [UInt: DJIGimbalAdapter] = [:]
     public let batteries: [DronelinkCore.BatteryAdapter]? = nil
 
@@ -191,6 +193,16 @@ public class DJIDroneAdapter: DroneAdapter {
 //        }
 //
 //        return enumElement.isEmpty ? nil : enumElement
+    }
+}
+
+public class DJILiveStreamingStateAdapter: LiveStreamingStateAdapter {
+    public var enabled: Bool {
+        return DJIRtmpMuxer.sharedInstance()?.status == DJIRtmpMuxerState_Streaming
+    }
+    
+    public var statusMessages: [DronelinkCore.Kernel.Message] {
+        return []
     }
 }
 

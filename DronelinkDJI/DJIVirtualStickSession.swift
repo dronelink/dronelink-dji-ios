@@ -47,8 +47,12 @@ public class DJIVirtualStickSession: DroneControlSession {
             return attemptDisengageReason
         }
         
-        if state == .FlightModeJoystickComplete, let flightControllerState = droneSession.flightControllerState, flightControllerState.value.flightMode != .joystick {
-            return Kernel.Message(title: "MissionDisengageReason.drone.control.override.title".localized, details: "MissionDisengageReason.drone.control.override.details".localized)
+        if let flightControllerState = droneSession.flightControllerState {
+            if state == .FlightModeJoystickComplete {
+                if flightControllerState.value.flightMode != .joystick {
+                    return Kernel.Message(title: "MissionDisengageReason.drone.control.override.title".localized, details: "MissionDisengageReason.drone.control.override.details".localized)
+                }
+            }
         }
         
         return nil

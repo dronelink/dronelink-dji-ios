@@ -31,6 +31,8 @@
 "MissionDisengageReason.drone.accessory.aggregation.unavailable.title" = "Accessories Unavailable";
 "MissionDisengageReason.drone.beacon.unavailable.title" = "Beacon Unavailable";
 "MissionDisengageReason.drone.spotlight.unavailable.title" = "Spotlight Unavailable";
+"MissionDisengageReason.drone.live.streaming.unavailable.title" = "Live Streaming Unavailable";
+"MissionDisengageReason.drone.live.streaming.failed.title" = "Unable to Start Live Streaming";
 "MissionDisengageReason.drone.remote.controller.unavailable.title" = "Remote Controller Unavailable";
 "MissionDisengageReason.drone.camera.unavailable.title" = "Camera Unavailable";
 "MissionDisengageReason.drone.lens.unavailable.title" = "Lens Unavailable";

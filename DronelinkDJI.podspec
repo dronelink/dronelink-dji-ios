@@ -14,4 +14,5 @@ Pod::Spec.new do |s|
   s.pod_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64'}
   s.dependency "DronelinkCore", "~> 4.5.0"
   s.dependency "DJI-SDK-iOS", "~> 4.16.2"
+  s.dependency "DJIWidget", "~> 1.6.8"
 end

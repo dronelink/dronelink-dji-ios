@@ -15,6 +15,7 @@ public class DJIDroneSession: NSObject {
     
     public let manager: DroneSessionManager
     public let adapter: DJIDroneAdapter
+    private let liveStreamingStateAdapter: DJILiveStreamingStateAdapter
     
     private let _opened = Date()
     private var _closed = false
@@ -31,6 +32,7 @@ public class DJIDroneSession: NSObject {
     
     private let delegates = MulticastDelegate<DroneSessionDelegate>()
     private let droneCommands = CommandQueue()
+    private let liveStreamingCommands = CommandQueue()
     private let remoteControllerCommands = MultiChannelCommandQueue()
     private let cameraCommands = MultiChannelCommandQueue()
     private let gimbalCommands = MultiChannelCommandQueue()
@@ -98,6 +100,7 @@ public class DJIDroneSession: NSObject {
     public init(manager: DroneSessionManager, drone: DJIAircraft) {
         self.manager = manager
         adapter = DJIDroneAdapter(drone: drone)
+        liveStreamingStateAdapter = DJILiveStreamingStateAdapter()
         super.init()
         initDrone()
         Thread.detachNewThread(self.execute)
@@ -671,6 +674,7 @@ public class DJIDroneSession: NSObject {
             }
             
             self.droneCommands.process()
+            self.liveStreamingCommands.process()
             self.remoteControllerCommands.process()
             self.cameraCommands.process()
             self.gimbalCommands.process()
@@ -902,6 +906,14 @@ extension DJIDroneSession: DroneSession {
             return
         }
         
+        if let command = command as? KernelLiveStreamingCommand {
+            try liveStreamingCommands.add(command: createCommand({ [weak self] in
+                self?.commandExecuted(command: command)
+                return self?.execute(liveStreamingCommand: command, finished: $0)
+            }))
+            return
+        }
+        
         if let command = command as? KernelRemoteControllerCommand {
             try remoteControllerCommands.add(channel: command.channel, command: createCommand({ [weak self] in
                 self?.commandExecuted(command: command)
@@ -939,6 +951,7 @@ extension DJIDroneSession: DroneSession {
     
     public func removeCommands() {
         droneCommands.removeAll()
+        liveStreamingCommands.removeAll()
         remoteControllerCommands.removeAll()
         cameraCommands.removeAll()
         gimbalCommands.removeAll()
@@ -1034,9 +1047,13 @@ extension DJIDroneSession: DroneSession {
         }
     }
 
-    public func batteryState(index: UInt) -> DronelinkCore.DatedValue<DronelinkCore.BatteryStateAdapter>? { nil }
+    public func batteryState(index: UInt) -> DatedValue<BatteryStateAdapter>? { nil }
     
-    public var rtkState: DronelinkCore.DatedValue<DronelinkCore.RTKStateAdapter>? { nil }
+    public var rtkState: DatedValue<RTKStateAdapter>? { nil }
+    
+    public var liveStreamingState: DatedValue<LiveStreamingStateAdapter>? {
+        DatedValue(value: liveStreamingStateAdapter)
+    }
     
     public func remoteControllerState(channel: UInt) -> DatedValue<RemoteControllerStateAdapter>? {
         remoteControllerSerialQueue.sync { [weak self] in

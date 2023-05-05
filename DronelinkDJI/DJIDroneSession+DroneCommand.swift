@@ -134,6 +134,29 @@ extension DJIDroneSession {
             return "MissionDisengageReason.drone.flight.assistant.unavailable.title".localized
         }
         
+        if let command = flightAssistantCommand as? Kernel.AuxiliaryLightModeDroneCommand {
+            switch command.auxiliaryLightPosition {
+            case .bottom:
+                flightAssistant.getDownwardFillLightMode { (current, error) in
+                    Command.conditionallyExecute(current != command.auxiliaryLightMode.djiValue, error: error, finished: finished) {
+                        flightAssistant.setDownwardFillLightMode(command.auxiliaryLightMode.djiValue, withCompletion: finished)
+                    }
+                }
+                return nil
+                
+            case .top:
+                flightAssistant.getUpwardFillLightMode { (current, error) in
+                    Command.conditionallyExecute(current != command.auxiliaryLightMode.djiValue, error: error, finished: finished) {
+                        flightAssistant.setUpwardFillLightMode(command.auxiliaryLightMode.djiValue, withCompletion: finished)
+                    }
+                }
+                return nil
+                
+            case .unknown:
+                break
+            }
+        }
+        
         if let command = flightAssistantCommand as? Kernel.CollisionAvoidanceDroneCommand {
             flightAssistant.getCollisionAvoidanceEnabled { (current, error) in
                 Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {

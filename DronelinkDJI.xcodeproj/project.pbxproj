@@ -13,6 +13,7 @@
 		245227D723676DE200123D75 /* DJIDroneSession+DroneCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 245227D623676DE200123D75 /* DJIDroneSession+DroneCommand.swift */; };
 		245227D92367775500123D75 /* DJIDroneSession+CameraCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 245227D82367775500123D75 /* DJIDroneSession+CameraCommand.swift */; };
 		245227DB2367776700123D75 /* DJIDroneSession+GimbalCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 245227DA2367776700123D75 /* DJIDroneSession+GimbalCommand.swift */; };
+		245818062A0064B300B3951D /* DJIDroneSession+LiveStreamingCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 245818052A0064B300B3951D /* DJIDroneSession+LiveStreamingCommand.swift */; };
 		246BB8DF2364DAF900A8E7D7 /* DJIAdapters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 246BB8DE2364DAF900A8E7D7 /* DJIAdapters.swift */; };
 		246BB8E1236507D600A8E7D7 /* DJIDroneSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 246BB8E0236507D600A8E7D7 /* DJIDroneSession.swift */; };
 		246BB8E523650D8F00A8E7D7 /* DJIVirtualStickSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 246BB8E423650D8F00A8E7D7 /* DJIVirtualStickSession.swift */; };
@@ -29,6 +30,7 @@
 		245227D623676DE200123D75 /* DJIDroneSession+DroneCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DJIDroneSession+DroneCommand.swift"; sourceTree = "<group>"; };
 		245227D82367775500123D75 /* DJIDroneSession+CameraCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DJIDroneSession+CameraCommand.swift"; sourceTree = "<group>"; };
 		245227DA2367776700123D75 /* DJIDroneSession+GimbalCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DJIDroneSession+GimbalCommand.swift"; sourceTree = "<group>"; };
+		245818052A0064B300B3951D /* DJIDroneSession+LiveStreamingCommand.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "DJIDroneSession+LiveStreamingCommand.swift"; sourceTree = "<group>"; };
 		246BB8D32364DA5300A8E7D7 /* DronelinkDJI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DronelinkDJI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		246BB8D72364DA5300A8E7D7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		246BB8DE2364DAF900A8E7D7 /* DJIAdapters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DJIAdapters.swift; sourceTree = "<group>"; };
@@ -87,6 +89,7 @@
 				246BB8E0236507D600A8E7D7 /* DJIDroneSession.swift */,
 				245227D82367775500123D75 /* DJIDroneSession+CameraCommand.swift */,
 				245227D623676DE200123D75 /* DJIDroneSession+DroneCommand.swift */,
+				245818052A0064B300B3951D /* DJIDroneSession+LiveStreamingCommand.swift */,
 				245227DA2367776700123D75 /* DJIDroneSession+GimbalCommand.swift */,
 				248BC91B272717910029AF5B /* DJIDroneSession+RemoteControllerCommand.swift */,
 				246BB8EA236710D900A8E7D7 /* DJIDroneSessionManager.swift */,
@@ -231,6 +234,7 @@
 				245227D92367775500123D75 /* DJIDroneSession+CameraCommand.swift in Sources */,
 				24A5B9BE26D02F7600BC1ACA /* DJIWaypointMissionSession.swift in Sources */,
 				245227D723676DE200123D75 /* DJIDroneSession+DroneCommand.swift in Sources */,
+				245818062A0064B300B3951D /* DJIDroneSession+LiveStreamingCommand.swift in Sources */,
 				246BB8E523650D8F00A8E7D7 /* DJIVirtualStickSession.swift in Sources */,
 				246BB8E1236507D600A8E7D7 /* DJIDroneSession.swift in Sources */,
 				248BC91C272717910029AF5B /* DJIDroneSession+RemoteControllerCommand.swift in Sources */,
