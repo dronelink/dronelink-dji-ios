@@ -546,7 +546,6 @@ public class DJIGimbalStateAdapter: GimbalStateAdapter {
 }
 
 extension DJIRemoteController: RemoteControllerAdapter {
-    
     public func startDeviceCharging(finished: CommandFinished?) {
         setChargeMobileMode(DJIRCChargeMobileMode.always, withCompletion: finished)
     }
@@ -557,13 +556,18 @@ extension DJIRemoteController: RemoteControllerAdapter {
 }
 
 public class DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
-    
     public let rcHardwareState: DJIRCHardwareState
     public let chargingDeviceState: DJIRCChargeMobileMode
+    public let gpsData: DJIRCGPSData?
 
-    public init(rcHardwareState: DJIRCHardwareState, chargingDeviceState: DJIRCChargeMobileMode?) {
+    public init(rcHardwareState: DJIRCHardwareState, chargingDeviceState: DJIRCChargeMobileMode?, gpsData: DJIRCGPSData?) {
         self.rcHardwareState = rcHardwareState
         self.chargingDeviceState = chargingDeviceState ?? .unknown
+        self.gpsData = gpsData
+    }
+    
+    public var location: CLLocation? {
+        gpsData?.isValid.boolValue ?? false ? gpsData?.location.asLocation : nil
     }
     
     public var leftStick: Kernel.RemoteControllerStick {
@@ -580,6 +584,30 @@ public class DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
         Kernel.RemoteControllerStick(
             x: Double(rcHardwareState.rightStick.horizontalPosition) / 660,
             y: Double(rcHardwareState.rightStick.verticalPosition) / 660)
+    }
+    
+    public var captureButton: DronelinkCore.Kernel.RemoteControllerButton {
+        Kernel.RemoteControllerButton(
+            present: rcHardwareState.shootPhotoAndRecordButton.isPresent.boolValue,
+            pressed: rcHardwareState.shootPhotoAndRecordButton.isClicked.boolValue)
+    }
+    
+    public var videoButton: DronelinkCore.Kernel.RemoteControllerButton {
+        Kernel.RemoteControllerButton(
+            present: rcHardwareState.recordButton.isPresent.boolValue,
+            pressed: rcHardwareState.recordButton.isClicked.boolValue)
+    }
+    
+    public var photoButton: DronelinkCore.Kernel.RemoteControllerButton {
+        Kernel.RemoteControllerButton(
+            present: rcHardwareState.shutterButton.isPresent.boolValue,
+            pressed: rcHardwareState.shutterButton.isClicked.boolValue)
+    }
+    
+    public var functionButton: DronelinkCore.Kernel.RemoteControllerButton {
+        Kernel.RemoteControllerButton(
+            present: rcHardwareState.fnButton.isPresent.boolValue,
+            pressed: rcHardwareState.fnButton.isClicked.boolValue)
     }
     
     public var pauseButton: Kernel.RemoteControllerButton {
@@ -605,6 +633,73 @@ public class DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
             present: rcHardwareState.c2Button.isPresent.boolValue,
             pressed: rcHardwareState.c2Button.isClicked.boolValue)
     }
+    
+    public var c3Button: DronelinkCore.Kernel.RemoteControllerButton {
+        Kernel.RemoteControllerButton(
+            present: false,
+            pressed: false)
+    }
+    
+    public var upButton: DronelinkCore.Kernel.RemoteControllerButton {
+        Kernel.RemoteControllerButton(
+            present: false,
+            pressed: false)
+    }
+    
+    public var downButton: DronelinkCore.Kernel.RemoteControllerButton {
+        Kernel.RemoteControllerButton(
+            present: false,
+            pressed: false)
+    }
+    
+    public var leftButton: DronelinkCore.Kernel.RemoteControllerButton {
+        Kernel.RemoteControllerButton(
+            present: false,
+            pressed: false)
+    }
+    
+    public var rightButton: DronelinkCore.Kernel.RemoteControllerButton {
+        Kernel.RemoteControllerButton(
+            present: false,
+            pressed: false)
+    }
+    
+    public var l1Button: DronelinkCore.Kernel.RemoteControllerButton {
+        Kernel.RemoteControllerButton(
+            present: false,
+            pressed: false)
+    }
+    
+    public var l2Button: DronelinkCore.Kernel.RemoteControllerButton {
+        Kernel.RemoteControllerButton(
+            present: false,
+            pressed: false)
+    }
+    
+    public var l3Button: DronelinkCore.Kernel.RemoteControllerButton {
+        Kernel.RemoteControllerButton(
+            present: false,
+            pressed: false)
+    }
+    
+    public var r1Button: DronelinkCore.Kernel.RemoteControllerButton {
+        Kernel.RemoteControllerButton(
+            present: false,
+            pressed: false)
+    }
+    
+    public var r2Button: DronelinkCore.Kernel.RemoteControllerButton {
+        Kernel.RemoteControllerButton(
+            present: false,
+            pressed: false)
+    }
+    
+    public var r3Button: DronelinkCore.Kernel.RemoteControllerButton {
+        Kernel.RemoteControllerButton(
+            present: false,
+            pressed: false)
+    }
+    
     
     public var isChargingDevice: Bool? {
         return chargingDeviceState == .always

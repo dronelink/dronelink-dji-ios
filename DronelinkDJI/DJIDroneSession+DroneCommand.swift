@@ -139,7 +139,12 @@ extension DJIDroneSession {
             case .bottom:
                 flightAssistant.getDownwardFillLightMode { (current, error) in
                     Command.conditionallyExecute(current != command.auxiliaryLightMode.djiValue, error: error, finished: finished) {
-                        flightAssistant.setDownwardFillLightMode(command.auxiliaryLightMode.djiValue, withCompletion: finished)
+                        flightAssistant.setDownwardFillLightMode(command.auxiliaryLightMode.djiValue) { [weak self] error in
+                            if error == nil {
+                                self?._auxiliaryLightModeBottom = DatedValue<DJIFillLightMode>(value: command.auxiliaryLightMode.djiValue)
+                            }
+                            finished(error)
+                        }
                     }
                 }
                 return nil

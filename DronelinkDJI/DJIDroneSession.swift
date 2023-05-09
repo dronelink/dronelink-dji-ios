@@ -53,7 +53,8 @@ public class DJIDroneSession: NSObject {
     private let remoteControllerSerialQueue = DispatchQueue(label: "DJIDroneSession+remoteControllerState")
     private var remoteControllerInitialized: Date?
     private var _remoteControllerState: DatedValue<RemoteControllerStateAdapter>?
-    private  var _remoteControllerChargingDeviceState: DatedValue<DJIRCChargeMobileMode>?
+    private var _remoteControllerChargingDeviceState: DatedValue<DJIRCChargeMobileMode>?
+    private var _remoteControllerGPSData: DJIRCGPSData?
     
     private let cameraSerialQueue = DispatchQueue(label: "DJIDroneSession+cameraStates")
     private var _cameraStates: [UInt: DatedValue<DJICameraSystemState>] = [:]
@@ -74,6 +75,7 @@ public class DJIDroneSession: NSObject {
     private var _uplinkSignalQuality: DatedValue<UInt>?
     private var _lightbridgefrequencyBand: DatedValue<DJILightbridgeFrequencyBand>?
     private var _ocuSyncfrequencyBand: DatedValue<DJIOcuSyncFrequencyBand>?
+    public var _auxiliaryLightModeBottom: DatedValue<DJIFillLightMode>?
     private var _exposureMode: DatedValue<DJICameraExposureMode>?
     private var _storageLocation: DatedValue<DJICameraStorageLocation>?
     private var _photoMode: DatedValue<DJICameraShootPhotoMode>?
@@ -170,6 +172,12 @@ public class DJIDroneSession: NSObject {
                 }
             }
         }
+        
+        flightController.flightAssistant?.getDownwardFillLightMode(completion: { [weak self] fillLightMode, error in
+            if error == nil {
+                self?._auxiliaryLightModeBottom = DatedValue<DJIFillLightMode>(value: fillLightMode)
+            }
+        })
     }
     
     private func initSerialNumber(attempt: Int = 0) {
@@ -1184,6 +1192,7 @@ extension DJIDroneSession: DroneStateAdapter {
     }
     public var lightbridgeFrequencyBand: Kernel.DroneLightbridgeFrequencyBand? { _lightbridgefrequencyBand?.value.kernelValue }
     public var ocuSyncFrequencyBand: Kernel.DroneOcuSyncFrequencyBand? { _ocuSyncfrequencyBand?.value.kernelValue }
+    public var auxiliaryLightModeBottom: DronelinkCore.Kernel.DroneAuxiliaryLightMode? { _auxiliaryLightModeBottom?.value.kernelValue }
 }
 
 extension DJIDroneSession: DJIBaseProductDelegate {
@@ -1284,8 +1293,12 @@ extension DJIDroneSession: DJIBatteryDelegate {
 extension DJIDroneSession: DJIRemoteControllerDelegate {
     public func remoteController(_ rc: DJIRemoteController, didUpdate state: DJIRCHardwareState) {
         remoteControllerSerialQueue.async { [weak self] in
-            self?._remoteControllerState = DatedValue<RemoteControllerStateAdapter>(value: DJIRemoteControllerStateAdapter(rcHardwareState: state, chargingDeviceState: self?._remoteControllerChargingDeviceState?.value))
+            self?._remoteControllerState = DatedValue<RemoteControllerStateAdapter>(value: DJIRemoteControllerStateAdapter(rcHardwareState: state, chargingDeviceState: self?._remoteControllerChargingDeviceState?.value, gpsData: self?._remoteControllerGPSData))
         }
+    }
+    
+    public func remoteController(_ rc: DJIRemoteController, didUpdate gpsData: DJIRCGPSData) {
+        _remoteControllerGPSData = gpsData
     }
 }
 

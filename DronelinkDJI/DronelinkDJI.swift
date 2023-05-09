@@ -1406,6 +1406,18 @@ extension Kernel.DJIWaypointTurnMode {
     }
 }
 
+extension DJIFillLightMode {
+    var kernelValue: Kernel.DroneAuxiliaryLightMode {
+        switch self {
+        case .auto: return .auto
+        case .on: return .on
+        case .off: return .off
+        case .beacon: return .beacon
+        case .unknown: return .unknown
+        }
+    }
+}
+
 extension Kernel.DroneAuxiliaryLightMode {
     var djiValue: DJIFillLightMode {
         switch self {
