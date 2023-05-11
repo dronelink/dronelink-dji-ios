@@ -1033,7 +1033,7 @@ extension DJIDroneSession: DroneSession {
                 }
                     
                 return DatedValue(value: DJICameraStateAdapter(
-                        djiCamera: camera as? DJICamera,
+                        camera: camera as? DJICamera,
                         systemState: systemState.value,
                         videoStreamSource: session._cameraVideoStreamSources[channel]?.value,
                         focusState: session._cameraFocusStates["\(channel).\(lensIndexResolved)"]?.value,
