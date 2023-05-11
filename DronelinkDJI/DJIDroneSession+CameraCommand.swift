@@ -198,6 +198,47 @@ extension DJIDroneSession {
             return nil
         }
         
+        if let command = cameraCommand as? Kernel.ZoomCameraCommand {
+            let zoomMax = UInt(state.opticalZoomSpec[Kernel.CameraZoomSpec.max])
+//            let targetZoomValue = UInt(command.focusRingPercent * Double(state.focusRingMax ?? 0))
+//            Command.conditionallyExecute(UInt(state.focusRingValue ?? 0) != targetFocusRingValue, finished: finished) {
+//                camera.setFocusRingValue(targetFocusRingValue) { error in
+//                    if error != nil {
+//                        finished(error)
+//                        return
+//                    }
+//                    
+//                    DispatchQueue.global().asyncAfter(deadline: .now() + 1.5) { [weak self] in
+//                        self?.cameraCommandFinishFocusRingVerifyValue(cameraCommand: command, targetFocusRingValue: targetFocusRingValue, finished: finished)
+//                    }
+//                }
+//            }
+            return nil
+        }
+        
+//        if let command = cameraCommand as? Kernel.FileIndexModeCameraCommand {
+//            camera.getFileIndexMode { (current, error) in
+//                Command.conditionallyExecute(current != command.fileIndexMode.djiValue, error: error, finished: finished) {
+//                    camera.setFileIndexMode(command.fileIndexMode.djiValue, withCompletion: finished)
+//                }
+//            }
+//            return nil
+//        }
+        
+//        if (command instanceof ZoomCameraCommand) {
+//                    Integer zoomMax = djiState.getOpticalZoomSpec().get(Kernel.enumRawValue(CameraZoomSpec.MAX));
+//                    Integer zoomStep = djiState.getOpticalZoomSpec().get(Kernel.enumRawValue(CameraZoomSpec.STEP));
+//                    if (zoomMax == null) {
+//                        zoomMax = 0;
+//                    }
+//                    if (zoomStep == null || zoomStep == 0) {
+//                        zoomStep = 1;
+//                    }
+//                    //Per DJI SDK documentation, setOpticalZoomFocalLength requires a value that is a multiple of zoomStep.
+//                    camera.setOpticalZoomFocalLength((int)Math.round((((ZoomCameraCommand)command).zoomPercent * zoomMax) / zoomStep) * zoomStep, createCompletionCallback(finished));
+//                    return null;
+//                }
+        
         if let command = cameraCommand as? Kernel.ISOCameraCommand {
             Command.conditionallyExecute(state.exposureSettings?.ISO != command.iso.djiValue.rawValue, finished: finished) {
                 camera.setISO(command.iso.djiValue, withCompletion: finished)

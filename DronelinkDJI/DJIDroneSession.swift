@@ -93,6 +93,8 @@ public class DJIDroneSession: NSObject {
     private var _focusMode: DatedValue<DJICameraFocusMode>?
     private var _focusRingValue: DatedValue<Double>?
     private var _focusRingMax: DatedValue<Double>?
+    private var _opticalZoomValue: DatedValue<Double>?
+    private var _opticalZoomSpec: DatedValue<DJICameraOpticalZoomSpec>?
     private var _meteringMode: DatedValue<DJICameraMeteringMode>?
     private var autoExposureLockEnabled: DatedValue<Bool>?
     private var _remoteControllerGimbalChannel: DatedValue<UInt>?
@@ -486,6 +488,24 @@ public class DJIDroneSession: NSObject {
             }
             else {
                 self?._focusRingMax = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamOpticalZoomFocalLength)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.doubleValue {
+                self?._opticalZoomValue = DatedValue(value: value)
+            }
+            else {
+                self?._opticalZoomValue = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamOpticalZoomSpec)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.value as? DJICameraOpticalZoomSpec {
+                self?._opticalZoomSpec = DatedValue(value: value)
+            }
+            else {
+                self?._opticalZoomValue = nil
             }
         }
         
@@ -1013,6 +1033,7 @@ extension DJIDroneSession: DroneSession {
                 }
                     
                 return DatedValue(value: DJICameraStateAdapter(
+                        djiCamera: camera as? DJICamera,
                         systemState: systemState.value,
                         videoStreamSource: session._cameraVideoStreamSources[channel]?.value,
                         focusState: session._cameraFocusStates["\(channel).\(lensIndexResolved)"]?.value,
@@ -1038,6 +1059,8 @@ extension DJIDroneSession: DroneSession {
                         focusMode: _focusMode?.value,
                         focusRingValue: _focusRingValue?.value,
                         focusRingMax: _focusRingMax?.value,
+                        opticalZoomValue: _opticalZoomValue?.value,
+                        opticalZoomSpec: _opticalZoomSpec?.value,
                         meteringMode: _meteringMode?.value,
                         isAutoExposureLockEnabled: autoExposureLockEnabled?.value ?? false),
                     date: systemState.date)
