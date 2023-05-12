@@ -478,9 +478,9 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
             return zoomSpec
         }
 
-        zoomSpec["min"] = Int(opticalZoomSpec.minFocalLength)
-        zoomSpec["max"] = Int(opticalZoomSpec.maxFocalLength)
-        zoomSpec["step"] = Int(opticalZoomSpec.focalLengthStep)
+        zoomSpec[Kernel.CameraZoomSpec.min.rawValue] = Int(opticalZoomSpec.minFocalLength)
+        zoomSpec[Kernel.CameraZoomSpec.max.rawValue] = Int(opticalZoomSpec.maxFocalLength)
+        zoomSpec[Kernel.CameraZoomSpec.step.rawValue] = Int(opticalZoomSpec.focalLengthStep)
         return zoomSpec
     }
     public func isFeatureSupported(feature: DronelinkCore.Kernel.CameraFeatures) -> Bool {
