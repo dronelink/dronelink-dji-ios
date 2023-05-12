@@ -199,10 +199,10 @@ extension DJIDroneSession {
         }
         
         if let command = cameraCommand as? Kernel.ZoomCameraCommand {
-            let zoomMax = state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.max.rawValue] == nil ? 0 : Double(state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.max.rawValue])
-            let zoomMin = state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.min.rawValue] == nil ? 0 : Double(state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.min.rawValue])
+            let zoomMax = state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.max.rawValue] == nil ? 0 : Double(state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.max.rawValue] ?? 0)
+            let zoomMin = state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.min.rawValue] == nil ? 0 : Double(state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.min.rawValue] ?? 0)
             let zoomStep = (state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.min.rawValue] == nil
-                            || state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.min.rawValue] == 0) ? 1 : Double(state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.min.rawValue])
+                            || state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.min.rawValue] == 0) ? 1 : Double(state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.min.rawValue] ?? 0)
             
             let targetZoomValue = UInt(round((command.zoomPercent * (zoomMax - zoomMin) + zoomMin) / zoomStep) * zoomStep)
             Command.conditionallyExecute(UInt(state.opticalZoomValue ?? 0) != targetZoomValue, finished: finished) {
