@@ -199,13 +199,12 @@ extension DJIDroneSession {
         }
         
         if let command = cameraCommand as? Kernel.ZoomCameraCommand {
-            var zoomMax: Double = Double(state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.max.rawValue] ?? 0)
-            var zoomStep: Double = Double(state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.min.rawValue] ?? 1)
-            if (zoomStep == 0) {
-                zoomStep = 1
-            }
+            let zoomMax = state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.max.rawValue] == nil ? 0 : Double(state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.max.rawValue])
+            let zoomMin = state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.min.rawValue] == nil ? 0 : Double(state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.min.rawValue])
+            let zoomStep = (state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.min.rawValue] == nil
+                            || state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.min.rawValue] == 0) ? 1 : Double(state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.min.rawValue])
             
-            let targetZoomValue = UInt(round((command.zoomPercent * zoomMax) / zoomStep) * zoomStep)
+            let targetZoomValue = UInt(round((command.zoomPercent * (zoomMax - zoomMin) + zoomMin) / zoomStep) * zoomStep)
             Command.conditionallyExecute(UInt(state.opticalZoomValue ?? 0) != targetZoomValue, finished: finished) {
                 camera.setOpticalZoomFocalLength(targetZoomValue) { error in
                     if error != nil {
