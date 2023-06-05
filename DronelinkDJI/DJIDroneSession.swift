@@ -999,7 +999,7 @@ extension DJIDroneSession: DroneSession {
     
     public func cameraState(channel: UInt, lensIndex: UInt?) -> DatedValue<CameraStateAdapter>? {
         cameraSerialQueue.sync { [weak self] in
-            guard let session = self, let camera = drone.camera(channel: channel) else {
+            guard let session = self, let camera = self?.drone.camera(channel: channel) else {
                 return nil
             }
             
@@ -1035,11 +1035,11 @@ extension DJIDroneSession: DroneSession {
                         whiteBalance: session._whiteBalance?.value,
                         iso: session._iso?.value,
                         shutterSpeed: session._shutterSpeed?.value,
-                        focusMode: _focusMode?.value,
-                        focusRingValue: _focusRingValue?.value,
-                        focusRingMax: _focusRingMax?.value,
-                        meteringMode: _meteringMode?.value,
-                        isAutoExposureLockEnabled: autoExposureLockEnabled?.value ?? false),
+                        focusMode: self?._focusMode?.value,
+                        focusRingValue: self?._focusRingValue?.value,
+                        focusRingMax: self?._focusRingMax?.value,
+                        meteringMode: self?._meteringMode?.value,
+                        isAutoExposureLockEnabled: self?.autoExposureLockEnabled?.value ?? false),
                     date: systemState.date)
             }
             return nil
