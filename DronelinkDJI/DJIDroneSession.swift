@@ -93,8 +93,8 @@ public class DJIDroneSession: NSObject {
     private var _focusMode: DatedValue<DJICameraFocusMode>?
     private var _focusRingValue: DatedValue<Double>?
     private var _focusRingMax: DatedValue<Double>?
-    private var _opticalZoomValue: DatedValue<Double>?
-    private var _opticalZoomSpec: DatedValue<DJICameraOpticalZoomSpec>?
+    private var _zoomValue: DatedValue<Double>?
+    private var _zoomSpec: DatedValue<Kernel.CameraZoomSpec>?
     private var _meteringMode: DatedValue<DJICameraMeteringMode>?
     private var autoExposureLockEnabled: DatedValue<Bool>?
     private var _remoteControllerGimbalChannel: DatedValue<UInt>?
@@ -491,21 +491,14 @@ public class DJIDroneSession: NSObject {
             }
         }
         
-        startListeningForChanges(on: DJICameraKey(param: DJICameraParamOpticalZoomFocalLength)!) { [weak self] (oldValue, newValue) in
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamHybridZoomFocalLength)!) { [weak self] (oldValue, newValue) in
+            NSLog("ZOOMTEST new ZoomValue before double: \(newValue)")
             if let value = newValue?.doubleValue {
-                self?._opticalZoomValue = DatedValue(value: value)
+                NSLog("ZOOMTEST new ZoomValue after double: \(value)")
+                self?._zoomValue = DatedValue(value: value)
             }
             else {
-                self?._opticalZoomValue = nil
-            }
-        }
-        
-        startListeningForChanges(on: DJICameraKey(param: DJICameraParamOpticalZoomSpec)!) { [weak self] (oldValue, newValue) in
-            if let value = newValue?.value as? DJICameraOpticalZoomSpec {
-                self?._opticalZoomSpec = DatedValue(value: value)
-            }
-            else {
-                self?._opticalZoomValue = nil
+                self?._zoomValue = nil
             }
         }
         
@@ -1031,7 +1024,7 @@ extension DJIDroneSession: DroneSession {
                 else if let videoStreamSource = session._cameraVideoStreamSources[channel]?.value {
                     lensIndexResolved = camera.lensIndex(videoStreamSource: videoStreamSource.kernelValue)
                 }
-                    
+
                 return DatedValue(value: DJICameraStateAdapter(
                         camera: camera as? DJICamera,
                         systemState: systemState.value,
@@ -1059,8 +1052,8 @@ extension DJIDroneSession: DroneSession {
                         focusMode: _focusMode?.value,
                         focusRingValue: _focusRingValue?.value,
                         focusRingMax: _focusRingMax?.value,
-                        opticalZoomValue: _opticalZoomValue?.value,
-                        opticalZoomSpec: _opticalZoomSpec?.value,
+                        zoomValue: _zoomValue?.value,
+                        zoomSpec: _getZoomSpec(camera: camera as? DJICamera)?.value,
                         meteringMode: _meteringMode?.value,
                         isAutoExposureLockEnabled: autoExposureLockEnabled?.value ?? false),
                     date: systemState.date)
@@ -1068,6 +1061,22 @@ extension DJIDroneSession: DroneSession {
             return nil
         }
     }
+    
+    private func _getZoomSpec(camera: DJICamera?) -> DatedValue<Kernel.CameraZoomSpec>? {
+        if let camera = camera {
+            if camera.isHybridZoomSupported() {
+                camera.getHybridZoomSpec { (hybridZoomSpec: DJICameraHybridZoomSpec, error: Error?) in
+                    if (error != nil) {
+                        NSLog("Error getting DJICameraHybridZoomSpec: \(error)")
+                        return
+                    }
+                    self._zoomSpec = DatedValue(value: Kernel.CameraZoomSpec(min: hybridZoomSpec.minHybridFocalLength, max: hybridZoomSpec.maxHybridFocalLength, maxOptical: hybridZoomSpec.maxOpticalFocalLength, step: hybridZoomSpec.focalLengthStep))
+                }
+            }
+        }
+        return _zoomSpec
+    }
+    
 
     public func gimbalState(channel: UInt) -> DatedValue<GimbalStateAdapter>? {
         gimbalSerialQueue.sync { [weak self] in

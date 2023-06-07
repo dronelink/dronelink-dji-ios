@@ -199,19 +199,14 @@ extension DJIDroneSession {
         }
         
         if let command = cameraCommand as? Kernel.ZoomCameraCommand {
-            let zoomMax = Double(state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.max.rawValue] ?? 0)
-            let zoomMin = Double(state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.min.rawValue] ?? 0)
-            let zoomStep = (state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.min.rawValue] == nil
-                            || state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.min.rawValue] == 0) ? 1 : Double(state.opticalZoomSpecResolved[Kernel.CameraZoomSpec.min.rawValue] ?? 0)
-            
-            let targetZoomValue = UInt(round((command.zoomPercent * (zoomMax - zoomMin) + zoomMin) / zoomStep) * zoomStep)
-            Command.conditionallyExecute(UInt(state.opticalZoomValue ?? 0) != targetZoomValue, finished: finished) {
-                camera.setOpticalZoomFocalLength(targetZoomValue) { error in
-                    if error != nil {
-                        finished(error)
-                        return
-                    }
+            Command.conditionallyExecute(state.zoomSpec != nil, finished: finished) {
+                guard let zoomSpec = state.zoomSpec else {
+                    return
                 }
+                let zoomMax = Double(zoomSpec.max)
+                let zoomMin = Double(zoomSpec.min)
+                let zoomStep = Double(zoomSpec.step == 0 ? 1 : zoomSpec.step)
+                camera.setHybridZoomFocalLength(UInt(round((command.zoomPercent * (zoomMax - zoomMin) + zoomMin) / zoomStep) * zoomStep), withCompletion: finished)
             }
             return nil
         }
