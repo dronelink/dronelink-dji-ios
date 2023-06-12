@@ -492,9 +492,7 @@ public class DJIDroneSession: NSObject {
         }
         
         startListeningForChanges(on: DJICameraKey(param: DJICameraParamHybridZoomFocalLength)!) { [weak self] (oldValue, newValue) in
-            NSLog("ZOOMTEST new ZoomValue before double: \(newValue)")
             if let value = newValue?.doubleValue {
-                NSLog("ZOOMTEST new ZoomValue after double: \(value)")
                 self?._zoomValue = DatedValue(value: value)
             }
             else {
@@ -1053,7 +1051,7 @@ extension DJIDroneSession: DroneSession {
                         focusRingValue: self?._focusRingValue?.value,
                         focusRingMax: self?._focusRingMax?.value,
                         zoomValue: _zoomValue?.value,
-                        zoomSpec: _getZoomSpec(camera: camera as? DJICamera)?.value,
+                        zoomSpecObject: _getZoomSpec(camera: camera as? DJICamera)?.value,
                         meteringMode: self?._meteringMode?.value,
                         isAutoExposureLockEnabled: self?.autoExposureLockEnabled?.value ?? false),
                     date: systemState.date)
