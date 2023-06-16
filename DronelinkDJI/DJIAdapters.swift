@@ -485,6 +485,9 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         }
         return camera.isHybridZoomSupported()
     }
+    public var isThermalZoomSupported: Bool {
+        return false
+    }
 }
 
 public class DJIGimbalAdapter: GimbalAdapter {
