@@ -1,0 +1,395 @@
+# Mission Paused
+MissionDisengageReason.user.disengaged=Missione sospesa
+
+# Unhandled Command Type
+MissionDisengageReason.command.type.unhandled=Tipo di comando non gestito
+
+# Drone Disconnected
+MissionDisengageReason.drone.disconnected.title=Drone disconnesso
+
+# Drone Control Unavailable
+MissionDisengageReason.drone.control.unavailable.title=Controllo drone non disponibile
+
+# Telemetry Unavailable
+MissionDisengageReason.telemetry.unavailable.title=Telemetria non disponibile
+
+# Weak Signal
+MissionDisengageReason.telemetry.delayed.title=Segnale debole
+
+# • Please point the RC antennas towards the drone.\n• If the signal does not improve, try moving closer to the drone.\n• If the signal still does not improve, move to an area with fewer obstacles or RF interference.
+MissionDisengageReason.telemetry.delayed.details=• Punta le antenne RC verso il drone.\n• Se il segnale non migliora, prova ad avvicinarti al drone.\n• Se il segnale continua a non migliorare, spostati in un'area con meno ostacoli o interferenze RF.
+
+# Automatic Control Interrupted
+MissionDisengageReason.drone.control.override.title=Controllo automatico interrotto
+
+# The drone must remain in P-GPS flight mode for automatic control.
+MissionDisengageReason.drone.control.override.details=Il drone deve rimanere in modalità di volo P-GPS per il controllo automatico.
+
+# Unable to Take Off
+MissionDisengageReason.take.off.failed.title=Impossibile decollare
+
+# Unable to Take Control
+MissionDisengageReason.take.control.failed.title=Impossibile prendere il controllo
+
+# Execution State Invalid
+MissionDisengageReason.execution.state.invalid.title=Stato di esecuzione non valido
+
+# Unable to Load Mission
+MissionDisengageReason.load.mission.failed.title=Impossibile caricare la missione
+
+# Unable to Upload Mission
+MissionDisengageReason.upload.mission.failed.title=Impossibile caricare la missione
+
+# Unable to Start Mission
+MissionDisengageReason.start.mission.failed.title=Impossibile avviare la missione
+
+# Max Altitude Reached
+MissionDisengageReason.drone.max.altitude.title=Altitudine massima raggiunta
+
+# Increase the max altitude setting to continue.
+MissionDisengageReason.drone.max.altitude.details=Aumentare l'impostazione dell'altitudine massima per continuare.
+
+# Max Distance Reached
+MissionDisengageReason.drone.max.distance.title=Distanza massima raggiunta
+
+# Increase the max distance setting to continue.
+MissionDisengageReason.drone.max.distance.details=Aumentare l'impostazione della distanza massima per continuare.
+
+# Flight Assistant Unavailable
+MissionDisengageReason.drone.flight.assistant.unavailable.title=Assistente di volo non disponibile
+
+# Landing Gear Unavailable
+MissionDisengageReason.drone.landing.gear.unavailable.title=Carrello di atterraggio non disponibile
+
+# Lightbridge Link Unavailable
+MissionDisengageReason.drone.lightbridge.unavailable.title=Collegamento Lightbridge non disponibile
+
+# OcuSync Link Unavailable
+MissionDisengageReason.drone.ocusync.unavailable.title=Collegamento OcuSync non disponibile
+
+# Accessories Unavailable
+MissionDisengageReason.drone.accessory.aggregation.unavailable.title=Accessori Non disponibile
+
+# Beacon Unavailable
+MissionDisengageReason.drone.beacon.unavailable.title=Segnale non disponibile
+
+# Spotlight Unavailable
+MissionDisengageReason.drone.spotlight.unavailable.title=Spotlight Non disponibile
+
+# Live Streaming Unavailable
+MissionDisengageReason.drone.live.streaming.unavailable.title=Streaming live non disponibile
+
+# Unable to Start Live Streaming
+MissionDisengageReason.drone.live.streaming.failed.title=Impossibile avviare il live streaming
+
+# Remote Controller Unavailable
+MissionDisengageReason.drone.remote.controller.unavailable.title=Telecomando non disponibile
+
+# Camera Unavailable
+MissionDisengageReason.drone.camera.unavailable.title=Fotocamera non disponibile
+
+# Lens Unavailable
+MissionDisengageReason.drone.lens.unavailable.title=Obiettivo non disponibile
+
+# Gimbal Unavailable
+MissionDisengageReason.drone.gimbal.unavailable.title=Gimbal Non disponibile
+
+# Camera Mode Invalid
+MissionDisengageReason.drone.camera.mode.invalid.title=Modalità fotocamera non valida
+
+# Uploading waypoints | %@ of %@
+DJIWaypointMissionSession.statusMessage.uploading=Caricamento waypoint | %@ Di %@
+
+# Component %@ of %@
+DJIWaypointMissionSession.statusMessage.component=Componente %@ di %@
+
+# Approaching waypoint %@ of %@
+DJIWaypointMissionSession.statusMessage.waypoint.0=Waypoint in avvicinamento %@ di %@
+
+# Flying to waypoint %@ of %@ | %@
+DJIWaypointMissionSession.statusMessage.waypoint.n=In volo verso il waypoint %@ di %@ | %@
+
+# Resuming at %@ to waypoint %@...
+DJIWaypointMissionSession.statusMessage.reengaging=Ripresa alle %@ al waypoint %@...
+
+# Telemetry Unavailable
+DJIDroneSession.telemetry.unavailable=Telemetria non disponibile
+
+# The %@ does not support DJI onboard waypoints.
+DJIDroneSession.createControlSession.dji.unsupported.drone=%@ non supporta i waypoint a bordo di DJI.
+
+# Unsupported execution engine: %@
+DJIDroneSession.createControlSession.execution.engine.unsupported=Motore di esecuzione non supportato: %@
+
+# Camera still capturing
+DJIDroneSession+CameraCommand.stop.capture.error=La fotocamera sta ancora catturando
+
+# Media File Not Created
+DJIDroneSession+CameraCommand.start.shoot.photo.no.file=File multimediale non creato
+
+# Uncalibrated Focus Distance
+DJIDroneSession+CameraCommand.focus.distance.error=Distanza di messa a fuoco non calibrata
+
+# Camera Busy
+DJIDroneSession+CameraCommand.focus.target.error=Fotocamera occupata
+
+# Focus Ring Outside Limits: %@ < %@ < %@
+DJIDroneSession+CameraCommand.focus.target.ring.invalid=Anello di messa a fuoco fuori dai limiti: %@ < %@ < %@
+
+# Gimbal Not Rotated
+DJIDroneSession+GimbalCommand.orientation.not.achieved=Giunto cardanico non ruotato
+
+# Remote controller is unavailable.
+DJIDroneSessionManager.remoteControllerLinking.unavailable=Il telecomando non è disponibile.
+
+# GPS Signal Unavailable
+DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.title=Segnale GPS non disponibile
+
+# Please wait for a strong GPS signal lock to continue.
+DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.details=Attendere che il segnale GPS venga bloccato per continuare.
+
+# Home Location Not Set
+DJIDronelink:DJIFlightControllerState.statusMessages.homeLocationNotSet.title=Posizione casa non impostata
+
+# Critically Low Battery
+DJIDronelink:DJIFlightControllerState.statusMessages.isLowerThanSeriousBatteryWarningThreshold.title=Batteria quasi scarica
+
+# Low Battery
+DJIDronelink:DJIFlightControllerState.statusMessages.isLowerThanBatteryWarningThreshold.title=Batteria scarica
+
+# Max Distance
+DJIDronelink:DJIFlightControllerState.statusMessages.hasReachedMaxFlightRadius.title=Distanza massima
+
+# Max Altitude
+DJIDronelink:DJIFlightControllerState.statusMessages.hasReachedMaxFlightHeight.title=Altitudine massima
+
+# Onboard Waypoints
+DJIWaypointMissionState.title=Waypoint a bordo
+
+# Unknown
+DJIWaypointMissionState.value.-1=Sconosciuto
+
+# Disconnected
+DJIWaypointMissionState.value.0=Disconnesso
+
+# Recovering
+DJIWaypointMissionState.value.1=Recupero
+
+# Not Supported
+DJIWaypointMissionState.value.2=Non supportato
+
+# Ready to Upload
+DJIWaypointMissionState.value.3=Pronto per il caricamento
+
+# Uploading
+DJIWaypointMissionState.value.4=Caricamento in corso
+
+# Ready to Execute
+DJIWaypointMissionState.value.5=Pronto per l'esecuzione
+
+# Running
+DJIWaypointMissionState.value.6=Corsa
+
+# Paused
+DJIWaypointMissionState.value.7=In pausa
+
+# Onboard Waypoints
+DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.default.title=Waypoint a bordo
+
+# Onboard Waypoints Uploading
+DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.uploading.title=Caricamento di waypoint a bordo
+
+# Onboard Waypoints Running
+DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.executing.title=Waypoint integrati in esecuzione
+
+# Onboard Waypoints Paused
+DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.executionPaused.title=Waypoint integrati in pausa
+
+# RTH
+DJIGoHomeExecutionState.title=RTH
+
+# Not Executing
+DJIGoHomeExecutionState.value.0=Non in esecuzione
+
+# Turning to Home Point
+DJIGoHomeExecutionState.value.1=Tornando al punto di partenza
+
+# Ascending to Altitude
+DJIGoHomeExecutionState.value.2=Salendo in quota
+
+# Flying to Home Point
+DJIGoHomeExecutionState.value.3=Volare al punto di partenza
+
+# Descending to Ground
+DJIGoHomeExecutionState.value.4=Discesa a terra
+
+# Braking
+DJIGoHomeExecutionState.value.5=Frenata
+
+# Bypassing
+DJIGoHomeExecutionState.value.6=Bypassare
+
+# Completed
+DJIGoHomeExecutionState.value.7=Completato
+
+# Unknown
+DJIGoHomeExecutionState.value.255=Sconosciuto
+
+# NFZ
+DJIFlyZoneState.title=NFZ
+
+# Clear
+DJIFlyZoneState.value.0=Chiaro
+
+# Near Restricted Zone
+DJIFlyZoneState.value.1=Vicino alla zona riservata
+
+# In Warning Zone with Height Limitation
+DJIFlyZoneState.value.2=Nella zona di attenzione con limitazione di altezza
+
+# In Warning Zone
+DJIFlyZoneState.value.3=Nella zona di attenzione
+
+# In Restricted Zone
+DJIFlyZoneState.value.4=In Zona Limitata
+
+# Unknown
+DJIFlyZoneState.value.255=Sconosciuto
+
+# AirSense Alert
+DJIAirSenseAirplaneState.title=Allarme AirSense
+
+# Aircraft %@ to the %@ at %@ (%@)
+DJIAirSenseAirplaneState.message=Velivolo %@ al %@ a %@ (%@)
+
+# Bearing
+DJIAirSenseDirection.title=Cuscinetto
+
+# North
+DJIAirSenseDirection.value.0=Nord
+
+# North east
+DJIAirSenseDirection.value.1=Nord est
+
+# East
+DJIAirSenseDirection.value.2=Est
+
+# South east
+DJIAirSenseDirection.value.3=Sud-est
+
+# South
+DJIAirSenseDirection.value.4=Sud
+
+# South west
+DJIAirSenseDirection.value.5=Sud-ovest
+
+# West
+DJIAirSenseDirection.value.6=ovest
+
+# North west
+DJIAirSenseDirection.value.7=Nord Ovest
+
+# Unknown
+DJIAirSenseDirection.value.255=Sconosciuto
+
+# DJI Activation
+DJIAppActivationState.title=Attivazione DJI
+
+# Not Supported
+DJIAppActivationState.value.0=Non supportato
+
+# Login Required
+DJIAppActivationState.value.1=Accesso richiesto
+
+# Activated
+DJIAppActivationState.value.2=Attivato
+
+# Unknown
+DJIAppActivationState.value.255=Sconosciuto
+
+# Video Feed Physical Source
+DJIVideoFeedPhysicalSource.title=Sorgente fisica del feed video
+
+# Main
+DJIVideoFeedPhysicalSource.value.0=Principale
+
+# FPV
+DJIVideoFeedPhysicalSource.value.1=FPV
+
+# LB
+DJIVideoFeedPhysicalSource.value.2=LIBBRE
+
+# EXT
+DJIVideoFeedPhysicalSource.value.3=EST
+
+# HDMI
+DJIVideoFeedPhysicalSource.value.4=HDMI
+
+# AV
+DJIVideoFeedPhysicalSource.value.5=AV
+
+# Left
+DJIVideoFeedPhysicalSource.value.6=Sinistra
+
+# Right
+DJIVideoFeedPhysicalSource.value.7=Giusto
+
+# Top
+DJIVideoFeedPhysicalSource.value.8=Superiore
+
+# Unknown
+DJIVideoFeedPhysicalSource.value.255=Sconosciuto
+
+# Compass
+DJICompassSensorState.title=Bussola
+
+# Disconnected
+DJICompassSensorState.value.0=Disconnesso
+
+# Calibrating
+DJICompassSensorState.value.1=Calibrazione
+
+# Idle
+DJICompassSensorState.value.2=Oziare
+
+# Data Exception
+DJICompassSensorState.value.3=Eccezione dati
+
+# Super Modulus Small
+DJICompassSensorState.value.4=Super Modulo Piccolo
+
+# Super Modulus Weak
+DJICompassSensorState.value.5=Super modulo debole
+
+# Super Modulus Deviate
+DJICompassSensorState.value.6=Deviazione del super modulo
+
+# Calibration Failed
+DJICompassSensorState.value.7=Calibrazione fallita
+
+# Inconsistent Direction
+DJICompassSensorState.value.8=Direzione incoerente
+
+# Unknown
+DJICompassSensorState.value.255=Sconosciuto
+
+# Compass Calibration
+DJICompassCalibrationState.title=Calibrazione della bussola
+
+# None
+DJICompassCalibrationState.value.0=Nessuno
+
+# Rotate 360 Horizontally
+DJICompassCalibrationState.value.1=Ruota orizzontalmente di 360°
+
+# Rotate 360 Vertically
+DJICompassCalibrationState.value.2=Ruota di 360° verticalmente
+
+# Finished
+DJICompassCalibrationState.value.3=Finito
+
+# Failed
+DJICompassCalibrationState.value.4=Fallito
+
+# Unknown
+DJICompassCalibrationState.value.255=Sconosciuto

@@ -1,0 +1,395 @@
+# Mission Paused
+MissionDisengageReason.user.disengaged=Миссия приостановлена
+
+# Unhandled Command Type
+MissionDisengageReason.command.type.unhandled=Необработанный тип команды
+
+# Drone Disconnected
+MissionDisengageReason.drone.disconnected.title=Дрон отключен
+
+# Drone Control Unavailable
+MissionDisengageReason.drone.control.unavailable.title=Управление дроном недоступно
+
+# Telemetry Unavailable
+MissionDisengageReason.telemetry.unavailable.title=Телеметрия недоступна
+
+# Weak Signal
+MissionDisengageReason.telemetry.delayed.title=Слабый сигнал
+
+# • Please point the RC antennas towards the drone.\n• If the signal does not improve, try moving closer to the drone.\n• If the signal still does not improve, move to an area with fewer obstacles or RF interference.
+MissionDisengageReason.telemetry.delayed.details=• Направьте антенны ДУ на дрон.\n• Если сигнал не улучшится, попробуйте приблизиться к дрону.\n• Если сигнал по-прежнему не улучшится, переместитесь в место с меньшим количеством препятствий или радиопомех.
+
+# Automatic Control Interrupted
+MissionDisengageReason.drone.control.override.title=Автоматическое управление прервано
+
+# The drone must remain in P-GPS flight mode for automatic control.
+MissionDisengageReason.drone.control.override.details=Дрон должен оставаться в режиме полета P-GPS для автоматического управления.
+
+# Unable to Take Off
+MissionDisengageReason.take.off.failed.title=Невозможно взлететь
+
+# Unable to Take Control
+MissionDisengageReason.take.control.failed.title=Невозможно взять под контроль
+
+# Execution State Invalid
+MissionDisengageReason.execution.state.invalid.title=Недопустимое состояние выполнения
+
+# Unable to Load Mission
+MissionDisengageReason.load.mission.failed.title=Не удалось загрузить миссию
+
+# Unable to Upload Mission
+MissionDisengageReason.upload.mission.failed.title=Не удалось загрузить миссию
+
+# Unable to Start Mission
+MissionDisengageReason.start.mission.failed.title=Невозможно начать миссию
+
+# Max Altitude Reached
+MissionDisengageReason.drone.max.altitude.title=Достигнута максимальная высота
+
+# Increase the max altitude setting to continue.
+MissionDisengageReason.drone.max.altitude.details=Увеличьте настройку максимальной высоты, чтобы продолжить.
+
+# Max Distance Reached
+MissionDisengageReason.drone.max.distance.title=Максимальное достигнутое расстояние
+
+# Increase the max distance setting to continue.
+MissionDisengageReason.drone.max.distance.details=Увеличьте настройку максимального расстояния, чтобы продолжить.
+
+# Flight Assistant Unavailable
+MissionDisengageReason.drone.flight.assistant.unavailable.title=Помощник по полету недоступен
+
+# Landing Gear Unavailable
+MissionDisengageReason.drone.landing.gear.unavailable.title=Шасси недоступно
+
+# Lightbridge Link Unavailable
+MissionDisengageReason.drone.lightbridge.unavailable.title=Ссылка на Lightbridge недоступна
+
+# OcuSync Link Unavailable
+MissionDisengageReason.drone.ocusync.unavailable.title=Ссылка OcuSync недоступна
+
+# Accessories Unavailable
+MissionDisengageReason.drone.accessory.aggregation.unavailable.title=Аксессуары недоступны
+
+# Beacon Unavailable
+MissionDisengageReason.drone.beacon.unavailable.title=Маяк недоступен
+
+# Spotlight Unavailable
+MissionDisengageReason.drone.spotlight.unavailable.title=Прожектор недоступен
+
+# Live Streaming Unavailable
+MissionDisengageReason.drone.live.streaming.unavailable.title=Прямая трансляция недоступна
+
+# Unable to Start Live Streaming
+MissionDisengageReason.drone.live.streaming.failed.title=Невозможно начать прямую трансляцию
+
+# Remote Controller Unavailable
+MissionDisengageReason.drone.remote.controller.unavailable.title=Пульт дистанционного управления недоступен
+
+# Camera Unavailable
+MissionDisengageReason.drone.camera.unavailable.title=Камера недоступна
+
+# Lens Unavailable
+MissionDisengageReason.drone.lens.unavailable.title=Объектив недоступен
+
+# Gimbal Unavailable
+MissionDisengageReason.drone.gimbal.unavailable.title=Подвес недоступен
+
+# Camera Mode Invalid
+MissionDisengageReason.drone.camera.mode.invalid.title=Неверный режим камеры
+
+# Uploading waypoints | %@ of %@
+DJIWaypointMissionSession.statusMessage.uploading=Загрузка путевых точек | %@ из %@
+
+# Component %@ of %@
+DJIWaypointMissionSession.statusMessage.component=Компонент %@ из %@
+
+# Approaching waypoint %@ of %@
+DJIWaypointMissionSession.statusMessage.waypoint.0=Приближение к путевой точке %@ из %@
+
+# Flying to waypoint %@ of %@ | %@
+DJIWaypointMissionSession.statusMessage.waypoint.n=Полет к путевой точке %@ из %@ | %@
+
+# Resuming at %@ to waypoint %@...
+DJIWaypointMissionSession.statusMessage.reengaging=Возобновление в %@ к путевой точке %@...
+
+# Telemetry Unavailable
+DJIDroneSession.telemetry.unavailable=Телеметрия недоступна
+
+# The %@ does not support DJI onboard waypoints.
+DJIDroneSession.createControlSession.dji.unsupported.drone=%@ не поддерживает встроенные путевые точки DJI.
+
+# Unsupported execution engine: %@
+DJIDroneSession.createControlSession.execution.engine.unsupported=Неподдерживаемый механизм выполнения: %@
+
+# Camera still capturing
+DJIDroneSession+CameraCommand.stop.capture.error=Камера все еще снимает
+
+# Media File Not Created
+DJIDroneSession+CameraCommand.start.shoot.photo.no.file=Медиафайл не создан
+
+# Uncalibrated Focus Distance
+DJIDroneSession+CameraCommand.focus.distance.error=Неоткалиброванное расстояние фокусировки
+
+# Camera Busy
+DJIDroneSession+CameraCommand.focus.target.error=Камера занята
+
+# Focus Ring Outside Limits: %@ < %@ < %@
+DJIDroneSession+CameraCommand.focus.target.ring.invalid=Кольцо фокусировки вне пределов: %@ < %@ < %@
+
+# Gimbal Not Rotated
+DJIDroneSession+GimbalCommand.orientation.not.achieved=Подвес не повернут
+
+# Remote controller is unavailable.
+DJIDroneSessionManager.remoteControllerLinking.unavailable=Пульт дистанционного управления недоступен.
+
+# GPS Signal Unavailable
+DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.title=GPS-сигнал недоступен
+
+# Please wait for a strong GPS signal lock to continue.
+DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.details=Пожалуйста, дождитесь сильного захвата сигнала GPS, чтобы продолжить.
+
+# Home Location Not Set
+DJIDronelink:DJIFlightControllerState.statusMessages.homeLocationNotSet.title=Домашняя локация не указана
+
+# Critically Low Battery
+DJIDronelink:DJIFlightControllerState.statusMessages.isLowerThanSeriousBatteryWarningThreshold.title=Критически низкий заряд батареи
+
+# Low Battery
+DJIDronelink:DJIFlightControllerState.statusMessages.isLowerThanBatteryWarningThreshold.title=Низкий заряд батареи
+
+# Max Distance
+DJIDronelink:DJIFlightControllerState.statusMessages.hasReachedMaxFlightRadius.title=Максимальное расстояние
+
+# Max Altitude
+DJIDronelink:DJIFlightControllerState.statusMessages.hasReachedMaxFlightHeight.title=Максимальная высота
+
+# Onboard Waypoints
+DJIWaypointMissionState.title=Бортовые путевые точки
+
+# Unknown
+DJIWaypointMissionState.value.-1=Неизвестный
+
+# Disconnected
+DJIWaypointMissionState.value.0=Отключено
+
+# Recovering
+DJIWaypointMissionState.value.1=Восстановление
+
+# Not Supported
+DJIWaypointMissionState.value.2=Не поддерживается
+
+# Ready to Upload
+DJIWaypointMissionState.value.3=Готов к загрузке
+
+# Uploading
+DJIWaypointMissionState.value.4=Загрузка
+
+# Ready to Execute
+DJIWaypointMissionState.value.5=Готов к выполнению
+
+# Running
+DJIWaypointMissionState.value.6=Бег
+
+# Paused
+DJIWaypointMissionState.value.7=Приостановлено
+
+# Onboard Waypoints
+DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.default.title=Бортовые путевые точки
+
+# Onboard Waypoints Uploading
+DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.uploading.title=Загрузка бортовых путевых точек
+
+# Onboard Waypoints Running
+DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.executing.title=Бортовые путевые точки
+
+# Onboard Waypoints Paused
+DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.executionPaused.title=Бортовые путевые точки приостановлены
+
+# RTH
+DJIGoHomeExecutionState.title=РУТ
+
+# Not Executing
+DJIGoHomeExecutionState.value.0=Не выполняется
+
+# Turning to Home Point
+DJIGoHomeExecutionState.value.1=Поворот в домашнюю точку
+
+# Ascending to Altitude
+DJIGoHomeExecutionState.value.2=Восхождение на высоту
+
+# Flying to Home Point
+DJIGoHomeExecutionState.value.3=Полет в домашнюю точку
+
+# Descending to Ground
+DJIGoHomeExecutionState.value.4=Спуск на землю
+
+# Braking
+DJIGoHomeExecutionState.value.5=Торможение
+
+# Bypassing
+DJIGoHomeExecutionState.value.6=В обход
+
+# Completed
+DJIGoHomeExecutionState.value.7=Завершенный
+
+# Unknown
+DJIGoHomeExecutionState.value.255=Неизвестный
+
+# NFZ
+DJIFlyZoneState.title=НФЗ
+
+# Clear
+DJIFlyZoneState.value.0=Прозрачный
+
+# Near Restricted Zone
+DJIFlyZoneState.value.1=Рядом с запретной зоной
+
+# In Warning Zone with Height Limitation
+DJIFlyZoneState.value.2=В зоне предупреждения с ограничением по высоте
+
+# In Warning Zone
+DJIFlyZoneState.value.3=В зоне предупреждения
+
+# In Restricted Zone
+DJIFlyZoneState.value.4=В запретной зоне
+
+# Unknown
+DJIFlyZoneState.value.255=Неизвестный
+
+# AirSense Alert
+DJIAirSenseAirplaneState.title=Предупреждение AirSense
+
+# Aircraft %@ to the %@ at %@ (%@)
+DJIAirSenseAirplaneState.message=Самолет %@ на %@ в %@ (%@)
+
+# Bearing
+DJIAirSenseDirection.title=Несущий
+
+# North
+DJIAirSenseDirection.value.0=Север
+
+# North east
+DJIAirSenseDirection.value.1=К северо-востоку
+
+# East
+DJIAirSenseDirection.value.2=Восток
+
+# South east
+DJIAirSenseDirection.value.3=Юго-восток
+
+# South
+DJIAirSenseDirection.value.4=Юг
+
+# South west
+DJIAirSenseDirection.value.5=Юго-запад
+
+# West
+DJIAirSenseDirection.value.6=Запад
+
+# North west
+DJIAirSenseDirection.value.7=Северо-Запад
+
+# Unknown
+DJIAirSenseDirection.value.255=Неизвестный
+
+# DJI Activation
+DJIAppActivationState.title=Активация DJI
+
+# Not Supported
+DJIAppActivationState.value.0=Не поддерживается
+
+# Login Required
+DJIAppActivationState.value.1=Требуется вход
+
+# Activated
+DJIAppActivationState.value.2=Активировано
+
+# Unknown
+DJIAppActivationState.value.255=Неизвестный
+
+# Video Feed Physical Source
+DJIVideoFeedPhysicalSource.title=Физический источник видеопотока
+
+# Main
+DJIVideoFeedPhysicalSource.value.0=Основной
+
+# FPV
+DJIVideoFeedPhysicalSource.value.1=FPV
+
+# LB
+DJIVideoFeedPhysicalSource.value.2=ФУНТ
+
+# EXT
+DJIVideoFeedPhysicalSource.value.3=EXT
+
+# HDMI
+DJIVideoFeedPhysicalSource.value.4=HDMI
+
+# AV
+DJIVideoFeedPhysicalSource.value.5=средний
+
+# Left
+DJIVideoFeedPhysicalSource.value.6=Левый
+
+# Right
+DJIVideoFeedPhysicalSource.value.7=Верно
+
+# Top
+DJIVideoFeedPhysicalSource.value.8=Вершина
+
+# Unknown
+DJIVideoFeedPhysicalSource.value.255=Неизвестный
+
+# Compass
+DJICompassSensorState.title=Компас
+
+# Disconnected
+DJICompassSensorState.value.0=Отключено
+
+# Calibrating
+DJICompassSensorState.value.1=Калибровка
+
+# Idle
+DJICompassSensorState.value.2=Праздный
+
+# Data Exception
+DJICompassSensorState.value.3=Исключение данных
+
+# Super Modulus Small
+DJICompassSensorState.value.4=Супер Модуль Малый
+
+# Super Modulus Weak
+DJICompassSensorState.value.5=Слабый супермодуль
+
+# Super Modulus Deviate
+DJICompassSensorState.value.6=Отклонение супермодуля
+
+# Calibration Failed
+DJICompassSensorState.value.7=Калибровка не удалась
+
+# Inconsistent Direction
+DJICompassSensorState.value.8=Непоследовательное направление
+
+# Unknown
+DJICompassSensorState.value.255=Неизвестный
+
+# Compass Calibration
+DJICompassCalibrationState.title=Калибровка компаса
+
+# None
+DJICompassCalibrationState.value.0=Никто
+
+# Rotate 360 Horizontally
+DJICompassCalibrationState.value.1=Повернуть на 360 по горизонтали
+
+# Rotate 360 Vertically
+DJICompassCalibrationState.value.2=Повернуть на 360 по вертикали
+
+# Finished
+DJICompassCalibrationState.value.3=Законченный
+
+# Failed
+DJICompassCalibrationState.value.4=Неуспешный
+
+# Unknown
+DJICompassCalibrationState.value.255=Неизвестный

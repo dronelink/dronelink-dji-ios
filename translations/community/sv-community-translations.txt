@@ -1,0 +1,395 @@
+# Mission Paused
+MissionDisengageReason.user.disengaged=Uppdraget pausat
+
+# Unhandled Command Type
+MissionDisengageReason.command.type.unhandled=Obehandlad kommandotyp
+
+# Drone Disconnected
+MissionDisengageReason.drone.disconnected.title=Drönare frånkopplad
+
+# Drone Control Unavailable
+MissionDisengageReason.drone.control.unavailable.title=Drönarkontroll ej tillgänglig
+
+# Telemetry Unavailable
+MissionDisengageReason.telemetry.unavailable.title=Telemetri inte tillgänglig
+
+# Weak Signal
+MissionDisengageReason.telemetry.delayed.title=Svag signal
+
+# • Please point the RC antennas towards the drone.\n• If the signal does not improve, try moving closer to the drone.\n• If the signal still does not improve, move to an area with fewer obstacles or RF interference.
+MissionDisengageReason.telemetry.delayed.details=• Rikta RC-antennerna mot drönaren.\n• Om signalen inte förbättras, försök att flytta närmare drönaren.\n• Om signalen fortfarande inte förbättras, flytta till ett område med färre hinder eller RF-störningar.
+
+# Automatic Control Interrupted
+MissionDisengageReason.drone.control.override.title=Automatisk kontroll avbruten
+
+# The drone must remain in P-GPS flight mode for automatic control.
+MissionDisengageReason.drone.control.override.details=Drönaren måste förbli i P-GPS flygläge för automatisk kontroll.
+
+# Unable to Take Off
+MissionDisengageReason.take.off.failed.title=Kan inte lyfta
+
+# Unable to Take Control
+MissionDisengageReason.take.control.failed.title=Kan inte ta kontroll
+
+# Execution State Invalid
+MissionDisengageReason.execution.state.invalid.title=Utförandestat ogiltig
+
+# Unable to Load Mission
+MissionDisengageReason.load.mission.failed.title=Det gick inte att ladda uppdrag
+
+# Unable to Upload Mission
+MissionDisengageReason.upload.mission.failed.title=Det gick inte att ladda upp uppdrag
+
+# Unable to Start Mission
+MissionDisengageReason.start.mission.failed.title=Det gick inte att starta uppdraget
+
+# Max Altitude Reached
+MissionDisengageReason.drone.max.altitude.title=Maxhöjd uppnådd
+
+# Increase the max altitude setting to continue.
+MissionDisengageReason.drone.max.altitude.details=Öka maxhöjdinställningen för att fortsätta.
+
+# Max Distance Reached
+MissionDisengageReason.drone.max.distance.title=Max nått avstånd
+
+# Increase the max distance setting to continue.
+MissionDisengageReason.drone.max.distance.details=Öka maxavståndsinställningen för att fortsätta.
+
+# Flight Assistant Unavailable
+MissionDisengageReason.drone.flight.assistant.unavailable.title=Flight Assistant ej tillgänglig
+
+# Landing Gear Unavailable
+MissionDisengageReason.drone.landing.gear.unavailable.title=Landningsställ ej tillgängligt
+
+# Lightbridge Link Unavailable
+MissionDisengageReason.drone.lightbridge.unavailable.title=Lightbridge-länken är inte tillgänglig
+
+# OcuSync Link Unavailable
+MissionDisengageReason.drone.ocusync.unavailable.title=OcuSync-länk är inte tillgänglig
+
+# Accessories Unavailable
+MissionDisengageReason.drone.accessory.aggregation.unavailable.title=Tillbehör ej tillgängliga
+
+# Beacon Unavailable
+MissionDisengageReason.drone.beacon.unavailable.title=Beacon ej tillgänglig
+
+# Spotlight Unavailable
+MissionDisengageReason.drone.spotlight.unavailable.title=Spotlight ej tillgänglig
+
+# Live Streaming Unavailable
+MissionDisengageReason.drone.live.streaming.unavailable.title=Livestreaming ej tillgänglig
+
+# Unable to Start Live Streaming
+MissionDisengageReason.drone.live.streaming.failed.title=Det gick inte att starta livestreaming
+
+# Remote Controller Unavailable
+MissionDisengageReason.drone.remote.controller.unavailable.title=Fjärrkontroll ej tillgänglig
+
+# Camera Unavailable
+MissionDisengageReason.drone.camera.unavailable.title=Kameran är inte tillgänglig
+
+# Lens Unavailable
+MissionDisengageReason.drone.lens.unavailable.title=Objektivet är inte tillgängligt
+
+# Gimbal Unavailable
+MissionDisengageReason.drone.gimbal.unavailable.title=Gimbal ej tillgänglig
+
+# Camera Mode Invalid
+MissionDisengageReason.drone.camera.mode.invalid.title=Kameraläge ogiltigt
+
+# Uploading waypoints | %@ of %@
+DJIWaypointMissionSession.statusMessage.uploading=Laddar upp waypoints | %@ av %@
+
+# Component %@ of %@
+DJIWaypointMissionSession.statusMessage.component=Komponent av %@
+
+# Approaching waypoint %@ of %@
+DJIWaypointMissionSession.statusMessage.waypoint.0=Närmar sig waypoint %@ av %@
+
+# Flying to waypoint %@ of %@ | %@
+DJIWaypointMissionSession.statusMessage.waypoint.n=Flyger till waypoint %@ av %@ | %@
+
+# Resuming at %@ to waypoint %@...
+DJIWaypointMissionSession.statusMessage.reengaging=Återupptar vid %@ till waypoint %@...
+
+# Telemetry Unavailable
+DJIDroneSession.telemetry.unavailable=Telemetri inte tillgänglig
+
+# The %@ does not support DJI onboard waypoints.
+DJIDroneSession.createControlSession.dji.unsupported.drone=%@ stöder inte DJI-vägpunkter ombord.
+
+# Unsupported execution engine: %@
+DJIDroneSession.createControlSession.execution.engine.unsupported=Utförandemotor som inte stöds: %@
+
+# Camera still capturing
+DJIDroneSession+CameraCommand.stop.capture.error=Kameran fotograferar fortfarande
+
+# Media File Not Created
+DJIDroneSession+CameraCommand.start.shoot.photo.no.file=Mediafilen har inte skapats
+
+# Uncalibrated Focus Distance
+DJIDroneSession+CameraCommand.focus.distance.error=Okalibrerat fokusavstånd
+
+# Camera Busy
+DJIDroneSession+CameraCommand.focus.target.error=Kameran upptagen
+
+# Focus Ring Outside Limits: %@ < %@ < %@
+DJIDroneSession+CameraCommand.focus.target.ring.invalid=Fokusring utanför gränser: %@ < %@ < %@
+
+# Gimbal Not Rotated
+DJIDroneSession+GimbalCommand.orientation.not.achieved=Kardan inte roterad
+
+# Remote controller is unavailable.
+DJIDroneSessionManager.remoteControllerLinking.unavailable=Fjärrkontrollen är inte tillgänglig.
+
+# GPS Signal Unavailable
+DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.title=GPS-signal ej tillgänglig
+
+# Please wait for a strong GPS signal lock to continue.
+DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.details=Vänta tills ett starkt GPS-signallås fortsätter.
+
+# Home Location Not Set
+DJIDronelink:DJIFlightControllerState.statusMessages.homeLocationNotSet.title=Hemplats ej angiven
+
+# Critically Low Battery
+DJIDronelink:DJIFlightControllerState.statusMessages.isLowerThanSeriousBatteryWarningThreshold.title=Kritiskt lågt batteri
+
+# Low Battery
+DJIDronelink:DJIFlightControllerState.statusMessages.isLowerThanBatteryWarningThreshold.title=Låg batterinivå
+
+# Max Distance
+DJIDronelink:DJIFlightControllerState.statusMessages.hasReachedMaxFlightRadius.title=Max avstånd
+
+# Max Altitude
+DJIDronelink:DJIFlightControllerState.statusMessages.hasReachedMaxFlightHeight.title=Max höjd
+
+# Onboard Waypoints
+DJIWaypointMissionState.title=Waypoints ombord
+
+# Unknown
+DJIWaypointMissionState.value.-1=Okänd
+
+# Disconnected
+DJIWaypointMissionState.value.0=Osammanhängande
+
+# Recovering
+DJIWaypointMissionState.value.1=Återhämtar sig
+
+# Not Supported
+DJIWaypointMissionState.value.2=Stöds inte
+
+# Ready to Upload
+DJIWaypointMissionState.value.3=Klar att ladda upp
+
+# Uploading
+DJIWaypointMissionState.value.4=Laddar upp
+
+# Ready to Execute
+DJIWaypointMissionState.value.5=Redo att köra
+
+# Running
+DJIWaypointMissionState.value.6=Löpning
+
+# Paused
+DJIWaypointMissionState.value.7=Pausad
+
+# Onboard Waypoints
+DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.default.title=Waypoints ombord
+
+# Onboard Waypoints Uploading
+DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.uploading.title=Uppladdning av vägpunkter ombord
+
+# Onboard Waypoints Running
+DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.executing.title=Inbyggda waypoints körs
+
+# Onboard Waypoints Paused
+DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.executionPaused.title=Inbyggda waypoints pausade
+
+# RTH
+DJIGoHomeExecutionState.title=RTH
+
+# Not Executing
+DJIGoHomeExecutionState.value.0=Utför inte
+
+# Turning to Home Point
+DJIGoHomeExecutionState.value.1=Vänder sig till Home Point
+
+# Ascending to Altitude
+DJIGoHomeExecutionState.value.2=Stiger till höjd
+
+# Flying to Home Point
+DJIGoHomeExecutionState.value.3=Flyger till Home Point
+
+# Descending to Ground
+DJIGoHomeExecutionState.value.4=Går ner till marken
+
+# Braking
+DJIGoHomeExecutionState.value.5=Bromsning
+
+# Bypassing
+DJIGoHomeExecutionState.value.6=Förbigående
+
+# Completed
+DJIGoHomeExecutionState.value.7=Avslutad
+
+# Unknown
+DJIGoHomeExecutionState.value.255=Okänd
+
+# NFZ
+DJIFlyZoneState.title=NFZ
+
+# Clear
+DJIFlyZoneState.value.0=Klar
+
+# Near Restricted Zone
+DJIFlyZoneState.value.1=Nära restriktionszon
+
+# In Warning Zone with Height Limitation
+DJIFlyZoneState.value.2=I varningszon med höjdbegränsning
+
+# In Warning Zone
+DJIFlyZoneState.value.3=I varningszon
+
+# In Restricted Zone
+DJIFlyZoneState.value.4=I begränsad zon
+
+# Unknown
+DJIFlyZoneState.value.255=Okänd
+
+# AirSense Alert
+DJIAirSenseAirplaneState.title=AirSense Alert
+
+# Aircraft %@ to the %@ at %@ (%@)
+DJIAirSenseAirplaneState.message=Flygplan %@ till %@ vid %@ (%@)
+
+# Bearing
+DJIAirSenseDirection.title=Lager
+
+# North
+DJIAirSenseDirection.value.0=Norr
+
+# North east
+DJIAirSenseDirection.value.1=Nordost
+
+# East
+DJIAirSenseDirection.value.2=Öst
+
+# South east
+DJIAirSenseDirection.value.3=Sydost
+
+# South
+DJIAirSenseDirection.value.4=söder
+
+# South west
+DJIAirSenseDirection.value.5=Sydväst
+
+# West
+DJIAirSenseDirection.value.6=Väst
+
+# North west
+DJIAirSenseDirection.value.7=Nordväst
+
+# Unknown
+DJIAirSenseDirection.value.255=Okänd
+
+# DJI Activation
+DJIAppActivationState.title=DJI aktivering
+
+# Not Supported
+DJIAppActivationState.value.0=Stöds inte
+
+# Login Required
+DJIAppActivationState.value.1=Inloggning Krävs
+
+# Activated
+DJIAppActivationState.value.2=Aktiverad
+
+# Unknown
+DJIAppActivationState.value.255=Okänd
+
+# Video Feed Physical Source
+DJIVideoFeedPhysicalSource.title=Fysisk källa för videoflöde
+
+# Main
+DJIVideoFeedPhysicalSource.value.0=Main
+
+# FPV
+DJIVideoFeedPhysicalSource.value.1=FPV
+
+# LB
+DJIVideoFeedPhysicalSource.value.2=LB
+
+# EXT
+DJIVideoFeedPhysicalSource.value.3=EXT
+
+# HDMI
+DJIVideoFeedPhysicalSource.value.4=HDMI
+
+# AV
+DJIVideoFeedPhysicalSource.value.5=AV
+
+# Left
+DJIVideoFeedPhysicalSource.value.6=Vänster
+
+# Right
+DJIVideoFeedPhysicalSource.value.7=Höger
+
+# Top
+DJIVideoFeedPhysicalSource.value.8=Topp
+
+# Unknown
+DJIVideoFeedPhysicalSource.value.255=Okänd
+
+# Compass
+DJICompassSensorState.title=Kompass
+
+# Disconnected
+DJICompassSensorState.value.0=Osammanhängande
+
+# Calibrating
+DJICompassSensorState.value.1=Kalibrerar
+
+# Idle
+DJICompassSensorState.value.2=På tomgång
+
+# Data Exception
+DJICompassSensorState.value.3=Dataundantag
+
+# Super Modulus Small
+DJICompassSensorState.value.4=Super Modulus Small
+
+# Super Modulus Weak
+DJICompassSensorState.value.5=Supermodul svag
+
+# Super Modulus Deviate
+DJICompassSensorState.value.6=Super Modulus Deviation
+
+# Calibration Failed
+DJICompassSensorState.value.7=Kalibrering misslyckades
+
+# Inconsistent Direction
+DJICompassSensorState.value.8=Inkonsekvent riktning
+
+# Unknown
+DJICompassSensorState.value.255=Okänd
+
+# Compass Calibration
+DJICompassCalibrationState.title=Kompasskalibrering
+
+# None
+DJICompassCalibrationState.value.0=Ingen
+
+# Rotate 360 Horizontally
+DJICompassCalibrationState.value.1=Rotera 360 horisontellt
+
+# Rotate 360 Vertically
+DJICompassCalibrationState.value.2=Rotera 360 vertikalt
+
+# Finished
+DJICompassCalibrationState.value.3=Färdiga
+
+# Failed
+DJICompassCalibrationState.value.4=Misslyckades
+
+# Unknown
+DJICompassCalibrationState.value.255=Okänd

@@ -1,0 +1,395 @@
+# Mission Paused
+MissionDisengageReason.user.disengaged=Misiune întreruptă
+
+# Unhandled Command Type
+MissionDisengageReason.command.type.unhandled=Tip de comandă netratată
+
+# Drone Disconnected
+MissionDisengageReason.drone.disconnected.title=Dronă deconectată
+
+# Drone Control Unavailable
+MissionDisengageReason.drone.control.unavailable.title=Controlul dronei indisponibil
+
+# Telemetry Unavailable
+MissionDisengageReason.telemetry.unavailable.title=Telemetria indisponibilă
+
+# Weak Signal
+MissionDisengageReason.telemetry.delayed.title=Semnal slab
+
+# • Please point the RC antennas towards the drone.\n• If the signal does not improve, try moving closer to the drone.\n• If the signal still does not improve, move to an area with fewer obstacles or RF interference.
+MissionDisengageReason.telemetry.delayed.details=• Vă rugăm să îndreptați antenele RC către dronă.\n• Dacă semnalul nu se îmbunătățește, încercați să vă apropiați de dronă.\n• Dacă semnalul tot nu se îmbunătățește, mutați-vă într-o zonă cu mai puține obstacole sau interferențe RF.
+
+# Automatic Control Interrupted
+MissionDisengageReason.drone.control.override.title=Control automat întrerupt
+
+# The drone must remain in P-GPS flight mode for automatic control.
+MissionDisengageReason.drone.control.override.details=Drona trebuie să rămână în modul de zbor P-GPS pentru control automat.
+
+# Unable to Take Off
+MissionDisengageReason.take.off.failed.title=Nu se poate decola
+
+# Unable to Take Control
+MissionDisengageReason.take.control.failed.title=Incapabil să preia controlul
+
+# Execution State Invalid
+MissionDisengageReason.execution.state.invalid.title=Starea de execuție invalidă
+
+# Unable to Load Mission
+MissionDisengageReason.load.mission.failed.title=Misiunea nu se poate încărca
+
+# Unable to Upload Mission
+MissionDisengageReason.upload.mission.failed.title=Misiunea nu se poate încărca
+
+# Unable to Start Mission
+MissionDisengageReason.start.mission.failed.title=Nu se poate începe misiunea
+
+# Max Altitude Reached
+MissionDisengageReason.drone.max.altitude.title=Altitudinea maximă atinsă
+
+# Increase the max altitude setting to continue.
+MissionDisengageReason.drone.max.altitude.details=Măriți setarea de altitudine maximă pentru a continua.
+
+# Max Distance Reached
+MissionDisengageReason.drone.max.distance.title=Distanța maximă atinsă
+
+# Increase the max distance setting to continue.
+MissionDisengageReason.drone.max.distance.details=Măriți setarea distanței maxime pentru a continua.
+
+# Flight Assistant Unavailable
+MissionDisengageReason.drone.flight.assistant.unavailable.title=Asistent de zbor indisponibil
+
+# Landing Gear Unavailable
+MissionDisengageReason.drone.landing.gear.unavailable.title=Trenul de aterizare indisponibil
+
+# Lightbridge Link Unavailable
+MissionDisengageReason.drone.lightbridge.unavailable.title=Link Lightbridge indisponibil
+
+# OcuSync Link Unavailable
+MissionDisengageReason.drone.ocusync.unavailable.title=Link OcuSync indisponibil
+
+# Accessories Unavailable
+MissionDisengageReason.drone.accessory.aggregation.unavailable.title=Accesorii indisponibile
+
+# Beacon Unavailable
+MissionDisengageReason.drone.beacon.unavailable.title=Beacon indisponibil
+
+# Spotlight Unavailable
+MissionDisengageReason.drone.spotlight.unavailable.title=Spotlight indisponibil
+
+# Live Streaming Unavailable
+MissionDisengageReason.drone.live.streaming.unavailable.title=Streaming live indisponibil
+
+# Unable to Start Live Streaming
+MissionDisengageReason.drone.live.streaming.failed.title=Imposibil de început Streamingul live
+
+# Remote Controller Unavailable
+MissionDisengageReason.drone.remote.controller.unavailable.title=Telecomanda indisponibilă
+
+# Camera Unavailable
+MissionDisengageReason.drone.camera.unavailable.title=Camera nu este disponibilă
+
+# Lens Unavailable
+MissionDisengageReason.drone.lens.unavailable.title=Lentila indisponibilă
+
+# Gimbal Unavailable
+MissionDisengageReason.drone.gimbal.unavailable.title=Gimbal indisponibil
+
+# Camera Mode Invalid
+MissionDisengageReason.drone.camera.mode.invalid.title=Mod cameră invalid
+
+# Uploading waypoints | %@ of %@
+DJIWaypointMissionSession.statusMessage.uploading=Încărcarea punctelor de trecere | %@ de %@
+
+# Component %@ of %@
+DJIWaypointMissionSession.statusMessage.component=Componenta %@ din %@
+
+# Approaching waypoint %@ of %@
+DJIWaypointMissionSession.statusMessage.waypoint.0=Se apropie punctul de trecere %@ din %@
+
+# Flying to waypoint %@ of %@ | %@
+DJIWaypointMissionSession.statusMessage.waypoint.n=Zburând către punctul de trecere %@ din %@ | %@
+
+# Resuming at %@ to waypoint %@...
+DJIWaypointMissionSession.statusMessage.reengaging=Se reia la %@ la punctul de trecere %@...
+
+# Telemetry Unavailable
+DJIDroneSession.telemetry.unavailable=Telemetria indisponibilă
+
+# The %@ does not support DJI onboard waypoints.
+DJIDroneSession.createControlSession.dji.unsupported.drone=%@ nu acceptă punctele de trecere DJI la bord.
+
+# Unsupported execution engine: %@
+DJIDroneSession.createControlSession.execution.engine.unsupported=Motor de execuție neacceptat: %@
+
+# Camera still capturing
+DJIDroneSession+CameraCommand.stop.capture.error=Camera încă captează
+
+# Media File Not Created
+DJIDroneSession+CameraCommand.start.shoot.photo.no.file=Fișierul media nu a fost creat
+
+# Uncalibrated Focus Distance
+DJIDroneSession+CameraCommand.focus.distance.error=Distanța de focalizare necalibrată
+
+# Camera Busy
+DJIDroneSession+CameraCommand.focus.target.error=Camera ocupată
+
+# Focus Ring Outside Limits: %@ < %@ < %@
+DJIDroneSession+CameraCommand.focus.target.ring.invalid=Inel de focalizare în afara limitelor: %@ < %@ < %@
+
+# Gimbal Not Rotated
+DJIDroneSession+GimbalCommand.orientation.not.achieved=Gimbal nu este rotit
+
+# Remote controller is unavailable.
+DJIDroneSessionManager.remoteControllerLinking.unavailable=Telecomanda nu este disponibilă.
+
+# GPS Signal Unavailable
+DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.title=Semnal GPS indisponibil
+
+# Please wait for a strong GPS signal lock to continue.
+DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.details=Vă rugăm să așteptați ca o blocare puternică a semnalului GPS să continue.
+
+# Home Location Not Set
+DJIDronelink:DJIFlightControllerState.statusMessages.homeLocationNotSet.title=Locația de acasă nu este setată
+
+# Critically Low Battery
+DJIDronelink:DJIFlightControllerState.statusMessages.isLowerThanSeriousBatteryWarningThreshold.title=Baterie extrem de scăzută
+
+# Low Battery
+DJIDronelink:DJIFlightControllerState.statusMessages.isLowerThanBatteryWarningThreshold.title=Baterie descarcata
+
+# Max Distance
+DJIDronelink:DJIFlightControllerState.statusMessages.hasReachedMaxFlightRadius.title=Distanța maximă
+
+# Max Altitude
+DJIDronelink:DJIFlightControllerState.statusMessages.hasReachedMaxFlightHeight.title=Altitudine maximă
+
+# Onboard Waypoints
+DJIWaypointMissionState.title=Puncte de trecere la bord
+
+# Unknown
+DJIWaypointMissionState.value.-1=Necunoscut
+
+# Disconnected
+DJIWaypointMissionState.value.0=Deconectat
+
+# Recovering
+DJIWaypointMissionState.value.1=Recuperarea
+
+# Not Supported
+DJIWaypointMissionState.value.2=Nu sunt acceptate
+
+# Ready to Upload
+DJIWaypointMissionState.value.3=Gata de încărcare
+
+# Uploading
+DJIWaypointMissionState.value.4=Încărcare
+
+# Ready to Execute
+DJIWaypointMissionState.value.5=Gata de executat
+
+# Running
+DJIWaypointMissionState.value.6=Alergare
+
+# Paused
+DJIWaypointMissionState.value.7=Întrerupt
+
+# Onboard Waypoints
+DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.default.title=Puncte de trecere la bord
+
+# Onboard Waypoints Uploading
+DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.uploading.title=Încărcarea punctelor de trecere la bord
+
+# Onboard Waypoints Running
+DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.executing.title=Running Waypoints la bord
+
+# Onboard Waypoints Paused
+DJIDronelink:DJIFlightControllerState.statusMessages.flightMode.gpsWaypoint.executionPaused.title=Puncte de trecere la bord au fost întrerupte
+
+# RTH
+DJIGoHomeExecutionState.title=RTH
+
+# Not Executing
+DJIGoHomeExecutionState.value.0=Nu se execută
+
+# Turning to Home Point
+DJIGoHomeExecutionState.value.1=Întorcându-vă la punctul de pornire
+
+# Ascending to Altitude
+DJIGoHomeExecutionState.value.2=Urcarea la altitudine
+
+# Flying to Home Point
+DJIGoHomeExecutionState.value.3=Zburând către punctul de acasă
+
+# Descending to Ground
+DJIGoHomeExecutionState.value.4=Coborând la pământ
+
+# Braking
+DJIGoHomeExecutionState.value.5=Frânare
+
+# Bypassing
+DJIGoHomeExecutionState.value.6=Ocolind
+
+# Completed
+DJIGoHomeExecutionState.value.7=Efectuat
+
+# Unknown
+DJIGoHomeExecutionState.value.255=Necunoscut
+
+# NFZ
+DJIFlyZoneState.title=NFZ
+
+# Clear
+DJIFlyZoneState.value.0=clar
+
+# Near Restricted Zone
+DJIFlyZoneState.value.1=Aproape de Zona restricționată
+
+# In Warning Zone with Height Limitation
+DJIFlyZoneState.value.2=În zona de avertizare cu limitare de înălțime
+
+# In Warning Zone
+DJIFlyZoneState.value.3=În zona de avertizare
+
+# In Restricted Zone
+DJIFlyZoneState.value.4=În Zona restricționată
+
+# Unknown
+DJIFlyZoneState.value.255=Necunoscut
+
+# AirSense Alert
+DJIAirSenseAirplaneState.title=Alertă AirSense
+
+# Aircraft %@ to the %@ at %@ (%@)
+DJIAirSenseAirplaneState.message=Aeronava %@ la %@ la %@ (%@)
+
+# Bearing
+DJIAirSenseDirection.title=Ținând
+
+# North
+DJIAirSenseDirection.value.0=Nord
+
+# North east
+DJIAirSenseDirection.value.1=nord-est
+
+# East
+DJIAirSenseDirection.value.2=Est
+
+# South east
+DJIAirSenseDirection.value.3=Sud Est
+
+# South
+DJIAirSenseDirection.value.4=Sud
+
+# South west
+DJIAirSenseDirection.value.5=Sud-vest
+
+# West
+DJIAirSenseDirection.value.6=Vest
+
+# North west
+DJIAirSenseDirection.value.7=Nord Vest
+
+# Unknown
+DJIAirSenseDirection.value.255=Necunoscut
+
+# DJI Activation
+DJIAppActivationState.title=Activare DJI
+
+# Not Supported
+DJIAppActivationState.value.0=Nu sunt acceptate
+
+# Login Required
+DJIAppActivationState.value.1=Conectare obligatorie
+
+# Activated
+DJIAppActivationState.value.2=Activat
+
+# Unknown
+DJIAppActivationState.value.255=Necunoscut
+
+# Video Feed Physical Source
+DJIVideoFeedPhysicalSource.title=Sursa fizică a fluxului video
+
+# Main
+DJIVideoFeedPhysicalSource.value.0=Principal
+
+# FPV
+DJIVideoFeedPhysicalSource.value.1=FPV
+
+# LB
+DJIVideoFeedPhysicalSource.value.2=LIVRE
+
+# EXT
+DJIVideoFeedPhysicalSource.value.3=EXT
+
+# HDMI
+DJIVideoFeedPhysicalSource.value.4=HDMI
+
+# AV
+DJIVideoFeedPhysicalSource.value.5=AV
+
+# Left
+DJIVideoFeedPhysicalSource.value.6=Stânga
+
+# Right
+DJIVideoFeedPhysicalSource.value.7=Dreapta
+
+# Top
+DJIVideoFeedPhysicalSource.value.8=Top
+
+# Unknown
+DJIVideoFeedPhysicalSource.value.255=Necunoscut
+
+# Compass
+DJICompassSensorState.title=Busolă
+
+# Disconnected
+DJICompassSensorState.value.0=Deconectat
+
+# Calibrating
+DJICompassSensorState.value.1=Calibrare
+
+# Idle
+DJICompassSensorState.value.2=Inactiv
+
+# Data Exception
+DJICompassSensorState.value.3=Excepție de date
+
+# Super Modulus Small
+DJICompassSensorState.value.4=Super Modulus Mic
+
+# Super Modulus Weak
+DJICompassSensorState.value.5=Super modul slab
+
+# Super Modulus Deviate
+DJICompassSensorState.value.6=Super Modulus Deviate
+
+# Calibration Failed
+DJICompassSensorState.value.7=Calibrarea a eșuat
+
+# Inconsistent Direction
+DJICompassSensorState.value.8=Direcție inconsecventă
+
+# Unknown
+DJICompassSensorState.value.255=Necunoscut
+
+# Compass Calibration
+DJICompassCalibrationState.title=Calibrare busola
+
+# None
+DJICompassCalibrationState.value.0=Nici unul
+
+# Rotate 360 Horizontally
+DJICompassCalibrationState.value.1=Rotiți 360 pe orizontală
+
+# Rotate 360 Vertically
+DJICompassCalibrationState.value.2=Rotiți 360 pe verticală
+
+# Finished
+DJICompassCalibrationState.value.3=Terminat
+
+# Failed
+DJICompassCalibrationState.value.4=A eșuat
+
+# Unknown
+DJICompassCalibrationState.value.255=Necunoscut
