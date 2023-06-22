@@ -13,7 +13,7 @@ extension String {
     private static let LocalizationMissing = "MISSING STRING LOCALIZATION"
     
     var localized: String {
-        let value = self.localizeForLibrary(libraryBundle: DronelinkDJI.bundle, mainBundle: Bundle.main)
+        let value = self.localizeForLibrary(libraryBundle: DronelinkDJI.bundle)
         return value
     }
     
