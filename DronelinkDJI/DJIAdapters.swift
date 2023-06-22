@@ -475,7 +475,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         return !isZoomSupported ? nil : zoomSpecObject
     }
     public var isZoomSupported: Bool {
-        //FOR DJI mobile SDK v4, only support hybrid zoom
+        //Only support hybrid zoom
         //Some cameras return true for isHybridZoomSupported() but don't support zoom. The spec is 0 when that is the case, so we can use that to check.
         guard let camera = camera else {
             return false
