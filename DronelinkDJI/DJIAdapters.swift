@@ -353,8 +353,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public let focusModeValue: DJICameraFocusMode?
     public let focusRingValue: Double?
     public let focusRingMax: Double?
-    public let zoomValue: Double?
-    public let zoomSpecObject: Kernel.CameraZoomSpec?
+    public let zoomSpecObject: Kernel.PercentZoomSpec?
     public let meteringModeValue: DJICameraMeteringMode?
     public let isAutoExposureLockEnabled: Bool
     
@@ -385,8 +384,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         focusMode: DJICameraFocusMode?,
         focusRingValue: Double?,
         focusRingMax: Double?,
-        zoomValue: Double?,
-        zoomSpecObject: Kernel.CameraZoomSpec?,
+        zoomSpecObject: Kernel.PercentZoomSpec?,
         meteringMode: DJICameraMeteringMode?,
         isAutoExposureLockEnabled: Bool) {
         self.camera = camera
@@ -415,7 +413,6 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         self.focusModeValue = focusMode
         self.focusRingValue = focusRingValue
         self.focusRingMax = focusRingMax
-        self.zoomValue = zoomValue
         self.zoomSpecObject = zoomSpecObject
         self.meteringModeValue = meteringMode
         self.isAutoExposureLockEnabled = isAutoExposureLockEnabled
@@ -471,21 +468,18 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var focusMode: DronelinkCore.Kernel.CameraFocusMode { return focusModeValue?.kernelValue ?? .unknown }
     public var meteringMode: DronelinkCore.Kernel.CameraMeteringMode { return meteringModeValue?.kernelValue ?? .unknown }
     public var aspectRatio: Kernel.CameraPhotoAspectRatio { (mode == .photo ? photoAspectRatioValue?.kernelValue : nil) ?? ._16x9 }
-    public var zoomSpec: Kernel.CameraZoomSpec? {
-        return !isZoomSupported ? nil : zoomSpecObject
+    public var zoomSpec: Kernel.PercentZoomSpec? {
+        return !isPercentZoomSupported ? nil : zoomSpecObject
     }
-    public var isZoomSupported: Bool {
+    public var isPercentZoomSupported: Bool {
+        guard let camera = camera, let spec = zoomSpecObject else {
+            return false
+        }
         //Only support hybrid zoom
         //Some cameras return true for isHybridZoomSupported() but don't support zoom. The spec is 0 when that is the case, so we can use that to check.
-        guard let camera = camera else {
-            return false
-        }
-        if (camera.isHybridZoomSupported() && zoomSpecObject?.step == 0) {
-            return false
-        }
-        return camera.isHybridZoomSupported()
+        return camera.isHybridZoomSupported() && spec.step > 0
     }
-    public var isThermalZoomSupported: Bool {
+    public var isRatioZoomSupported: Bool {
         return false
     }
 }
