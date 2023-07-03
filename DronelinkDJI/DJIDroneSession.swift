@@ -1082,18 +1082,6 @@ extension DJIDroneSession: DroneSession {
         }
     }
     
-    //FIXME refactor
-//    private func validateZoomSpecArguments(currentZoom: Double, min: UInt, max: UInt, maxOptical: UInt, step: UInt) -> String? {
-//        if min <= 0 || max <= 0 || maxOptical <= 0 || step <= 0 ||
-//            min >= max || (max - min) < step ||
-//            maxOptical < min || maxOptical > max ||
-//            currentZoom < Double(min) || currentZoom > Double(max) {
-//            return String("Arguments produce an invalid zoom spec. Arguments must be positive and non-zero, min must be less than max, maxOptical must be between min and max inclusive, and step must be less than max - min.")
-//        }
-//        return nil
-//    }
-    
-
     public func gimbalState(channel: UInt) -> DatedValue<GimbalStateAdapter>? {
         gimbalSerialQueue.sync { [weak self] in
             if let gimbalState = self?._gimbalStates[channel] {

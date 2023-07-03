@@ -476,8 +476,27 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
             return nil
             
         }
+        let min = hybridZoomSpec.minHybridFocalLength
+        let max = hybridZoomSpec.maxHybridFocalLength
+        let maxOptical = hybridZoomSpec.maxOpticalFocalLength
+        let step = hybridZoomSpec.focalLengthStep
+        if let error = validateZoomSpecArguments(currentZoom: zoomValue, min: min, max: max, maxOptical: maxOptical, step: step) {
+            NSLog("Illegal zoomSpec arguments: \(error)")
+            return nil
+        }
         return Kernel.PercentZoomSpec(currentZoom: zoomValue, min: hybridZoomSpec.minHybridFocalLength, max: hybridZoomSpec.maxHybridFocalLength, maxOptical: hybridZoomSpec.maxOpticalFocalLength, step: hybridZoomSpec.focalLengthStep)
     }
+    
+    private func validateZoomSpecArguments(currentZoom: Double, min: UInt, max: UInt, maxOptical: UInt, step: UInt) -> String? {
+        if min <= 0 || max <= 0 || maxOptical <= 0 || step <= 0 ||
+            min >= max || (max - min) < step ||
+            maxOptical < min || maxOptical > max ||
+            currentZoom < Double(min) || currentZoom > Double(max) {
+            return String("Arguments produce an invalid zoom spec. Arguments must be positive and non-zero, min must be less than max, maxOptical must be between min and max inclusive, and step must be less than max - min.")
+        }
+        return nil
+    }
+    
     public var isPercentZoomSupported: Bool {
         guard let camera = camera else {
             return false
