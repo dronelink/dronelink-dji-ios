@@ -94,7 +94,7 @@ public class DJIDroneSession: NSObject {
     private var _focusRingValue: DatedValue<Double>?
     private var _focusRingMax: DatedValue<Double>?
     private var _zoomValue: DatedValue<Double>?
-    private var _zoomSpec: DatedValue<Kernel.PercentZoomSpec>?
+    private var _hybridZoomSpec: DatedValue<DJICameraHybridZoomSpec>?
     private var _meteringMode: DatedValue<DJICameraMeteringMode>?
     private var autoExposureLockEnabled: DatedValue<Bool>?
     private var _remoteControllerGimbalChannel: DatedValue<UInt>?
@@ -500,34 +500,26 @@ public class DJIDroneSession: NSObject {
             }
         }
         
-        startListeningForChanges(on: DJICameraKey(param: DJICameraHybridZoomSpec)!) { [weak self] (oldValue, newValue) in
-                guard let camera = self.drone.camera(channel: 0) as? DJICamera, let zoomValue = _zoomValue?.value else {
-                    return nil
-                }
-        
-                
-                if camera.isHybridZoomSupported() {
-                    camera.getHybridZoomSpec { (hybridZoomSpec: DJICameraHybridZoomSpec, error: Error?) in
-                        if (error != nil) {
-                            NSLog("Error getting DJICameraHybridZoomSpec: \(error)")
-                            return
-                        }
-                        let min = hybridZoomSpec.minHybridFocalLength
-                        let max = hybridZoomSpec.maxHybridFocalLength
-                        let maxOptical = hybridZoomSpec.maxOpticalFocalLength
-                        let step = hybridZoomSpec.focalLengthStep
-                        let illegalArgumentError = self.validateZoomSpecArguments(currentZoom: zoomValue, min: min, max: max, maxOptical: maxOptical, step: step)
-                        if (illegalArgumentError != nil) {
-                            NSLog("Error initializing percent zoom spec: \(illegalArgumentError)")
-                            return
-                        }
-                        
-                        self._zoomSpec = DatedValue(value: Kernel.PercentZoomSpec(currentZoom: zoomValue, min: min, max: max, maxOptical: maxOptical, step: step))
-                    }
-                }
-                
-                return _zoomSpec
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamHybridZoomSpec)!) { [weak self] (oldValue, newValue) in
+            //There is an outstanding bug in DJIDroneSession architecture where signed up listeners do not know about which camera channel they are listening to.
+            //For now, we are hard coding channel 0. Hybrid zoom spec will not work on drones with multiple cameras.
+            //Additionally we have to get the hybrid zoom spec from the camera because at the time of writing this code (June 2023), casting newValue to DJICameraHybridZoomSpec does not work.
+            guard let camera = self?.drone.camera(channel: 0) as? DJICamera else {
+                self?._hybridZoomSpec = nil
+                return
+            }
             
+            if camera.isHybridZoomSupported() {
+                camera.getHybridZoomSpec { (hybridZoomSpec: DJICameraHybridZoomSpec, error: Error?) in
+                    if (error != nil) {
+                        NSLog("Error getting DJICameraHybridZoomSpec: \(error)")
+                        return
+                    }
+                    self?._hybridZoomSpec = DatedValue(value: hybridZoomSpec)
+                }
+            } else {
+                self?._hybridZoomSpec = nil
+            }
         }
         
         startListeningForChanges(on: DJICameraKey(param: DJICameraParamMeteringMode)!) { [weak self] (oldValue, newValue) in
@@ -1080,7 +1072,8 @@ extension DJIDroneSession: DroneSession {
                         focusMode: self?._focusMode?.value,
                         focusRingValue: self?._focusRingValue?.value,
                         focusRingMax: self?._focusRingMax?.value,
-                        zoomSpecObject: _getZoomSpec(camera: camera as? DJICamera)?.value,
+                        zoomValue: self?._zoomValue?.value,
+                        hybridZoomSpec: self?._hybridZoomSpec?.value,
                         meteringMode: self?._meteringMode?.value,
                         isAutoExposureLockEnabled: self?.autoExposureLockEnabled?.value ?? false),
                     date: systemState.date)
@@ -1089,15 +1082,16 @@ extension DJIDroneSession: DroneSession {
         }
     }
     
-    private func validateZoomSpecArguments(currentZoom: Double, min: UInt, max: UInt, maxOptical: UInt, step: UInt) -> String? {
-        if min <= 0 || max <= 0 || maxOptical <= 0 || step <= 0 ||
-            min >= max || (max - min) < step ||
-            maxOptical < min || maxOptical > max ||
-            currentZoom < Double(min) || currentZoom > Double(max) {
-            return String("Arguments produce an invalid zoom spec. Arguments must be positive and non-zero, min must be less than max, maxOptical must be between min and max inclusive, and step must be less than max - min.")
-        }
-        return nil
-    }
+    //FIXME refactor
+//    private func validateZoomSpecArguments(currentZoom: Double, min: UInt, max: UInt, maxOptical: UInt, step: UInt) -> String? {
+//        if min <= 0 || max <= 0 || maxOptical <= 0 || step <= 0 ||
+//            min >= max || (max - min) < step ||
+//            maxOptical < min || maxOptical > max ||
+//            currentZoom < Double(min) || currentZoom > Double(max) {
+//            return String("Arguments produce an invalid zoom spec. Arguments must be positive and non-zero, min must be less than max, maxOptical must be between min and max inclusive, and step must be less than max - min.")
+//        }
+//        return nil
+//    }
     
 
     public func gimbalState(channel: UInt) -> DatedValue<GimbalStateAdapter>? {
