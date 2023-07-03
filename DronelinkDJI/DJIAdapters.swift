@@ -484,7 +484,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
             NSLog("Illegal zoomSpec arguments: \(error)")
             return nil
         }
-        return Kernel.PercentZoomSpec(currentZoom: zoomValue, min: hybridZoomSpec.minHybridFocalLength, max: hybridZoomSpec.maxHybridFocalLength, maxOptical: hybridZoomSpec.maxOpticalFocalLength, step: hybridZoomSpec.focalLengthStep)
+        return Kernel.PercentZoomSpec(currentZoom: zoomValue, min: min, max: max, maxOptical: maxOptical, step: step)
     }
     
     private func validateZoomSpecArguments(currentZoom: Double, min: UInt, max: UInt, maxOptical: UInt, step: UInt) -> String? {
