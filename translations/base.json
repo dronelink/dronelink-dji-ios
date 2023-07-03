@@ -2,6 +2,7 @@
   "en": {
     "MissionDisengageReason.user.disengaged": "Mission Paused",
     "MissionDisengageReason.command.type.unhandled": "Unhandled Command Type",
+    "MissionDisengageReason.command.type.unsupported": "Command Type Unsupported on this Drone",
     "MissionDisengageReason.drone.disconnected.title": "Drone Disconnected",
     "MissionDisengageReason.drone.control.unavailable.title": "Drone Control Unavailable",
     "MissionDisengageReason.telemetry.unavailable.title": "Telemetry Unavailable",
@@ -136,6 +137,7 @@
   "de": {
     "MissionDisengageReason.user.disengaged": "Mission pausiert",
     "MissionDisengageReason.command.type.unhandled": "Nicht behandelter Befehlstyp",
+    "MissionDisengageReason.command.type.unsupported": "Befehlstyp wird auf dieser Drohne nicht unterstützt",
     "MissionDisengageReason.drone.disconnected.title": "Drohne nicht angeschlossen",
     "MissionDisengageReason.drone.control.unavailable.title": "Drohnensteuerung nicht verfügbar",
     "MissionDisengageReason.telemetry.unavailable.title": "Telemetrie nicht verfügbar",
@@ -270,6 +272,7 @@
   "es": {
     "MissionDisengageReason.user.disengaged": "Misión en pausa",
     "MissionDisengageReason.command.type.unhandled": "Tipo de comando no controlado",
+    "MissionDisengageReason.command.type.unsupported": "Tipo de comando no admitido en este dron",
     "MissionDisengageReason.drone.disconnected.title": "Dron desconectado",
     "MissionDisengageReason.drone.control.unavailable.title": "Control de drones no disponible",
     "MissionDisengageReason.telemetry.unavailable.title": "Telemetría no disponible",
@@ -404,6 +407,7 @@
   "fr": {
     "MissionDisengageReason.user.disengaged": "Mission en pause",
     "MissionDisengageReason.command.type.unhandled": "Type de commande non géré",
+    "MissionDisengageReason.command.type.unsupported": "Type de commande non pris en charge sur ce drone",
     "MissionDisengageReason.drone.disconnected.title": "Drone déconnecté",
     "MissionDisengageReason.drone.control.unavailable.title": "Contrôle du drone indisponible",
     "MissionDisengageReason.telemetry.unavailable.title": "Télémétrie non disponible",
@@ -538,6 +542,7 @@
   "hi": {
     "MissionDisengageReason.user.disengaged": "मिशन रुका हुआ",
     "MissionDisengageReason.command.type.unhandled": "बिना क्रिया के कमांड प्रकार",
+    "MissionDisengageReason.command.type.unsupported": "इस ड्रोन पर कमांड प्रकार असमर्थित है",
     "MissionDisengageReason.drone.disconnected.title": "ड्रोन डिस्कनेक्ट हो गया",
     "MissionDisengageReason.drone.control.unavailable.title": "ड्रोन नियंत्रण अनुपलब्ध",
     "MissionDisengageReason.telemetry.unavailable.title": "टेलीमेट्री अनुपलब्ध",
@@ -672,6 +677,7 @@
   "id": {
     "MissionDisengageReason.user.disengaged": "Misi Dijeda",
     "MissionDisengageReason.command.type.unhandled": "Jenis Perintah Tidak Tertangani",
+    "MissionDisengageReason.command.type.unsupported": "Tipe Perintah Tidak Didukung di Drone ini",
     "MissionDisengageReason.drone.disconnected.title": "Drone Terputus",
     "MissionDisengageReason.drone.control.unavailable.title": "Kontrol Drone Tidak Tersedia",
     "MissionDisengageReason.telemetry.unavailable.title": "Telemetri Tidak Tersedia",
@@ -806,6 +812,7 @@
   "it": {
     "MissionDisengageReason.user.disengaged": "Missione sospesa",
     "MissionDisengageReason.command.type.unhandled": "Tipo di comando non gestito",
+    "MissionDisengageReason.command.type.unsupported": "Tipo di comando non supportato su questo drone",
     "MissionDisengageReason.drone.disconnected.title": "Drone disconnesso",
     "MissionDisengageReason.drone.control.unavailable.title": "Controllo drone non disponibile",
     "MissionDisengageReason.telemetry.unavailable.title": "Telemetria non disponibile",
@@ -940,6 +947,7 @@
   "pl": {
     "MissionDisengageReason.user.disengaged": "Misja wstrzymana",
     "MissionDisengageReason.command.type.unhandled": "Nieobsługiwany typ polecenia",
+    "MissionDisengageReason.command.type.unsupported": "Typ polecenia nieobsługiwany w tym dronie",
     "MissionDisengageReason.drone.disconnected.title": "Dron odłączony",
     "MissionDisengageReason.drone.control.unavailable.title": "Sterowanie dronem niedostępne",
     "MissionDisengageReason.telemetry.unavailable.title": "Telemetria niedostępna",
@@ -1074,6 +1082,7 @@
   "pt": {
     "MissionDisengageReason.user.disengaged": "Missão pausada",
     "MissionDisengageReason.command.type.unhandled": "Tipo de comando não tratado",
+    "MissionDisengageReason.command.type.unsupported": "Tipo de comando não suportado neste drone",
     "MissionDisengageReason.drone.disconnected.title": "drone desconectado",
     "MissionDisengageReason.drone.control.unavailable.title": "Controle de drone indisponível",
     "MissionDisengageReason.telemetry.unavailable.title": "Telemetria indisponível",
@@ -1208,6 +1217,7 @@
   "ro": {
     "MissionDisengageReason.user.disengaged": "Misiune întreruptă",
     "MissionDisengageReason.command.type.unhandled": "Tip de comandă netratată",
+    "MissionDisengageReason.command.type.unsupported": "Tip de comandă Neacceptat pe această dronă",
     "MissionDisengageReason.drone.disconnected.title": "Dronă deconectată",
     "MissionDisengageReason.drone.control.unavailable.title": "Controlul dronei indisponibil",
     "MissionDisengageReason.telemetry.unavailable.title": "Telemetria indisponibilă",
@@ -1342,6 +1352,7 @@
   "ru": {
     "MissionDisengageReason.user.disengaged": "Миссия приостановлена",
     "MissionDisengageReason.command.type.unhandled": "Необработанный тип команды",
+    "MissionDisengageReason.command.type.unsupported": "Тип команды не поддерживается на этом дроне",
     "MissionDisengageReason.drone.disconnected.title": "Дрон отключен",
     "MissionDisengageReason.drone.control.unavailable.title": "Управление дроном недоступно",
     "MissionDisengageReason.telemetry.unavailable.title": "Телеметрия недоступна",
@@ -1476,6 +1487,7 @@
   "sv": {
     "MissionDisengageReason.user.disengaged": "Uppdraget pausat",
     "MissionDisengageReason.command.type.unhandled": "Obehandlad kommandotyp",
+    "MissionDisengageReason.command.type.unsupported": "Kommandotyp stöds inte på denna drönare",
     "MissionDisengageReason.drone.disconnected.title": "Drönare frånkopplad",
     "MissionDisengageReason.drone.control.unavailable.title": "Drönarkontroll ej tillgänglig",
     "MissionDisengageReason.telemetry.unavailable.title": "Telemetri inte tillgänglig",
@@ -1610,6 +1622,7 @@
   "ur": {
     "MissionDisengageReason.user.disengaged": "مشن روک دیا گیا۔",
     "MissionDisengageReason.command.type.unhandled": "غیر ہینڈل کمانڈ کی قسم",
+    "MissionDisengageReason.command.type.unsupported": "اس ڈرون پر کمانڈ کی قسم غیر تعاون یافتہ ہے۔",
     "MissionDisengageReason.drone.disconnected.title": "ڈرون سے رابطہ منقطع ہوگیا۔",
     "MissionDisengageReason.drone.control.unavailable.title": "ڈرون کنٹرول دستیاب نہیں ہے۔",
     "MissionDisengageReason.telemetry.unavailable.title": "ٹیلی میٹری دستیاب نہیں ہے۔",
