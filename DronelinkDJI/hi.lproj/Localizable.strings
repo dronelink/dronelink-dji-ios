@@ -2,11 +2,12 @@
 // Localizable-hi.strings
 // dronelink-dji-ios - Locale: hi
 //
-// Created by 'dronelink-translations' on Thu Jun 15 2023.
+// Created by 'dronelink-translations' on Wed Jul 05 2023.
 // Copyright © 2023 Dronelink. All rights reserved.
 //
 "MissionDisengageReason.user.disengaged" = "मिशन रुका हुआ";
 "MissionDisengageReason.command.type.unhandled" = "बिना क्रिया के कमांड प्रकार";
+"MissionDisengageReason.command.type.unsupported" = "इस ड्रोन पर कमांड प्रकार असमर्थित है";
 "MissionDisengageReason.drone.disconnected.title" = "ड्रोन डिस्कनेक्ट हो गया";
 "MissionDisengageReason.drone.control.unavailable.title" = "ड्रोन नियंत्रण अनुपलब्ध";
 "MissionDisengageReason.telemetry.unavailable.title" = "टेलीमेट्री अनुपलब्ध";
