@@ -326,7 +326,6 @@ public struct DJICameraFile : CameraFile {
 }
 
 public struct DJICameraStateAdapter: CameraStateAdapter {
-
     public let camera: DJICamera?
     public let systemState: DJICameraSystemState
     public let videoStreamSourceValue: DJICameraVideoStreamSource?
