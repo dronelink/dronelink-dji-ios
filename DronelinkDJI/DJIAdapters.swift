@@ -472,10 +472,11 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var meteringMode: DronelinkCore.Kernel.CameraMeteringMode { return meteringModeValue?.kernelValue ?? .unknown }
     public var aspectRatio: Kernel.CameraPhotoAspectRatio { (mode == .photo ? photoAspectRatioValue?.kernelValue : nil) ?? ._16x9 }
     public var zoomSpec: Kernel.PercentZoomSpec? {
-        guard isPercentZoomSupported, let hybridZoomSpec = hybridZoomSpec, let zoomValue = zoomValue else {
+        //Some cameras return true for isPercentZoomSupported but don't support zoom. The spec focal length is 0 when that is the case, so we can use that to check.
+        guard isPercentZoomSupported, let hybridZoomSpec = hybridZoomSpec, let zoomValue = zoomValue, hybridZoomSpec.focalLengthStep != 0 else {
             return nil
-            
         }
+        
         let min = hybridZoomSpec.minHybridFocalLength
         let max = hybridZoomSpec.maxHybridFocalLength
         let maxOptical = hybridZoomSpec.maxOpticalFocalLength
@@ -502,7 +503,6 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
             return false
         }
         //Only support hybrid zoom
-        //Some cameras return true for isHybridZoomSupported() but don't support zoom. The spec is 0 when that is the case, so we can use that to check.
         return camera.isHybridZoomSupported()
     }
     public var isRatioZoomSupported: Bool {
