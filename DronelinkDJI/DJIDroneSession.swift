@@ -94,7 +94,7 @@ public class DJIDroneSession: NSObject {
     private var _focusRingValue: DatedValue<Double>?
     private var _focusRingMax: DatedValue<Double>?
     private var _zoomValue: DatedValue<Double>?
-    private var _hybridZoomSpec: DatedValue<DJICameraHybridZoomSpec>?
+    private var _hybridZoomSpecification: DatedValue<DJICameraHybridZoomSpec>?
     private var _meteringMode: DatedValue<DJICameraMeteringMode>?
     private var autoExposureLockEnabled: DatedValue<Bool>?
     private var _remoteControllerGimbalChannel: DatedValue<UInt>?
@@ -502,23 +502,23 @@ public class DJIDroneSession: NSObject {
         
         startListeningForChanges(on: DJICameraKey(param: DJICameraParamHybridZoomSpec)!) { [weak self] (oldValue, newValue) in
             //There is an outstanding bug in DJIDroneSession architecture where signed up listeners do not know about which camera channel they are listening to.
-            //For now, we are hard coding channel 0. Hybrid zoom spec will not work on drones with multiple cameras.
-            //Additionally we have to get the hybrid zoom spec from the camera because at the time of writing this code (June 2023), casting newValue to DJICameraHybridZoomSpec does not work.
+            //For now, we are hard coding channel 0. Hybrid zoom specification will not work on drones with multiple cameras.
+            //Additionally we have to get the hybrid zoom specification from the camera because at the time of writing this code (June 2023), casting newValue to DJICameraHybridZoomSpecification does not work.
             guard let camera = self?.drone.camera(channel: 0) as? DJICamera else {
-                self?._hybridZoomSpec = nil
+                self?._hybridZoomSpecification = nil
                 return
             }
             
             if camera.isHybridZoomSupported() {
-                camera.getHybridZoomSpec { (hybridZoomSpec: DJICameraHybridZoomSpec, error: Error?) in
-                    if (error != nil) {
-                        NSLog("Error getting DJICameraHybridZoomSpec: \(error)")
+                camera.getHybridZoomSpec { (hybridZoomSpecification: DJICameraHybridZoomSpec, error: Error?) in
+                    if let error = error {
+                        os_log(.error, log: DJIDroneSession.log, "Error getting DJICameraHybridZoomSpec: %{public}s", error.localizedDescription)
                         return
                     }
-                    self?._hybridZoomSpec = DatedValue(value: hybridZoomSpec)
+                    self?._hybridZoomSpecification = DatedValue(value: hybridZoomSpecification)
                 }
             } else {
-                self?._hybridZoomSpec = nil
+                self?._hybridZoomSpecification = nil
             }
         }
         
@@ -1073,7 +1073,7 @@ extension DJIDroneSession: DroneSession {
                         focusRingValue: self?._focusRingValue?.value,
                         focusRingMax: self?._focusRingMax?.value,
                         zoomValue: self?._zoomValue?.value,
-                        hybridZoomSpec: self?._hybridZoomSpec?.value,
+                        hybridZoomSpecification: self?._hybridZoomSpecification?.value,
                         meteringMode: self?._meteringMode?.value,
                         isAutoExposureLockEnabled: self?.autoExposureLockEnabled?.value ?? false),
                     date: systemState.date)

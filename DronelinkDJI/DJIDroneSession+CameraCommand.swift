@@ -199,14 +199,11 @@ extension DJIDroneSession {
         }
         
         if let command = cameraCommand as? Kernel.ZoomPercentCameraCommand {
-            guard let zoomSpec = state.zoomSpec else {
+            guard let defaultZoomSpecification = state.defaultZoomSpecification else {
                 return "MissionDisengageReason.command.type.unsupported".localized
             }
-            let zoomMax = Double(zoomSpec.max)
-            let zoomMin = Double(zoomSpec.min)
-            let zoomStep = Double(zoomSpec.step)
-            let hybridZoomFocalLength = UInt(round((command.zoomPercent * (zoomMax - zoomMin) + zoomMin) / zoomStep) * zoomStep)
-            Command.conditionallyExecute(hybridZoomFocalLength != UInt(zoomSpec.currentZoom), finished: finished) {
+            let hybridZoomFocalLength = UInt(round((command.zoomPercent * (defaultZoomSpecification.max - defaultZoomSpecification.min) + defaultZoomSpecification.min) / defaultZoomSpecification.step) * defaultZoomSpecification.step)
+            Command.conditionallyExecute(hybridZoomFocalLength != UInt(defaultZoomSpecification.currentZoom), finished: finished) {
                 camera.setHybridZoomFocalLength(hybridZoomFocalLength, withCompletion: finished)
             }
             return nil

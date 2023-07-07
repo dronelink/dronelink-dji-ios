@@ -353,7 +353,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public let focusRingValue: Double?
     public let focusRingMax: Double?
     public let zoomValue: Double?
-    public let hybridZoomSpec: DJICameraHybridZoomSpec?
+    public let hybridZoomSpecification: DJICameraHybridZoomSpec?
     public let meteringModeValue: DJICameraMeteringMode?
     public let isAutoExposureLockEnabled: Bool
     
@@ -385,7 +385,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         focusRingValue: Double?,
         focusRingMax: Double?,
         zoomValue: Double?,
-        hybridZoomSpec: DJICameraHybridZoomSpec?,
+        hybridZoomSpecification: DJICameraHybridZoomSpec?,
         meteringMode: DJICameraMeteringMode?,
         isAutoExposureLockEnabled: Bool) {
         self.camera = camera
@@ -415,7 +415,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         self.focusRingValue = focusRingValue
         self.focusRingMax = focusRingMax
         self.zoomValue = zoomValue
-        self.hybridZoomSpec = hybridZoomSpec
+        self.hybridZoomSpecification = hybridZoomSpecification
         self.meteringModeValue = meteringMode
         self.isAutoExposureLockEnabled = isAutoExposureLockEnabled
     }
@@ -470,42 +470,14 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var focusMode: DronelinkCore.Kernel.CameraFocusMode { return focusModeValue?.kernelValue ?? .unknown }
     public var meteringMode: DronelinkCore.Kernel.CameraMeteringMode { return meteringModeValue?.kernelValue ?? .unknown }
     public var aspectRatio: Kernel.CameraPhotoAspectRatio { (mode == .photo ? photoAspectRatioValue?.kernelValue : nil) ?? ._16x9 }
-    public var zoomSpec: Kernel.PercentZoomSpec? {
-        guard isPercentZoomSupported, let hybridZoomSpec = hybridZoomSpec, let zoomValue = zoomValue else {
+    public var defaultZoomSpecification: Kernel.PercentZoomSpecification? {
+        guard isPercentZoomSupported, let hybridZoomSpecification = hybridZoomSpecification, let zoomValue = zoomValue else {
             return nil
         }
-        
-        let min = hybridZoomSpec.minHybridFocalLength
-        let max = hybridZoomSpec.maxHybridFocalLength
-        let maxOptical = hybridZoomSpec.maxOpticalFocalLength
-        let step = hybridZoomSpec.focalLengthStep
-        if let error = validateZoomSpecArguments(currentZoom: zoomValue, min: min, max: max, maxOptical: maxOptical, step: step) {
-            NSLog("Illegal zoomSpec arguments: \(error)")
-            return nil
-        }
-        return Kernel.PercentZoomSpec(currentZoom: zoomValue, min: min, max: max, maxOptical: maxOptical, step: step)
+        return Kernel.PercentZoomSpecification(currentZoom: zoomValue, min: Double(hybridZoomSpecification.minHybridFocalLength), max: Double(hybridZoomSpecification.maxHybridFocalLength), maxOptical: Double(hybridZoomSpecification.maxOpticalFocalLength), step: Double(hybridZoomSpecification.focalLengthStep))
     }
-    
-    private func validateZoomSpecArguments(currentZoom: Double, min: UInt, max: UInt, maxOptical: UInt, step: UInt) -> String? {
-        if min <= 0 || max <= 0 || maxOptical <= 0 || step <= 0 ||
-            min >= max || (max - min) < step ||
-            maxOptical < min || maxOptical > max ||
-            currentZoom < Double(min) || currentZoom > Double(max) {
-            return String("Arguments produce an invalid zoom spec. Arguments must be positive and non-zero, min must be less than max, maxOptical must be between min and max inclusive, and step must be less than max - min.")
-        }
-        return nil
-    }
-    
-    public var isPercentZoomSupported: Bool {
-        guard let camera = camera else {
-            return false
-        }
-        //Only support hybrid zoom
-        return camera.isHybridZoomSupported()
-    }
-    public var isRatioZoomSupported: Bool {
-        return false
-    }
+    public var isPercentZoomSupported: Bool { camera?.isHybridZoomSupported() ?? false } //Only support hybrid zoom
+    public var isRatioZoomSupported: Bool { false }
 }
 
 public class DJIGimbalAdapter: GimbalAdapter {
