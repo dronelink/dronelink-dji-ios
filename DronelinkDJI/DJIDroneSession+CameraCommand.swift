@@ -203,7 +203,7 @@ extension DJIDroneSession {
                 return "MissionDisengageReason.command.type.unsupported".localized
             }
             let hybridZoomFocalLength = UInt(round((command.zoomPercent * (defaultZoomSpecification.max - defaultZoomSpecification.min) + defaultZoomSpecification.min) / defaultZoomSpecification.step) * defaultZoomSpecification.step)
-            Command.conditionallyExecute(hybridZoomFocalLength != UInt(defaultZoomSpecification.currentZoom), finished: finished) {
+            Command.conditionallyExecute(abs(Double(hybridZoomFocalLength) - defaultZoomSpecification.currentZoom) >= 0.1, finished: finished) {
                 camera.setHybridZoomFocalLength(hybridZoomFocalLength, withCompletion: finished)
             }
             return nil
