@@ -326,6 +326,7 @@ public struct DJICameraFile : CameraFile {
 }
 
 public struct DJICameraStateAdapter: CameraStateAdapter {
+    public let camera: DJICamera?
     public let systemState: DJICameraSystemState
     public let videoStreamSourceValue: DJICameraVideoStreamSource?
     public let focusState: DJICameraFocusState?
@@ -351,10 +352,13 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public let focusModeValue: DJICameraFocusMode?
     public let focusRingValue: Double?
     public let focusRingMax: Double?
+    public let zoomValue: Double?
+    public let hybridZoomSpecification: DJICameraHybridZoomSpec?
     public let meteringModeValue: DJICameraMeteringMode?
     public let isAutoExposureLockEnabled: Bool
     
     public init(
+        camera: DJICamera?,
         systemState: DJICameraSystemState,
         videoStreamSource: DJICameraVideoStreamSource?,
         focusState: DJICameraFocusState?,
@@ -380,8 +384,11 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         focusMode: DJICameraFocusMode?,
         focusRingValue: Double?,
         focusRingMax: Double?,
+        zoomValue: Double?,
+        hybridZoomSpecification: DJICameraHybridZoomSpec?,
         meteringMode: DJICameraMeteringMode?,
         isAutoExposureLockEnabled: Bool) {
+        self.camera = camera
         self.systemState = systemState
         self.videoStreamSourceValue = videoStreamSource
         self.focusState = focusState
@@ -407,6 +414,8 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         self.focusModeValue = focusMode
         self.focusRingValue = focusRingValue
         self.focusRingMax = focusRingMax
+        self.zoomValue = zoomValue
+        self.hybridZoomSpecification = hybridZoomSpecification
         self.meteringModeValue = meteringMode
         self.isAutoExposureLockEnabled = isAutoExposureLockEnabled
     }
@@ -461,6 +470,14 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var focusMode: DronelinkCore.Kernel.CameraFocusMode { return focusModeValue?.kernelValue ?? .unknown }
     public var meteringMode: DronelinkCore.Kernel.CameraMeteringMode { return meteringModeValue?.kernelValue ?? .unknown }
     public var aspectRatio: Kernel.CameraPhotoAspectRatio { (mode == .photo ? photoAspectRatioValue?.kernelValue : nil) ?? ._16x9 }
+    public var defaultZoomSpecification: Kernel.PercentZoomSpecification? {
+        guard isPercentZoomSupported, let hybridZoomSpecification = hybridZoomSpecification, let zoomValue = zoomValue else {
+            return nil
+        }
+        return Kernel.PercentZoomSpecification(currentZoom: zoomValue, min: Double(hybridZoomSpecification.minHybridFocalLength), max: Double(hybridZoomSpecification.maxHybridFocalLength), maxOptical: Double(hybridZoomSpecification.maxOpticalFocalLength), step: Double(hybridZoomSpecification.focalLengthStep))
+    }
+    public var isPercentZoomSupported: Bool { camera?.isHybridZoomSupported() ?? false } //Only support hybrid zoom
+    public var isRatioZoomSupported: Bool { false }
 }
 
 public class DJIGimbalAdapter: GimbalAdapter {

@@ -93,6 +93,8 @@ public class DJIDroneSession: NSObject {
     private var _focusMode: DatedValue<DJICameraFocusMode>?
     private var _focusRingValue: DatedValue<Double>?
     private var _focusRingMax: DatedValue<Double>?
+    private var _zoomValue: DatedValue<Double>?
+    private var _hybridZoomSpecification: DatedValue<DJICameraHybridZoomSpec>?
     private var _meteringMode: DatedValue<DJICameraMeteringMode>?
     private var autoExposureLockEnabled: DatedValue<Bool>?
     private var _remoteControllerGimbalChannel: DatedValue<UInt>?
@@ -486,6 +488,37 @@ public class DJIDroneSession: NSObject {
             }
             else {
                 self?._focusRingMax = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamHybridZoomFocalLength)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.doubleValue {
+                self?._zoomValue = DatedValue(value: value)
+            }
+            else {
+                self?._zoomValue = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJICameraParamHybridZoomSpec)!) { [weak self] (oldValue, newValue) in
+            //There is an outstanding bug in DJIDroneSession architecture where signed up listeners do not know about which camera channel they are listening to.
+            //For now, we are hard coding channel 0. Hybrid zoom specification will not work on drones with multiple cameras.
+            //Additionally we have to get the hybrid zoom specification from the camera because at the time of writing this code (June 2023), casting newValue to DJICameraHybridZoomSpecification does not work.
+            guard let camera = self?.drone.camera(channel: 0) as? DJICamera else {
+                self?._hybridZoomSpecification = nil
+                return
+            }
+            
+            if camera.isHybridZoomSupported() {
+                camera.getHybridZoomSpec { (hybridZoomSpecification: DJICameraHybridZoomSpec, error: Error?) in
+                    if let error = error {
+                        os_log(.error, log: DJIDroneSession.log, "Error getting DJICameraHybridZoomSpec: %{public}s", error.localizedDescription)
+                        return
+                    }
+                    self?._hybridZoomSpecification = DatedValue(value: hybridZoomSpecification)
+                }
+            } else {
+                self?._hybridZoomSpecification = nil
             }
         }
         
@@ -1011,8 +1044,9 @@ extension DJIDroneSession: DroneSession {
                 else if let videoStreamSource = session._cameraVideoStreamSources[channel]?.value {
                     lensIndexResolved = camera.lensIndex(videoStreamSource: videoStreamSource.kernelValue)
                 }
-                    
+
                 return DatedValue(value: DJICameraStateAdapter(
+                        camera: camera as? DJICamera,
                         systemState: systemState.value,
                         videoStreamSource: session._cameraVideoStreamSources[channel]?.value,
                         focusState: session._cameraFocusStates["\(channel).\(lensIndexResolved)"]?.value,
@@ -1038,6 +1072,8 @@ extension DJIDroneSession: DroneSession {
                         focusMode: self?._focusMode?.value,
                         focusRingValue: self?._focusRingValue?.value,
                         focusRingMax: self?._focusRingMax?.value,
+                        zoomValue: self?._zoomValue?.value,
+                        hybridZoomSpecification: self?._hybridZoomSpecification?.value,
                         meteringMode: self?._meteringMode?.value,
                         isAutoExposureLockEnabled: self?.autoExposureLockEnabled?.value ?? false),
                     date: systemState.date)
@@ -1045,7 +1081,7 @@ extension DJIDroneSession: DroneSession {
             return nil
         }
     }
-
+    
     public func gimbalState(channel: UInt) -> DatedValue<GimbalStateAdapter>? {
         gimbalSerialQueue.sync { [weak self] in
             if let gimbalState = self?._gimbalStates[channel] {

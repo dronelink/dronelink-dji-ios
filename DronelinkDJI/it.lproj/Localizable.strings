@@ -2,11 +2,12 @@
 // Localizable-it.strings
 // dronelink-dji-ios - Locale: it
 //
-// Created by 'dronelink-translations' on Thu Jun 15 2023.
+// Created by 'dronelink-translations' on Mon Jul 10 2023.
 // Copyright © 2023 Dronelink. All rights reserved.
 //
 "MissionDisengageReason.user.disengaged" = "Missione sospesa";
 "MissionDisengageReason.command.type.unhandled" = "Tipo di comando non gestito";
+"MissionDisengageReason.command.type.unsupported" = "Tipo di comando non supportato su questo drone";
 "MissionDisengageReason.drone.disconnected.title" = "Drone disconnesso";
 "MissionDisengageReason.drone.control.unavailable.title" = "Controllo drone non disponibile";
 "MissionDisengageReason.telemetry.unavailable.title" = "Telemetria non disponibile";

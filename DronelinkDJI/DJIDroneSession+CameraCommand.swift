@@ -198,6 +198,22 @@ extension DJIDroneSession {
             return nil
         }
         
+        if let command = cameraCommand as? Kernel.ZoomPercentCameraCommand {
+            guard let defaultZoomSpecification = state.defaultZoomSpecification else {
+                return "MissionDisengageReason.command.type.unsupported".localized
+            }
+            let hybridZoomFocalLength = UInt(round((command.zoomPercent * (defaultZoomSpecification.max - defaultZoomSpecification.min) + defaultZoomSpecification.min) / defaultZoomSpecification.step) * defaultZoomSpecification.step)
+            Command.conditionallyExecute(abs(Double(hybridZoomFocalLength) - defaultZoomSpecification.currentZoom) >= 0.1, finished: finished) {
+                camera.setHybridZoomFocalLength(hybridZoomFocalLength, withCompletion: finished)
+            }
+            return nil
+        }
+        
+        if let command = cameraCommand as? Kernel.ZoomRatioCameraCommand {
+            //This command should not be supported by mSDKv4 drones, because there is no real way to retrieve zoom ratios from the DJI SDK.
+            return "MissionDisengageReason.command.type.unsupported".localized
+        }
+        
         if let command = cameraCommand as? Kernel.ISOCameraCommand {
             Command.conditionallyExecute(state.exposureSettings?.ISO != command.iso.djiValue.rawValue, finished: finished) {
                 camera.setISO(command.iso.djiValue, withCompletion: finished)
