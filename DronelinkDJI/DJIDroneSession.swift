@@ -54,6 +54,7 @@ public class DJIDroneSession: NSObject {
     private var remoteControllerInitialized: Date?
     private var _remoteControllerState: DatedValue<RemoteControllerStateAdapter>?
     private var _remoteControllerChargingDeviceState: DatedValue<DJIRCChargeMobileMode>?
+    private var _remoteControllerDisplayName: DatedValue<String>?
     private var _remoteControllerGPSData: DJIRCGPSData?
     
     private let cameraSerialQueue = DispatchQueue(label: "DJIDroneSession+cameraStates")
@@ -548,6 +549,16 @@ public class DJIDroneSession: NSObject {
                 self?._remoteControllerGimbalChannel = nil
             }
         }
+        
+        startListeningForChanges(on: DJIRemoteControllerKey(param: DJIRemoteControllerParamDisplayName)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.value as? String {
+                self?._remoteControllerDisplayName = DatedValue(value: value)
+            }
+            else {
+                self?._remoteControllerDisplayName = nil
+            }
+        }
+        
         
         startListeningForChanges(on: DJIRemoteControllerKey(param: DJIRemoteControllerParamChargeMobileMode)!) { [weak self] (oldValue, newValue) in
             if let value = newValue?.unsignedIntegerValue {
@@ -1329,7 +1340,7 @@ extension DJIDroneSession: DJIBatteryDelegate {
 extension DJIDroneSession: DJIRemoteControllerDelegate {
     public func remoteController(_ rc: DJIRemoteController, didUpdate state: DJIRCHardwareState) {
         remoteControllerSerialQueue.async { [weak self] in
-            self?._remoteControllerState = DatedValue<RemoteControllerStateAdapter>(value: DJIRemoteControllerStateAdapter(rcHardwareState: state, chargingDeviceState: self?._remoteControllerChargingDeviceState?.value, gpsData: self?._remoteControllerGPSData))
+            self?._remoteControllerState = DatedValue<RemoteControllerStateAdapter>(value: DJIRemoteControllerStateAdapter(rcHardwareState: state, chargingDeviceState: self?._remoteControllerChargingDeviceState?.value, gpsData: self?._remoteControllerGPSData, controllerName: self?._remoteControllerDisplayName?.value))
         }
     }
     

@@ -576,16 +576,20 @@ public class DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
     public let rcHardwareState: DJIRCHardwareState
     public let chargingDeviceState: DJIRCChargeMobileMode
     public let gpsData: DJIRCGPSData?
+    public let controllerDisplayName: String?
 
-    public init(rcHardwareState: DJIRCHardwareState, chargingDeviceState: DJIRCChargeMobileMode?, gpsData: DJIRCGPSData?) {
+    public init(rcHardwareState: DJIRCHardwareState, chargingDeviceState: DJIRCChargeMobileMode?, gpsData: DJIRCGPSData?, controllerName: String?) {
         self.rcHardwareState = rcHardwareState
         self.chargingDeviceState = chargingDeviceState ?? .unknown
         self.gpsData = gpsData
+        self.controllerDisplayName = controllerName
     }
     
     public var location: CLLocation? {
         gpsData?.isValid.boolValue ?? false ? gpsData?.location.asLocation : nil
     }
+    
+    public var displayName: String? { controllerDisplayName }
     
     public var leftStick: Kernel.RemoteControllerStick {
         Kernel.RemoteControllerStick(
