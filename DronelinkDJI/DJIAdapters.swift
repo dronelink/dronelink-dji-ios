@@ -573,18 +573,30 @@ extension DJIRemoteController: RemoteControllerAdapter {
 }
 
 public class DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
+    private let rcn1PotentialDroneList: [String] = ["DJI Mini 2", "Mavic Air 2", "DJI Air 2S"]
+
     public let rcHardwareState: DJIRCHardwareState
     public let chargingDeviceState: DJIRCChargeMobileMode
     public let gpsData: DJIRCGPSData?
-
-    public init(rcHardwareState: DJIRCHardwareState, chargingDeviceState: DJIRCChargeMobileMode?, gpsData: DJIRCGPSData?) {
+    public let droneModel: String?
+    
+    public init(rcHardwareState: DJIRCHardwareState, chargingDeviceState: DJIRCChargeMobileMode?, gpsData: DJIRCGPSData?, droneModel: String?) {
         self.rcHardwareState = rcHardwareState
         self.chargingDeviceState = chargingDeviceState ?? .unknown
         self.gpsData = gpsData
+        self.droneModel = droneModel
     }
     
     public var location: CLLocation? {
         gpsData?.isValid.boolValue ?? false ? gpsData?.location.asLocation : nil
+    }
+    
+    //Function that ensures custom buttons are not returned if the function button is pressed on a remote controller that combines function, c1, and c2.
+    private func cancelCustomButtons() -> Bool {
+        if let droneModel = droneModel, rcn1PotentialDroneList.contains(droneModel) {
+            return true
+        }
+        return false
     }
     
     public var leftStick: Kernel.RemoteControllerStick {
@@ -622,7 +634,13 @@ public class DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
     }
     
     public var functionButton: DronelinkCore.Kernel.RemoteControllerButton {
-        Kernel.RemoteControllerButton(
+        //Use c1 button as the function button if the drone is a rcn1 remote controller potential candidate that combines fn, c1, and c2 buttons.
+        if cancelCustomButtons() {
+            return Kernel.RemoteControllerButton(
+                present: rcHardwareState.c1Button.isPresent.boolValue,
+                pressed: rcHardwareState.c1Button.isClicked.boolValue)
+        }
+       return Kernel.RemoteControllerButton(
             present: rcHardwareState.fnButton.isPresent.boolValue,
             pressed: rcHardwareState.fnButton.isClicked.boolValue)
     }
@@ -640,13 +658,23 @@ public class DJIRemoteControllerStateAdapter: RemoteControllerStateAdapter {
     }
     
     public var c1Button: Kernel.RemoteControllerButton {
-        Kernel.RemoteControllerButton(
+        if cancelCustomButtons() {
+            return Kernel.RemoteControllerButton(
+                present: false,
+                pressed: false)
+        }
+        return Kernel.RemoteControllerButton(
             present: rcHardwareState.c1Button.isPresent.boolValue,
             pressed: rcHardwareState.c1Button.isClicked.boolValue)
     }
     
     public var c2Button: Kernel.RemoteControllerButton {
-        Kernel.RemoteControllerButton(
+        if cancelCustomButtons() {
+            return Kernel.RemoteControllerButton(
+                present: false,
+                pressed: false)
+        }
+        return Kernel.RemoteControllerButton(
             present: rcHardwareState.c2Button.isPresent.boolValue,
             pressed: rcHardwareState.c2Button.isClicked.boolValue)
     }
