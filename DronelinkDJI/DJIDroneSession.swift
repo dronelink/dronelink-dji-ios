@@ -1329,7 +1329,7 @@ extension DJIDroneSession: DJIBatteryDelegate {
 extension DJIDroneSession: DJIRemoteControllerDelegate {
     public func remoteController(_ rc: DJIRemoteController, didUpdate state: DJIRCHardwareState) {
         remoteControllerSerialQueue.async { [weak self] in
-            self?._remoteControllerState = DatedValue<RemoteControllerStateAdapter>(value: DJIRemoteControllerStateAdapter(rcHardwareState: state, chargingDeviceState: self?._remoteControllerChargingDeviceState?.value, gpsData: self?._remoteControllerGPSData))
+            self?._remoteControllerState = DatedValue<RemoteControllerStateAdapter>(value: DJIRemoteControllerStateAdapter(rcHardwareState: state, chargingDeviceState: self?._remoteControllerChargingDeviceState?.value, gpsData: self?._remoteControllerGPSData, droneModel: self?.model))
         }
     }
     
