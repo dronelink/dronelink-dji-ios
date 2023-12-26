@@ -770,13 +770,13 @@ public class DJIDroneSession: NSObject {
                 }
                 //Sometimes the DJI SDK does not automatically issue a RTH on low battery.
                 //If the battery drops a few percentage below the threshold and is still engaged, manually issue the RTH
-                if (!_sessionLowBatteryReturnHomeIssued && state?.value.batteryPercent ?? 0 <= (state?.value.lowBatteryThreshold ?? 0) - 2) {
+                if (!_sessionLowBatteryReturnHomeIssued && state?.value.batteryPercent ?? 0 <= (state?.value.lowBatteryThreshold ?? 0) - 0.02) {
+                    _sessionLowBatteryReturnHomeIssued = true
                     adapter.startReturnHome { (error: Error?) in
                         if let error = error {
                             os_log(.error, log: DJIDroneSession.log, "Failed to start return home: %@", "\(error)")
                         }
                     }
-                    _sessionLowBatteryReturnHomeIssued = true
                     
                 }
             }
