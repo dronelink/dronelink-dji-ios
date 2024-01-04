@@ -96,6 +96,12 @@ extension DJIDroneSession {
             }
             return nil
         }
+        
+        if let command = droneCommand as? Kernel.ReturnHomeDroneCommand {
+            Command.conditionallyExecute(isFlying && !isReturningHome, finished: finished) {
+                adapter.startReturnHome(finished: finished)
+            }
+        }
 
         if let command = droneCommand as? Kernel.ReturnHomeAltitudeDroneCommand {
             flightController.getGoHomeHeightInMeters { (current, error) in
