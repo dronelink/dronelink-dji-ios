@@ -1199,6 +1199,7 @@ extension DJIDroneSession: DroneStateAdapter {
         }
         return nil
     }
+    public var obstacleAvoidanceSpecification: Kernel.DroneObstacleAvoidanceSpecification? { nil }
     public var obstacleDistance: Double? {
         var minObstacleDistance = 0.0
         visionDetectionState?.value.detectionSectors?.forEach {
