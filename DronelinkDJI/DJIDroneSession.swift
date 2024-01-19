@@ -86,6 +86,7 @@ public class DJIDroneSession: NSObject {
     private var _photoFileFormat: DatedValue<DJICameraPhotoFileFormat>?
     private var _videoFileFormat: DatedValue<DJICameraVideoFileFormat>?
     private var _videoResolutionAndFrameRate: DatedValue<DJICameraVideoResolutionAndFrameRate>?
+    private var _videoResolutionAndFrameRateRange: DatedValue<[DJICameraVideoResolutionAndFrameRate]>?
     private var _mostRecentCameraFile: DatedValue<CameraFile>?
     private var _whiteBalance: DatedValue<DJICameraWhiteBalance>?
     private var _iso: DatedValue<DJICameraISO>?
@@ -434,6 +435,15 @@ public class DJIDroneSession: NSObject {
             }
             else {
                 self?._videoResolutionAndFrameRate = nil
+            }
+        }
+        
+        startListeningForChanges(on: DJICameraKey(param: DJISupportedCameraVideoResolutionAndFrameRateRange)!) { [weak self] (oldValue, newValue) in
+            if let value = newValue?.value as? [DJICameraVideoResolutionAndFrameRate] {
+                self?._videoResolutionAndFrameRateRange = DatedValue(value: value)
+            }
+            else {
+                self?._videoResolutionAndFrameRateRange = nil
             }
         }
         
@@ -1066,6 +1076,7 @@ extension DJIDroneSession: DroneSession {
                         videoFileFormat: session._videoFileFormat?.value,
                         videoFrameRate: session._videoResolutionAndFrameRate?.value.frameRate,
                         videoResolution: session._videoResolutionAndFrameRate?.value.resolution,
+                        videoResolutionAndFrameRateRange: session._videoResolutionAndFrameRateRange?.value,
                         whiteBalance: session._whiteBalance?.value,
                         iso: session._iso?.value,
                         shutterSpeed: session._shutterSpeed?.value,

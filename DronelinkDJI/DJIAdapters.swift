@@ -346,6 +346,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public let videoFileFormatValue: DJICameraVideoFileFormat?
     public let videoFrameRateValue: DJICameraVideoFrameRate?
     public let videoResolutionValue: DJICameraVideoResolution?
+    public let videoResolutionAndFrameRateRangeValue: [DJICameraVideoResolutionAndFrameRate]?
     public let whiteBalanceValue: DJICameraWhiteBalance?
     public let isoValue: DJICameraISO?
     public let shutterSpeedValue: DJICameraShutterSpeed?
@@ -378,6 +379,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         videoFileFormat: DJICameraVideoFileFormat?,
         videoFrameRate: DJICameraVideoFrameRate?,
         videoResolution: DJICameraVideoResolution?,
+        videoResolutionAndFrameRateRange: [DJICameraVideoResolutionAndFrameRate]?,
         whiteBalance: DJICameraWhiteBalance?,
         iso: DJICameraISO?,
         shutterSpeed: DJICameraShutterSpeed?,
@@ -408,6 +410,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         self.videoFileFormatValue = videoFileFormat
         self.videoFrameRateValue = videoFrameRate
         self.videoResolutionValue = videoResolution
+        self.videoResolutionAndFrameRateRangeValue = videoResolutionAndFrameRateRange
         self.whiteBalanceValue = whiteBalance
         self.isoValue = iso
         self.shutterSpeedValue = shutterSpeed
@@ -447,8 +450,22 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var burstCount: Kernel.CameraBurstCount? { burstCountValue?.kernelValue }
     public var aebCount: Kernel.CameraAEBCount? {aebCountValue?.kernelValue}
     public var videoFileFormat: Kernel.CameraVideoFileFormat { videoFileFormatValue?.kernelValue ?? .unknown }
-    public var videoFrameRate: Kernel.CameraVideoFrameRate { videoFrameRateValue?.kernelValue ?? .unknown }
-    public var videoResolution: Kernel.CameraVideoResolution { videoResolutionValue?.kernelValue ?? .unknown }
+    //TODO N remove when spec is added
+    public var videoFrameRateTest: Kernel.CameraVideoFrameRate { videoFrameRateValue?.kernelValue ?? .unknown }
+    public var videoResolutionTest: Kernel.CameraVideoResolution { videoResolutionValue?.kernelValue ?? .unknown }
+    public var videoResolutionFrameRateSpecification: Kernel.CameraVideoResolutionFrameFrameRateSpecification {
+        return Kernel.CameraVideoResolutionFrameFrameRateSpecification(
+            currentResolution: videoResolutionValue?.kernelValue,
+            currentFrameRate: videoFrameRateValue?.kernelValue,
+            resolutionFrameRateOptions: {
+                guard let range = videoResolutionAndFrameRateRangeValue else {
+                    return nil
+                }
+                return Dictionary(grouping: range, by: { $0.resolution.kernelValue })
+                    .mapValues { $0.map { $0.frameRate.kernelValue } }
+            }()
+        )
+    }
     public var currentVideoTime: Double? { systemState.currentVideoTime }
     public var exposureMode: Kernel.CameraExposureMode { exposureModeValue?.kernelValue ?? .unknown }
     public var exposureCompensation: Kernel.CameraExposureCompensation { exposureSettings?.exposureCompensation.kernelValue ?? .unknown }
@@ -478,6 +495,13 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     }
     public var isPercentZoomSupported: Bool { camera?.isHybridZoomSupported() ?? false } //Only support hybrid zoom
     public var isRatioZoomSupported: Bool { false }
+    private func resolutionFrameRateOptions() -> [Kernel.CameraVideoResolution: [Kernel.CameraVideoFrameRate]]? {
+        guard let range = videoResolutionAndFrameRateRangeValue else {
+            return nil
+        }
+        return Dictionary(grouping: range, by: { $0.resolution.kernelValue })
+            .mapValues { $0.map { $0.frameRate.kernelValue } }
+    }
 }
 
 public class DJIGimbalAdapter: GimbalAdapter {
