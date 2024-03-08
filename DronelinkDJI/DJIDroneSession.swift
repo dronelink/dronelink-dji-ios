@@ -439,10 +439,12 @@ public class DJIDroneSession: NSObject {
         }
         
         startListeningForChanges(on: DJICameraKey(param: DJISupportedCameraVideoResolutionAndFrameRateRange)!) { [weak self] (oldValue, newValue) in
-            if let value = newValue?.value as? [DJICameraVideoResolutionAndFrameRate] {
-                self?._videoResolutionAndFrameRateRange = DatedValue(value: value)
-            }
-            else {
+            //There is an outstanding bug in DJIDroneSession architecture where signed up listeners do not know about which camera channel they are listening to.
+            //For now, we are hard coding channel 0. Getting the supported camera and video resolution and framerate range will not work on drones with multiple cameras.
+            //Additionally we have to get the supported camera resolution and framerate from the camera because at the time of writing this code (March 2024), casting newValue to [DJICameraVideoResolutionAndFrameRate] does not work. newValue always is nil.
+            if let camera = self?.drone.camera(channel: 0) as? DJICamera {
+                self?._videoResolutionAndFrameRateRange = DatedValue(value: camera.capabilities.videoResolutionAndFrameRateRange())
+            } else {
                 self?._videoResolutionAndFrameRateRange = nil
             }
         }

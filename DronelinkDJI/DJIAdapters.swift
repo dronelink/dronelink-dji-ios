@@ -453,7 +453,7 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     //TODO N remove when spec is added
     public var videoFrameRateTest: Kernel.CameraVideoFrameRate { videoFrameRateValue?.kernelValue ?? .unknown }
     public var videoResolutionTest: Kernel.CameraVideoResolution { videoResolutionValue?.kernelValue ?? .unknown }
-    public var videoResolutionFrameRateSpecification: Kernel.CameraVideoResolutionFrameFrameRateSpecification {
+    public var videoResolutionFrameRateSpecification: Kernel.CameraVideoResolutionFrameFrameRateSpecification? {
         return Kernel.CameraVideoResolutionFrameFrameRateSpecification(
             currentResolution: videoResolutionValue?.kernelValue,
             currentFrameRate: videoFrameRateValue?.kernelValue,
