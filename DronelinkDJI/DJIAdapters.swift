@@ -472,21 +472,8 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
     public var aebCount: Kernel.CameraAEBCount? {aebCountValue?.kernelValue}
     public var videoFileFormat: Kernel.CameraVideoFileFormat { videoFileFormatValue?.kernelValue ?? .unknown }
     //TODO N remove when spec is added
-    public var videoFrameRateTest: Kernel.CameraVideoFrameRate { videoFrameRateValue?.kernelValue ?? .unknown }
-    public var videoResolutionTest: Kernel.CameraVideoResolution { videoResolutionValue?.kernelValue ?? .unknown }
-    public var videoResolutionFrameRateSpecification: Kernel.CameraVideoResolutionFrameFrameRateSpecification? {
-        return Kernel.CameraVideoResolutionFrameFrameRateSpecification(
-            currentResolution: videoResolutionValue?.kernelValue,
-            currentFrameRate: videoFrameRateValue?.kernelValue,
-            resolutionFrameRateOptions: {
-                guard let range = videoResolutionAndFrameRateRangeValue else {
-                    return nil
-                }
-                return Dictionary(grouping: range, by: { $0.resolution.kernelValue })
-                    .mapValues { $0.map { $0.frameRate.kernelValue } }
-            }()
-        )
-    }
+    public var videoFrameRate: Kernel.CameraVideoFrameRate { videoFrameRateValue?.kernelValue ?? .unknown }
+    public var videoResolution: Kernel.CameraVideoResolution { videoResolutionValue?.kernelValue ?? .unknown }
     public var currentVideoTime: Double? { systemState.currentVideoTime }
     public var exposureMode: Kernel.CameraExposureMode { exposureModeValue?.kernelValue ?? .unknown }
     public var exposureCompensation: Kernel.CameraExposureCompensation { exposureSettings?.exposureCompensation.kernelValue ?? .unknown }
