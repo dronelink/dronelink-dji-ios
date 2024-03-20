@@ -399,7 +399,6 @@ public struct DJICameraStateAdapter: CameraStateAdapter {
         videoFileFormat: DJICameraVideoFileFormat?,
         videoFrameRate: DJICameraVideoFrameRate?,
         videoResolution: DJICameraVideoResolution?,
-        videoResolutionAndFrameRateRange: [DJICameraVideoResolutionAndFrameRate]?,
         whiteBalance: DJICameraWhiteBalance?,
         iso: DJICameraISO?,
         shutterSpeed: DJICameraShutterSpeed?,

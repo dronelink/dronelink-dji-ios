@@ -86,7 +86,6 @@ public class DJIDroneSession: NSObject {
     private var _photoFileFormat: DatedValue<DJICameraPhotoFileFormat>?
     private var _videoFileFormat: DatedValue<DJICameraVideoFileFormat>?
     private var _videoResolutionAndFrameRate: DatedValue<DJICameraVideoResolutionAndFrameRate>?
-    private var _videoResolutionAndFrameRateRange: DatedValue<[DJICameraVideoResolutionAndFrameRate]>?
     private var _mostRecentCameraFile: DatedValue<CameraFile>?
     private var _whiteBalance: DatedValue<DJICameraWhiteBalance>?
     private var _iso: DatedValue<DJICameraISO>?
@@ -435,17 +434,6 @@ public class DJIDroneSession: NSObject {
             }
             else {
                 self?._videoResolutionAndFrameRate = nil
-            }
-        }
-        
-        startListeningForChanges(on: DJICameraKey(param: DJISupportedCameraVideoResolutionAndFrameRateRange)!) { [weak self] (oldValue, newValue) in
-            //There is an outstanding bug in DJIDroneSession architecture where signed up listeners do not know about which camera channel they are listening to.
-            //For now, we are hard coding channel 0. Getting the supported camera and video resolution and framerate range will not work on drones with multiple cameras.
-            //Additionally we have to get the supported camera resolution and framerate from the camera because at the time of writing this code (March 2024), casting newValue to [DJICameraVideoResolutionAndFrameRate] does not work. newValue always is nil.
-            if let camera = self?.drone.camera(channel: 0) as? DJICamera {
-                self?._videoResolutionAndFrameRateRange = DatedValue(value: camera.capabilities.videoResolutionAndFrameRateRange())
-            } else {
-                self?._videoResolutionAndFrameRateRange = nil
             }
         }
         
@@ -1078,7 +1066,6 @@ extension DJIDroneSession: DroneSession {
                         videoFileFormat: session._videoFileFormat?.value,
                         videoFrameRate: session._videoResolutionAndFrameRate?.value.frameRate,
                         videoResolution: session._videoResolutionAndFrameRate?.value.resolution,
-                        videoResolutionAndFrameRateRange: session._videoResolutionAndFrameRateRange?.value,
                         whiteBalance: session._whiteBalance?.value,
                         iso: session._iso?.value,
                         shutterSpeed: session._shutterSpeed?.value,
