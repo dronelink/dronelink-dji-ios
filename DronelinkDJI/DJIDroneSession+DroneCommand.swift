@@ -186,6 +186,18 @@ extension DJIDroneSession {
             return nil
         }
         
+        if let command = flightAssistantCommand as? Kernel.ObstacleAvoidanceBrakingDistanceDroneCommand {
+            return "MissionDisengageReason.command.type.unsupported".localized
+        }
+        
+        if let command = flightAssistantCommand as? Kernel.ObstacleAvoidanceModeDroneCommand {
+            return "MissionDisengageReason.command.type.unsupported".localized
+        }
+        
+        if let command = flightAssistantCommand as? Kernel.ObstacleAvoidanceWarningDistanceDroneCommand {
+            return "MissionDisengageReason.command.type.unsupported".localized
+        }
+        
         if let command = flightAssistantCommand as? Kernel.PrecisionLandingDroneCommand {
             flightAssistant.getPrecisionLandingEnabled { (current, error) in
                 Command.conditionallyExecute(current != command.enabled, error: error, finished: finished) {
@@ -220,6 +232,10 @@ extension DJIDroneSession {
                 }
             }
             return nil
+        }
+        
+        if let command = flightAssistantCommand as? Kernel.DownwardAvoidanceDroneCommand {
+            return "MissionDisengageReason.command.type.unsupported".localized
         }
         
         return "MissionDisengageReason.command.type.unhandled".localized

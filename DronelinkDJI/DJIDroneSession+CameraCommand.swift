@@ -70,6 +70,10 @@ extension DJIDroneSession {
             return nil
         }
         
+        if let command = cameraCommand as? Kernel.DewarpingCameraCommand {
+            return "MissionDisengageReason.command.type.unsupported".localized
+        }
+        
         if let command = cameraCommand as? Kernel.DisplayModeCameraCommand {
             if adapter.drone.model == DJIAircraftModelNameMavic2EnterpriseDual || camera.model == DJICameraDisplayNameXT2Thermal {
                 camera.getDisplayMode { (current, error) in

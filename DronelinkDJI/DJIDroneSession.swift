@@ -979,6 +979,11 @@ extension DJIDroneSession: DroneSession {
             return
         }
         
+        if let command = command as? KernelRTKCommand {
+            throw DroneSessionError.commandTypeUnsupported
+            return
+        }
+        
         throw DroneSessionError.commandTypeUnhandled
     }
     
