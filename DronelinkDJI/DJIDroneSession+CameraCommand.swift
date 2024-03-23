@@ -438,6 +438,10 @@ extension DJIDroneSession {
             return nil
         }
         
+        if let command = cameraCommand as? Kernel.StorageCustomFolderNameCameraCommand {
+            return "MissionDisengageReason.command.type.unsupported".localized
+        }
+        
         if let command = cameraCommand as? Kernel.StorageLocationCameraCommand {
             camera.getStorageLocation { (current, error) in
                 Command.conditionallyExecute(current != command.storageLocation.djiValue, error: error, finished: finished) {
