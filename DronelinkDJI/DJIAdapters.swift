@@ -303,6 +303,27 @@ extension DJICamera : CameraAdapter {
         
         return enumElements.isEmpty ? nil : enumElements
     }
+    
+    public func tupleEnumElements(parameter: String) -> [EnumElementTuple]? {
+        var tuples: [EnumElementTuple] = []
+        switch parameter {
+        case "CameraVideoResolutionFrameRate":
+            capabilities.videoResolutionAndFrameRateRange().forEach { resolutionFrameRate in
+                let resolutionRaw = resolutionFrameRate.resolution.kernelValue.rawValue
+                let frameRateRaw = resolutionFrameRate.frameRate.kernelValue.rawValue
+                tuples.append(
+                    EnumElementTuple(
+                        element1: EnumElement(display: Dronelink.shared.formatEnum(name: "CameraVideoResolution", value: resolutionRaw), value: resolutionRaw),
+                        element2: EnumElement(display: Dronelink.shared.formatEnum(name: "CameraVideoFrameRate", value: frameRateRaw), value: frameRateRaw)))
+            }
+            break
+        default:
+            return nil
+            
+        }
+        return tuples.isEmpty ? nil : tuples
+        
+    }
 }
 
 public struct DJICameraFile : CameraFile {
