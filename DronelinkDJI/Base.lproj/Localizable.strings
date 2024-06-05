@@ -54,6 +54,8 @@
 "DJIDroneSession+CameraCommand.focus.target.ring.invalid" = "Focus Ring Outside Limits: %@ < %@ < %@";
 "DJIDroneSession+GimbalCommand.orientation.not.achieved" = "Gimbal Not Rotated";
 "DJIDroneSessionManager.remoteControllerLinking.unavailable" = "Remote controller is unavailable.";
+"DJIDroneSessionManager.authorization.flyzones.unsupported" = "Retrieving authorization zones is not supported";
+"DJIDroneSessionManager.authorization.flyzone.unlock.unsupported" = "Unlocking authorization fly zones is not supported";
 "DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.title" = "GPS Signal Unavailable";
 "DJIDronelink:DJIFlightControllerState.statusMessages.locationUnavailable.details" = "Please wait for a strong GPS signal lock to continue.";
 "DJIDronelink:DJIFlightControllerState.statusMessages.homeLocationNotSet.title" = "Home Location Not Set";
