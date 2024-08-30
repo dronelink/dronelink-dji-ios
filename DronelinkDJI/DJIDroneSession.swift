@@ -1170,6 +1170,9 @@ extension DJIDroneSession: DroneStateAdapter {
         //takeoffLocation == nil ? nil : flightControllerState?.value.takeoffAltitude
     }
     public var course: Double { flightControllerState?.value.course ?? 0 }
+    public var velocityX: Double { Double(flightControllerState?.value.velocityX ?? 0) }
+    public var velocityY: Double { Double(flightControllerState?.value.velocityY ?? 0) }
+    public var velocityZ: Double { Double(flightControllerState?.value.velocityZ ?? 0) }
     public var horizontalSpeed: Double { flightControllerState?.value.horizontalSpeed ?? 0 }
     public var verticalSpeed: Double { flightControllerState?.value.verticalSpeed ?? 0 }
     public var altitude: Double { flightControllerState?.value.altitude ?? 0 }
