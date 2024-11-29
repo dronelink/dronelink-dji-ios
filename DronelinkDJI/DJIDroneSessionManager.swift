@@ -70,6 +70,16 @@ extension DJIDroneSessionManager: DroneSessionManager {
         }
         finished?("DJIDroneSessionManager.remoteControllerLinking.unavailable".localized)
     }
+    
+    public func authorizationFlyZonesInSurroundingArea(finished: DronelinkCore.CommandFinished?) {
+        //TODO N Localize
+        finished?("DJIDroneSessionManager.authorization.flyzones.unsupported".localized)
+    }
+    
+    public func unlockAuthorizationFlyZone(flyZoneID: String, finished: DronelinkCore.CommandFinished?) {
+        //TODO N Localize
+        finished?("DJIDroneSessionManager.authorization.flyzone.unlock.unsupported".localized)
+    }
 
     public var session: DroneSession? { _session }
     
