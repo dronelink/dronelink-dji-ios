@@ -1026,6 +1026,8 @@ extension DJIDroneSession: DroneSession {
                  return djiWaypointMissionSession
             }
             break
+        case .dji2:
+            break
         }
         
         throw String(format: "DJIDroneSession.createControlSession.execution.engine.unsupported".localized, Dronelink.shared.formatEnum(name: "ExecutionEngine", value: executionEngine.rawValue, defaultValue: ""))
